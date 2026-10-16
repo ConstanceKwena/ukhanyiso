@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ukhanyiso</title>
+</head>
+<body>
+  <h1>Ukhanyiso</h1>
+  <p id="status">Checking backend...</p>
+  <script>
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(d => document.getElementById('status').textContent = 'Backend: ' + d.status + ' (SQLite ' + d.sqlite + ')')
+      .catch(() => document.getElementById('status').textContent = 'Backend not reachable');
+  </script>
+</body>
+</html>
