@@ -5,6 +5,7 @@
 - [x] Start the source sheet: `data/source_sheet.csv` (APS, subjects, closing date, official link, date checked, checked by, status)
 - [x] Load the sheet into the tables: `data/seed.sql` (tested in SQLite: 12 courses, 51 requirement rows)
 - [x] Write the matching rules and the near-miss rule: `docs/matching-rules.md`
+- [x] APS rules and likelihood-label rules (draft, to agree with Kwena): sections 3 and 9 of `docs/matching-rules.md`
 
 ## Still to confirm (not blocking iteration 0)
 

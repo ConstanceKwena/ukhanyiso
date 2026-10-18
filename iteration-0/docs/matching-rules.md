@@ -101,7 +101,51 @@ A `MATCH` that is `CLOSED` is shown as "you qualify, but the 2027 window has clo
 6. Course accepts Maths OR Maths Literacy (OR-group): MATCH with either.
 7. Life Orientation at 90%: adds nothing to APS.
 8. Course with `min_aps` NULL: CANNOT_CHECK.
-8b. UJ LLB with Maths Literacy at level 4 and APS 31: NO_MATCH or NEAR_MISS (needs 32), not MATCH. With Maths level 3 and APS 31: MATCH.
-8c. TUT Dip IT with Maths Literacy level 7 and APS 27: NEAR_MISS (needs 28). With Technical Maths level 5 and APS 26: MATCH.
+   8b. UJ LLB with Maths Literacy at level 4 and APS 31: NO_MATCH or NEAR_MISS (needs 32), not MATCH. With Maths level 3 and APS 31: MATCH.
+   8c. TUT Dip IT with Maths Literacy level 7 and APS 27: NEAR_MISS (needs 28). With Technical Maths level 5 and APS 26: MATCH.
 9. Closing date yesterday: CLOSED. 14 days away: CLOSING_SOON. No date: UNKNOWN.
 10. Closing at 12:00 on the day, current time 14:00 that day: CLOSED.
+
+## 9. Likelihood labels
+
+A label is a short, plain-language summary shown next to each course. It is calculated from the fit status (section 5) and how far the learner is above the cut-off. It says how the learner's results compare with the **published minimum**. It is not a prediction of admission, because most institutions select competitively and the published minimum is only the entry point.
+
+Three labels: **Likely**, **Possible**, **Unlikely**.
+
+Definitions:
+
+- `aps_margin` = learner's APS minus the APS needed for the alternative the learner satisfies (the `aps_required` rule in section 4 applies).
+- `likely_aps_margin` = 3 by default (stored in `match_config`, so the team can change it without touching code).
+
+| Fit status | Condition | Label |
+|---|---|---|
+| MATCH | `aps_margin` >= `likely_aps_margin` | **Likely** |
+| MATCH | `aps_margin` from 0 up to `likely_aps_margin` - 1 | **Possible** |
+| NEAR_MISS | any | **Unlikely** (show what closes the gap) |
+| NO_MATCH | any | **Unlikely** |
+| CANNOT_CHECK | any | no label; show "not enough data to check this course" |
+
+Rules around the label:
+
+1. **Meeting the minimum is not a promise.** Wording for Likely is "You are comfortably above the minimum", never "you will get in". Wording for Possible is "You meet the minimum, but it is close".
+2. **Near-misses stay useful.** A near-miss is labelled Unlikely, but the card must also say what would change it, for example "1 more APS point would move this to Possible".
+3. **The label ignores the deadline.** A Likely course that has CLOSED is still labelled Likely but shows the closed status next to it. Never show a closed course as something the learner can still apply for.
+4. **Caveats travel with the label.** If `aps_method_verified = 0` for the institution, show "APS method not yet confirmed" beside the label. Labels are not hidden because of it.
+5. **No label upgrades.** Data quality can only lower confidence. Never move a course up a label because a source is missing.
+6. **Subjects have no margin in iteration 0.** Only APS margin decides Likely versus Possible. A course where a required subject is exactly at the minimum can still be Likely if APS is comfortable. The team may want to tighten this later.
+
+Known limits (for the team to decide):
+
+- The margin of 3 points is a proposal, not a published figure. Check it against real cut-off history if the institutions publish it.
+- Competitive courses (Law, Engineering, Accounting) often admit well above the minimum. A `competitive` flag on courses could cap their label at Possible. Not in iteration 0.
+
+## 10. Test cases for labels
+
+1. MATCH with APS exactly 3 above the cut-off: Likely.
+2. MATCH with APS 2 above: Possible. With APS exactly at the cut-off: Possible.
+3. NEAR_MISS (1 APS point short): Unlikely, with the "1 more APS point" message.
+4. NO_MATCH: Unlikely.
+5. Course with `min_aps` NULL: no label.
+6. UJ LLB with Maths Literacy and APS 35: margin is 3 against the 32 needed, so Likely. With Maths and APS 35: margin is 4 against 31, so Likely.
+7. MATCH, margin 4, course CLOSED: Likely, with the closed status shown.
+8. Institution with `aps_method_verified = 0`: label shown with the caveat.
