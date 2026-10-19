@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: funding</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav><a href="/index.html">Marks</a><a href="/results.html">Results</a><a href="/funding.html">Funding</a></nav>
+<h1>Funding and documents</h1>
+<div id="list"></div>
+<script src="/js/fake-data.js"></script>
+<script>
+    const list = document.getElementById("list");
+    FAKE_BURSARIES.forEach((b, i) => {
+        const c = document.createElement("div"); c.className = "card";
+        const h = document.createElement("strong"); h.textContent = b.name;
+        const p = document.createElement("p"); p.textContent = "Closes " + b.closingDate;
+        c.append(h, p);
+        b.documents.forEach((doc, j) => {
+            const id = `d${i}-${j}`;
+            const l = document.createElement("label");
+            const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = id; cb.style.width = "auto";
+            l.append(cb, " " + doc);
+            c.appendChild(l);
+        });
+        list.appendChild(c);
+    });
+</script>
+</body>
+</html>

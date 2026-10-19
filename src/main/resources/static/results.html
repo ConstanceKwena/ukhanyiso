@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: your courses</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav><a href="/index.html">Marks</a><a href="/results.html">Results</a><a href="/funding.html">Funding</a></nav>
+<h1>Courses for you</h1>
+<div id="list"></div>
+<p class="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
+<script src="/js/fake-data.js"></script>
+<script>
+    const list = document.getElementById("list");
+    FAKE_RESULTS.forEach(r => {
+        const c = document.createElement("div"); c.className = "card";
+        const h = document.createElement("strong"); h.textContent = r.course;
+        const badge = document.createElement("span"); badge.className = "badge " + r.label; badge.textContent = r.label;
+        const p = document.createElement("p");
+        p.textContent = `${r.institution} | Required APS ${r.requiredAps} | Your APS ${r.yourAps} | Closes ${r.closingDate}`;
+        c.append(h, document.createTextNode(" "), badge, p);
+        list.appendChild(c);
+    });
+</script>
+</body>
+</html>

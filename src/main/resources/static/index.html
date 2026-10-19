@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: enter your marks</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav><a href="/index.html">Marks</a><a href="/results.html">Results</a><a href="/funding.html">Funding</a></nav>
+<h1>Enter your matric marks</h1>
+<form id="marks-form" novalidate>
+    <div id="rows"></div>
+    <button type="button" class="secondary" id="add">Add subject</button>
+    <button type="submit">See my courses</button>
+    <div id="errors" class="error" role="alert"></div>
+</form>
+<script src="/js/fake-data.js"></script>
+<script src="/js/validate.js"></script>
+<script>
+    const rowsEl = document.getElementById("rows");
+    function addRow() {
+        const d = document.createElement("div");
+        d.className = "row";
+        const sel = document.createElement("select");
+        sel.setAttribute("aria-label", "Subject");
+        const blank = document.createElement("option");
+        blank.value = ""; blank.textContent = "Choose subject";
+        sel.appendChild(blank);
+        SUBJECTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; sel.appendChild(o); });
+        const mark = document.createElement("input");
+        mark.type = "number"; mark.min = 0; mark.max = 100; mark.step = 1; mark.placeholder = "Mark %";
+        mark.setAttribute("aria-label", "Mark");
+        const rm = document.createElement("button");
+        rm.type = "button"; rm.className = "secondary"; rm.textContent = "X";
+        rm.setAttribute("aria-label", "Remove subject");
+        rm.onclick = () => d.remove();
+        d.append(sel, mark, rm);
+        rowsEl.appendChild(d);
+    }
+    for (let i = 0; i < 4; i++) addRow();
+    document.getElementById("add").onclick = addRow;
+    document.getElementById("marks-form").onsubmit = e => {
+        e.preventDefault();
+        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input").value }));
+        const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
+        const box = document.getElementById("errors");
+        box.textContent = errors.join(" ");
+        if (errors.length === 0) location.href = "/results.html"; // TODO: call the APS endpoint
+    };
+</script>
+</body>
+</html>
