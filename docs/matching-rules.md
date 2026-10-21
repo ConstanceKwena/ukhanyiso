@@ -1,6 +1,6 @@
 # Iteration 0: matching rules and near-miss rule
 
-Status: ready for team review. Course data in `data/source_sheet.csv` and `data/seed.sql` comes from official institution pages checked on 2026-10-16. Anything still marked CONFIRM must be checked on the official source before it is shown to learners.
+Status: plain-language rules are drafted; Kwena and Nana still need to agree on them. Course data in `data/source_sheet.csv` and `data/seed.sql` comes from official institution pages checked on 2026-10-16. Anything still marked CONFIRM must be checked on the official source before it is shown to learners.
 
 ## 1. Inputs and outputs
 

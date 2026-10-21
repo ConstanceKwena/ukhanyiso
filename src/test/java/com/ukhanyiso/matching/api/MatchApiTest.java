@@ -101,4 +101,10 @@ class MatchApiTest {
         mvc.perform(post("/api/match").param("includeAll", "maybe").contentType(MediaType.APPLICATION_JSON).content(GOOD))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void obsoletePersistenceEndpointIsNotAvailable() throws Exception {
+        mvc.perform(post("/api/matching/process").param("sourceReference", "SRC-REF-001"))
+                .andExpect(status().isNotFound());
+    }
 }

@@ -14,10 +14,13 @@
 <script src="/js/fake-data.js"></script>
 <script>
     const list = document.getElementById("list");
+    const labels = { LIKELY: "Likely", POSSIBLE: "Possible", UNLIKELY: "Unlikely" };
     FAKE_RESULTS.forEach(r => {
         const c = document.createElement("div"); c.className = "card";
         const h = document.createElement("strong"); h.textContent = r.course;
-        const badge = document.createElement("span"); badge.className = "badge " + r.label; badge.textContent = r.label;
+        const rawLabel = typeof r.label === "string" ? r.label : "";
+        const label = labels[rawLabel.toUpperCase()] || rawLabel;
+        const badge = document.createElement("span"); badge.className = "badge " + label.toLowerCase(); badge.textContent = label;
         const p = document.createElement("p");
         p.textContent = `${r.institution} | Required APS ${r.requiredAps} | Your APS ${r.yourAps} | Closes ${r.closingDate}`;
         c.append(h, document.createTextNode(" "), badge, p);

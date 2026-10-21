@@ -64,6 +64,6 @@ Results are already ranked (rules doc section 7). Show them in the order receive
 ## For the front end
 
 1. `index.html` has `// TODO: call the APS endpoint`: send `rows` as `{ marks: rows }` with `fetch("/api/match", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ marks: rows }) })`, keep the client checks, and show `errors` from a 400.
-2. **Label names need a decision.** The page and CSS use `Safe` / `Possible` / `Stretch`; the rules use `LIKELY` / `POSSIBLE` / `UNLIKELY`. The natural mapping is Safe = LIKELY, Possible = POSSIBLE, Stretch = UNLIKELY. Either the front end maps them, or the team renames the rules. Nobody has chosen yet.
+2. The canonical labels are `LIKELY`, `POSSIBLE`, and `UNLIKELY`, as defined in `matching-rules.md` and returned by the API. The page displays them as "Likely", "Possible", and "Unlikely"; the fake-data fixture uses the same display wording. Confirm the wording with Nana before treating the rules as team-approved.
 3. Use `textContent` (as `results.html` already does) for every string from the API.
 4. Rate limiting (test case S-02) is not built yet: it is waiting on an answer from Kwena.
