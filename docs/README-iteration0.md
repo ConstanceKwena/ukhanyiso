@@ -20,43 +20,44 @@
 - Meeting the minimum never guarantees a place; wording must say "meets the minimum".
 ## Security checklist (Iteration 0 - Kwena)
 
-Status: NOT TESTED means evidence is still required.
+For every row, record exactly one result: **PASS**, **FAIL**, or **NOT TESTED**. Add dated evidence (test output, configuration, or review record). A missing feature is **FAIL** when required for this iteration; otherwise record it as **NOT TESTED** with the reason. Do not treat configuration alone as proof that a security test passed.
 
-| Security control | Pass criteria | Status |
+| Security control | PASS criteria | Result / evidence |
 |---|---|---|
-| [ ] Secrets excluded from Git | `.gitignore` excludes `.env` and other local secret files; no real secrets are committed. | NOT TESTED |
-| [ ] Sample configuration | `.env.example` contains placeholders only, if environment configuration is needed. | NOT TESTED |
-| [ ] Demo account uses synthetic data | All demo learner profiles and marks are fictional; no real learner records or identity documents are used. | NOT TESTED |
-| [ ] Input validation | Invalid or missing marks, APS values and course inputs are rejected or handled safely. | NOT TESTED |
-| [ ] Access control | Users cannot access another learner's private information. If authentication is not implemented, record this as NOT IMPLEMENTED. | NOT TESTED |
-| [ ] Dependency security | Dependencies are inventoried and GitHub dependency alerts are enabled where supported. | NOT TESTED |
-| [ ] Secret scanning | GitHub secret scanning is enabled where supported, and findings are reviewed. | NOT TESTED |
-| [ ] Security testing | Relevant tests run; failures are documented and fixed or recorded as unresolved. | NOT TESTED |
-| [ ] Data minimisation | The demo collects and stores only data required for the iteration. | NOT TESTED |
-| [ ] Documentation | Test evidence, unresolved risks and remediation actions are recorded. | NOT TESTED |
+| Secrets excluded from Git | `.gitignore` excludes local environment files; no credentials or private keys are tracked or found in the repository/history. | NOT TESTED — scan current files and Git history. |
+| Sample configuration | `.env.example` has safe local defaults/placeholders only; `.env` is ignored. | PASS — `.env.example` contains only `SERVER_PORT=8080`; `.gitignore` ignores `.env` and `.env.*` except `.env.example`. |
+| Demo data | The judge demo uses a clearly labelled synthetic profile and marks; no real learner information or documents are used. | NOT TESTED — demo login is not available yet; policy is documented. |
+| Input validation | Automated tests show invalid, missing, out-of-range, oversized, and unexpected input is rejected safely. | PASS — `mvn test -q` on 2026-10-21; `MarksValidatorTest` and `MatchApiTest` cover missing, malformed, invalid, oversized, and unexpected input. |
+| Access control | Tests show one user cannot read or change another user's private data; if accounts are absent, document that limitation and do not store private learner data. | NOT TESTED — authentication and private learner accounts are not available yet. |
+| Dependency security | Dependency graph and Dependabot alerts are enabled; dependency updates are configured; open alerts are reviewed and triaged. | NOT TESTED — Dependabot update schedule is in `.github/dependabot.yml`; verify repository alert settings and review alerts. |
+| Secret scanning | GitHub secret scanning and push protection are enabled where supported; scan findings are reviewed and resolved. | NOT TESTED — prior screenshots documented enabled protections; verify current settings and findings. |
+| Security testing | Relevant tests and scans complete; failures are fixed or tracked with an owner and due date. | NOT TESTED — attach current test and scan results. |
+| Data minimisation | The demo collects and retains only data needed for the demonstrated features; retention/deletion behavior is documented. | NOT TESTED — verify before collecting or persisting learner data. |
+| Documentation | Every result has dated evidence; failures and accepted exceptions have an owner, action, and due date. | NOT TESTED — complete this record after checks run. |
 
 ### Security Testing
 
-**Pass:** The relevant security checks have been run, results are recorded, and no unresolved critical or high-severity issue remains.
+**PASS:** All applicable security checks have been run and their dated evidence is recorded. No unresolved critical or high-severity issue remains, no secret is exposed, and all demo data is synthetic.
 
-**Fail:** A check identifies an unresolved critical or high-severity issue, secrets are exposed, or the demo uses real learner data without an approved safeguard.
+**FAIL:** Any check finds an unresolved critical or high-severity issue, an exposed secret, real learner data in the demo, or an unmitigated security-test failure. Do not sign off or release while a failure remains.
 
-**Not tested:** The check has not been run or there is no evidence to support a pass.
+**NOT TESTED:** A check has not been run or has no evidence. NOT TESTED is not a pass and blocks security sign-off.
 
-Record each check with its date, result, evidence and any remediation owner. Do not mark a control PASS based on configuration alone when a test is required.
+Record each check with its date, result, evidence, and remediation owner/due date when it fails. A configuration being present does not prove the application behaves securely.
 
 ### Demo-account data policy
 
-The demo account must use fictional learner profiles and synthetic marks. Do not use real learner names, ID numbers, contact details, marks, family-income details or identity documents. Use clearly labelled synthetic records, and keep credentials out of source control. If realistic examples are needed, create them from scratch rather than copying real learner records.
+The judge demo is not available yet. When implemented, provide a clearly labelled, preloaded fictional profile with synthetic marks so judges do not need to enter personal information or use a learner's account. Never use real names, ID numbers, contact details, marks, household-income details, or identity documents, including altered or anonymised copies of real records. Do not save demo submissions as learner profiles. Keep any future demo credentials out of source control and rotate them if exposed.
 
 ### SSDLC gate
 
-Iteration 0 security review is complete only when each applicable control has a recorded PASS or an explicitly accepted, documented exception. NOT TESTED and NOT IMPLEMENTED are not PASS. Unresolved critical or high-severity issues block the security sign-off.
+The SSDLC gate **passes** only when every applicable checklist item is PASS or has a documented exception approved by the team, with evidence and an owner. Any FAIL, NOT TESTED item, exposed secret, or unresolved critical/high issue blocks security sign-off. A feature not implemented must be recorded as such; it cannot be described as protected by an unimplemented control.
 
 ### Security test evidence
 
 - **SQLite seed integrity — PASS:** On 2026-10-19, loaded `schema.sql` and `seed.sql` into a temporary in-memory SQLite database with foreign-key enforcement enabled. Loaded 3 institutions, 12 courses, 9 subjects, 51 course requirements and 17 sources. `PRAGMA foreign_key_check` returned no errors.
-- **Maven build — PASS:** On 2026-10-19, `mvn test` returned `BUILD SUCCESS`, but reported "No tests to run". This confirms the build succeeds; application security tests remain unverified.
+- **Maven build — PASS (historical):** On 2026-10-19, `mvn test` returned `BUILD SUCCESS`, but reported "No tests to run". This confirms that build only; current application security tests remain unverified.
+- **Maven tests — PASS:** On 2026-10-21, `mvn test -q` passed all 78 tests across 9 test suites with 0 failures, errors, or skips. This includes input-validation/API coverage; it does not replace secret/dependency scans or access-control tests.
 - **Demo seed data review — PASS for `seed.sql` only:** The inspected seed data contains institutional and course information, not learner profiles or identity documents. Other files have not all been reviewed.
-- **GitHub protections — VERIFIED:** Secret Protection and push protection were shown enabled in GitHub screenshots. Dependency graph, Dependabot alerts and Dependabot security updates were confirmed by the developer.
-- **Remaining checks:** Scan repository contents and history for secrets; inspect all demo data; verify application input validation and access control when implemented; add and run relevant automated tests.
+- **GitHub protections — historical evidence:** Secret Protection and push protection were shown enabled in GitHub screenshots. Dependency graph, Dependabot alerts and Dependabot security updates were confirmed by the developer. Re-check current repository settings and alerts before signing off.
+- **Remaining checks:** Scan repository contents and history for secrets; inspect demo data; run current validation/security tests; verify access control before any private learner data is stored; review dependency and secret alerts.
