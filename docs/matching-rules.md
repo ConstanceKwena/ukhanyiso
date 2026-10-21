@@ -28,7 +28,11 @@ All comparisons use levels, not raw %, because prospectuses publish levels.
 
 ## 3. Step 2: APS per institution
 
-APS depends on the institution (`institutions.aps_method`), so calculate it once per institution, never once per learner.
+### Plain-language rule (for agreement with Nana)
+
+Turn each subject percentage into its NSC level using the table above. To get an institution's APS, follow that institution's published method. The current draft adds the six highest eligible subject levels and leaves out Life Orientation for UJ, UP, and TUT, but the best-six method has not been confirmed from official sources; show that caveat with results. TUT also leaves out Level 1 subjects, according to its official course information. Other institutions may count subjects differently. If an institution's method is unknown and no draft method is available, or its method cannot be calculated, do not guess: show that the course cannot be checked.
+
+### Implementation details
 
 - `BEST6_EXCL_LO`: sum the levels of the best 6 subjects, leaving out Life Orientation. Used for UJ, UP and TUT in iteration 0.
 - `ALL_EXCL_LO`: sum all subjects except Life Orientation.
@@ -111,7 +115,18 @@ A `MATCH` that is `CLOSED` is shown as "you qualify, but the 2027 window has clo
 
 ## 9. Likelihood labels
 
-A label is a short, plain-language summary shown next to each course. It is calculated from the fit status (section 5) and how far the learner is above the cut-off. It says how the learner's results compare with the **published minimum**. It is not a prediction of admission, because most institutions select competitively and the published minimum is only the entry point.
+### Plain-language rule (for agreement with Nana)
+
+The label describes how a learner's marks compare with the course's published minimum. It does **not** predict admission. A learner can meet the minimum and still not get a place because institutions may have limited spaces or higher competitive selection scores.
+
+- **Likely:** the learner meets every checked requirement and is at least 3 APS points above the applicable minimum. Say, "You are comfortably above the minimum"; never promise admission.
+- **Possible:** the learner meets every checked requirement but is less than 3 APS points above the minimum, including exactly meeting it. Say, "You meet the minimum, but it is close."
+- **Unlikely:** the learner does not meet the requirements, or is close but still short. For a near-miss, explain the exact gap and what would close it.
+- If the course information is incomplete or the APS method cannot be checked, show no likelihood label. Explain that there is not enough confirmed information.
+
+The label does not change when an application deadline closes. Show the deadline separately, and show any data caveat beside the label. These labels describe the published minimum only, not the chance of admission.
+
+### Implementation details
 
 Three labels: **Likely**, **Possible**, **Unlikely**.
 
