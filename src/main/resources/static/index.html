@@ -40,13 +40,31 @@
     }
     for (let i = 0; i < 4; i++) addRow();
     document.getElementById("add").onclick = addRow;
-    document.getElementById("marks-form").onsubmit = e => {
+
+    document.getElementById("marks-form").onsubmit = async e => {
         e.preventDefault();
         const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input").value }));
         const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
         const box = document.getElementById("errors");
         box.textContent = errors.join(" ");
-        if (errors.length === 0) location.href = "/results.html"; // TODO: call the APS endpoint
+        if (errors.length > 0) return;
+
+        try {
+            const res = await fetch("/api/match", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ marks: rows })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                box.textContent = (data.errors || ["Something went wrong. Please try again."]).join(" ");
+                return;
+            }
+            sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
+            location.href = "/results.html";
+        } catch (err) {
+            box.textContent = "We could not reach the server. Please try again.";
+        }
     };
 </script>
 </body>

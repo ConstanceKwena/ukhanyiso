@@ -10,22 +10,85 @@
 <nav><a href="/index.html">Marks</a><a href="/results.html">Results</a><a href="/funding.html">Funding</a></nav>
 <h1>Courses for you</h1>
 <div id="list"></div>
-<p class="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
-<script src="/js/fake-data.js"></script>
+<p class="disclaimer" id="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
 <script>
+    // Backend code -> what the learner sees + the CSS class the page already has.
+    // To change a label name, only change "text" here.
+    const LABELS = {
+        LIKELY:   { text: "Likely",   css: "Safe" },
+        POSSIBLE: { text: "Possible", css: "Possible" },
+        UNLIKELY: { text: "Stretch",  css: "Stretch" }
+    };
+
     const list = document.getElementById("list");
-    const labels = { LIKELY: "Likely", POSSIBLE: "Possible", UNLIKELY: "Unlikely" };
-    FAKE_RESULTS.forEach(r => {
-        const c = document.createElement("div"); c.className = "card";
-        const h = document.createElement("strong"); h.textContent = r.course;
-        const rawLabel = typeof r.label === "string" ? r.label : "";
-        const label = labels[rawLabel.toUpperCase()] || rawLabel;
-        const badge = document.createElement("span"); badge.className = "badge " + label.toLowerCase(); badge.textContent = label;
-        const p = document.createElement("p");
-        p.textContent = `${r.institution} | Required APS ${r.requiredAps} | Your APS ${r.yourAps} | Closes ${r.closingDate}`;
-        c.append(h, document.createTextNode(" "), badge, p);
-        list.appendChild(c);
-    });
+
+    function el(tag, text, className) {
+        const e = document.createElement(tag);
+        if (className) e.className = className;
+        if (text !== undefined && text !== null) e.textContent = text;
+        return e;
+    }
+
+    function showMessage(text) {
+        const p = el("p", text + " ");
+        const a = el("a", "Enter your marks");
+        a.href = "/index.html";
+        p.appendChild(a);
+        list.appendChild(p);
+    }
+
+    let data = null;
+    try { data = JSON.parse(sessionStorage.getItem("ukhanyiso-results")); } catch (e) { data = null; }
+
+    if (!data || !Array.isArray(data.results)) {
+        showMessage("We have no results to show yet.");
+    } else if (data.results.length === 0) {
+        showMessage("No courses matched your marks.");
+    } else {
+        data.results.forEach(r => {
+            const c = el("div", null, "card");
+
+            c.appendChild(el("strong", r.course));
+
+            const lab = LABELS[r.label];
+            if (lab) {
+                c.appendChild(document.createTextNode(" "));
+                c.appendChild(el("span", lab.text, "badge " + lab.css));
+            }
+
+            if (r.deadline === "CLOSED") {
+                c.appendChild(document.createTextNode(" "));
+                c.appendChild(el("span", "Applications closed", "badge"));
+            } else if (r.deadline === "CLOSING_SOON") {
+                c.appendChild(document.createTextNode(" "));
+                c.appendChild(el("span", "Closing soon", "badge"));
+            }
+
+            const closes = r.closingDate ? `Closes ${r.closingDate}` : "Closing date not confirmed";
+            const yours = (r.yourAps === null || r.yourAps === undefined) ? "not checked" : r.yourAps;
+            c.appendChild(el("p", `${r.institution} | Required APS ${r.requiredAps} | Your APS ${yours} | ${closes}`));
+
+            (r.suggestions || []).forEach(s => c.appendChild(el("p", s)));
+            (r.reasons || []).forEach(s => c.appendChild(el("p", s)));
+            (r.caveats || []).forEach(s => c.appendChild(el("p", "Note: " + s)));
+
+            if (r.officialLink && String(r.officialLink).startsWith("https://")) {
+                const p = el("p", "Source: official page, checked " + (r.sourceChecked || "date unknown") + ". ");
+                const a = el("a", "Open official page");
+                a.href = r.officialLink;
+                a.rel = "noopener noreferrer";
+                a.target = "_blank";
+                p.appendChild(a);
+                c.appendChild(p);
+            }
+
+            list.appendChild(c);
+        });
+    }
+
+    if (data && data.disclaimer) {
+        document.getElementById("disclaimer").textContent = data.disclaimer;
+    }
 </script>
 </body>
 </html>
