@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Turns failures on /api/match into short, safe JSON. Limited to MatchController so the older
- * /api/matching/process endpoint keeps its current behaviour. Never returns stack traces, class names or user input.
+ * Turns failures on /api/match into short, safe JSON. Never returns stack traces, class names or user input.
  */
 @RestControllerAdvice(assignableTypes = MatchController.class)
 public class MatchExceptionHandler {
