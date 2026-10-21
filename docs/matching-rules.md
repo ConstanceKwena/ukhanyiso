@@ -32,6 +32,7 @@ APS depends on the institution (`institutions.aps_method`), so calculate it once
 
 - `BEST6_EXCL_LO`: sum the levels of the best 6 subjects, leaving out Life Orientation. Used for UJ, UP and TUT in iteration 0.
 - `ALL_EXCL_LO`: sum all subjects except Life Orientation.
+- Some institutions do not count a subject at level 1 (`institutions.exclude_level_one`; TUT per its official 2027 course information). Those subjects are dropped before the best six are chosen.
 - `CUSTOM`: weighted or faculty-specific schemes. Not supported in iteration 0; courses at such institutions return `CANNOT_CHECK`.
 
 What the official sources confirm so far: UP excludes Life Orientation; TUT excludes Life Orientation and any subject at level 1. That the best six subjects are used is only reported by guide websites, so each institution has `aps_method_verified = 0`. Until that flag is 1, every result for that institution carries the caveat "APS method not yet confirmed".
@@ -40,11 +41,11 @@ What the official sources confirm so far: UP excludes Life Orientation; TUT excl
 
 A course is a `MATCH` only if ALL of these hold:
 
-1. **Data complete**: `min_aps` is not NULL and every requirement has a source with status `verified`. If not, return `CANNOT_CHECK`, never a guess.
+1. **Data complete**: `min_aps` is not NULL and the course's source status is `verified` or `partial` (`partial` = APS and subjects confirmed from an official page, one detail such as a date still to re-check; the result then carries a caveat). Status `unverified`, `conflicting` or `stale` returns `CANNOT_CHECK`, never a guess.
 2. **APS**: learner's APS for that institution >= the APS needed. This is `courses.min_aps`, unless the learner satisfies a requirement that has its own `aps_required`, in which case that value is used (UJ LLB: 31 with Maths, 32 with Maths Literacy; TUT diplomas: 26 with Maths or Technical Maths, 28 with Maths Literacy). If the learner satisfies more than one alternative, use the one with the lowest `aps_required`.
 3. **Subjects**: every requirement group is satisfied. Inside a group any one subject passing is enough (OR). Across groups all must pass (AND).
 4. **Levels or percentages**: compare levels. Where a requirement has `min_percent` instead (for example UP's 5-year BEng needs 65%), compare the learner's raw % to it.
-5. **Subject identity is strict**: Mathematical Literacy and Technical Mathematics never satisfy a Mathematics requirement unless the course lists them in the same group. Languages: Home Language and First Additional Language are different subject ids.
+5. **Subject identity is strict**: Mathematical Literacy and Technical Mathematics never satisfy a Mathematics requirement unless the course lists them in the same group. Languages: Home Language and First Additional Language are different subject ids. The requirement `ADD_LANG` (UJ LLB: "Additional Language 4") is met by any language subject other than English; if the learner has several, the highest mark counts.
 6. **Pathway (optional in iteration 0)**: learner meets the minimum NSC pass type for the qualification (bachelor / diploma / higher certificate). CONFIRM the exact thresholds from the DHET policy before coding; do not use remembered numbers.
 
 Meeting the minimum is not a guarantee. Most institutions select competitively, so the wording shown to learners is "you meet the minimum requirements", never "you will get in".
@@ -80,16 +81,18 @@ Compare `closing_date` + `closing_time` to now:
 - `CLOSING_SOON`: within `closing_soon_days` (default 14).
 - `OPEN`: later than that.
 - `UNKNOWN`: no closing date on file. Never display "open".
+- If a date is on file but no closing time (UJ's 12:00 is only reported by guide sites, so it is not stored), the course stays open until the end of that day and the result carries the caveat "The closing time is not published. Apply early." Dates are South African time.
 
 A `MATCH` that is `CLOSED` is shown as "you qualify, but the 2027 window has closed", not hidden.
 
 ## 7. Sort order
 
 1. MATCH + CLOSING_SOON, soonest first
-2. MATCH + OPEN
-3. NEAR_MISS (smallest gap first)
+2. MATCH + OPEN or UNKNOWN deadline (Likely before Possible, then soonest closing)
+3. NEAR_MISS still open (smallest gap first)
 4. MATCH + CLOSED
-5. Everything else on request only
+5. NEAR_MISS + CLOSED
+6. Everything else (NO_MATCH, CANNOT_CHECK): only returned when the request asks for it (`includeAll=true`)
 
 ## 8. Test cases to write before any code
 

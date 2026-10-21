@@ -1,6 +1,5 @@
--- Seed data generated from data/source_sheet.csv (iteration 0). Load after schema.sql.
-BEGIN;
-INSERT INTO sources VALUES ('S001','UJ',NULL,'closing_date','2026-10-31','https://www.uj.ac.za/university-courses/bcom-in-accounting/','secondary','2026-10-16','nana','partial');
+-- Seed data (iteration 0, fixed in iteration 2 for H2). Spring runs this after schema.sql.
+INSERT INTO sources VALUES ('S001','UJ',NULL,'closing_date','2026-10-31','https://www.uj.ac.za/university-courses/bcom-in-accounting/','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S002','UJ',NULL,'aps_method','APS method: guide sites say best six subjects excluding Life Orientation. Find t','https://www.uj.ac.za','none','2026-10-16','nana','unverified');
 INSERT INTO sources VALUES ('S003','UP',NULL,'closing_date','2026-06-30','https://www.up.ac.za/programmes/undergraduate/bachelor-of-laws-llb/2027','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S004','UP',NULL,'aps_method','APS method detail (how many subjects count) not on programme pages - check the 2','https://www.up.ac.za/students/faculty-brochures-2027','none','2026-10-16','nana','unverified');
@@ -17,9 +16,9 @@ INSERT INTO sources VALUES ('S030','TUT','TUT-DIP-CS','min_aps','APS 26; English
 INSERT INTO sources VALUES ('S031','TUT','TUT-DIP-IT','min_aps','APS 26; English 4; Mathematics or Technical Mathematics 5, or Maths Literacy 7; Physical Science or Technical Science 3 (APS 28 with Maths Literacy); closes 2026-09-30','https://www.tut.ac.za/media/tshwane-interim/site-content/images/promo-blocks/_ICT-at-a-Glance.pdf','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S032','TUT','TUT-DIP-INF','min_aps','APS 26; English 4; Mathematics or Technical Mathematics 5, or Maths Literacy 7 (APS 28 with Maths Literacy); closes 2026-09-30','https://www.tut.ac.za/media/tshwane-interim/site-content/images/promo-blocks/_ICT-at-a-Glance.pdf','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S033','TUT','TUT-DIP-CSE','min_aps','APS 26; English 4; Mathematics or Technical Mathematics 5; Physical Sciences or Technical Sciences 4 (Maths Literacy not accepted); closes 2026-09-30','https://www.tut.ac.za/media/tshwane-interim/site-content/images/promo-blocks/_ICT-at-a-Glance.pdf','official','2026-10-16','nana','verified');
-INSERT INTO institutions VALUES ('UJ','University of Johannesburg','university','BEST6_EXCL_LO',0,'Life Orientation excluded; best six subjects per guide sites (confirm in UJ prospectus).','https://www.uj.ac.za',0,'S001');
-INSERT INTO institutions VALUES ('UP','University of Pretoria','university','BEST6_EXCL_LO',0,'Life Orientation excluded (official UP page). How many subjects count is not stated on programme pages - confirm.','https://www.up.ac.za/online-application',300,'S003');
-INSERT INTO institutions VALUES ('TUT','Tshwane University of Technology','university_of_technology','BEST6_EXCL_LO',0,'Life Orientation and any subject at level 1 are not counted (official TUT 2027 course info). ''Six subjects'' per guide site - confirm.','https://applications-prod.tut.ac.za/',NULL,'S005');
+INSERT INTO institutions VALUES ('UJ','University of Johannesburg','university','BEST6_EXCL_LO',0,'Life Orientation excluded; best six subjects per guide sites (confirm in UJ prospectus).','https://www.uj.ac.za',NULL,'S001',0);
+INSERT INTO institutions VALUES ('UP','University of Pretoria','university','BEST6_EXCL_LO',0,'Life Orientation excluded (official UP page). How many subjects count is not stated on programme pages - confirm.','https://www.up.ac.za/online-application',NULL,'S003',0);
+INSERT INTO institutions VALUES ('TUT','Tshwane University of Technology','university_of_technology','BEST6_EXCL_LO',0,'Life Orientation and any subject at level 1 are not counted (official TUT 2027 course info). ''Six subjects'' per guide site - confirm.','https://www.tut.ac.za',NULL,'S005',1);
 INSERT INTO subjects VALUES ('MATHS','Mathematics',1);
 INSERT INTO subjects VALUES ('MATHS_LIT','Mathematical Literacy',1);
 INSERT INTO subjects VALUES ('TECH_MATHS','Technical Mathematics',1);
@@ -27,12 +26,12 @@ INSERT INTO subjects VALUES ('PHYS_SCI','Physical Sciences',1);
 INSERT INTO subjects VALUES ('TECH_SCI','Technical Sciences',1);
 INSERT INTO subjects VALUES ('ENG_HL','English Home Language',1);
 INSERT INTO subjects VALUES ('ENG_FAL','English First Additional Language',1);
-INSERT INTO subjects VALUES ('ADD_LANG','Additional language (any official language other than the English subject counted)',1);
+INSERT INTO subjects VALUES ('ADD_LANG','Additional Language',1);
 INSERT INTO subjects VALUES ('LO','Life Orientation',0);
-INSERT INTO courses VALUES ('UJ-BCOM-ACC','UJ','BCom in Accounting','B34A5Q','bachelor','College of Business and Economics',28,'2026-10-31','12:00','https://www.uj.ac.za/university-courses/bcom-in-accounting/',2027,'S010');
-INSERT INTO courses VALUES ('UJ-BSC-CSI','UJ','BSc in Computer Science and Informatics',NULL,'bachelor','Faculty of Science',30,'2026-10-31','12:00','https://www.uj.ac.za/university-courses/bsc-in-computer-science-and-informatics/',2027,'S011');
-INSERT INTO courses VALUES ('UJ-BED-FP','UJ','BEd in Foundation Phase Teaching (Grade R-3)','B5BFPQ','bachelor','Faculty of Education',28,'2026-10-31','12:00','https://www.uj.ac.za/university-courses/bed-in-foundation-phase-teaching-grade-r-3/',2027,'S012');
-INSERT INTO courses VALUES ('UJ-LLB','UJ','LLB in Law','B4L03Q','bachelor','Faculty of Law',31,'2026-10-31','12:00','https://www.uj.ac.za/university-courses/llb-in-law',2027,'S013');
+INSERT INTO courses VALUES ('UJ-BCOM-ACC','UJ','BCom in Accounting','B34A5Q','bachelor','College of Business and Economics',28,'2026-10-31',NULL,'https://www.uj.ac.za/university-courses/bcom-in-accounting/',2027,'S010');
+INSERT INTO courses VALUES ('UJ-BSC-CSI','UJ','BSc in Computer Science and Informatics',NULL,'bachelor','Faculty of Science',30,'2026-10-31',NULL,'https://www.uj.ac.za/university-courses/bsc-in-computer-science-and-informatics/',2027,'S011');
+INSERT INTO courses VALUES ('UJ-BED-FP','UJ','BEd in Foundation Phase Teaching (Grade R-3)','B5BFPQ','bachelor','Faculty of Education',28,'2026-10-31',NULL,'https://www.uj.ac.za/university-courses/bed-in-foundation-phase-teaching-grade-r-3/',2027,'S012');
+INSERT INTO courses VALUES ('UJ-LLB','UJ','LLB in Law','B4L03Q','bachelor','Faculty of Law',31,'2026-10-31',NULL,'https://www.uj.ac.za/university-courses/llb-in-law',2027,'S013');
 INSERT INTO courses VALUES ('UP-BCOM-ACCSCI','UP','BCom in Accounting Sciences','07130045','bachelor','Faculty of Economic and Management Sciences',34,'2026-06-30',NULL,'https://www.up.ac.za/programmes/undergraduate/bcom-accounting-sciences/2027',2027,'S020');
 INSERT INTO courses VALUES ('UP-BSC-CS','UP','BSc in Computer Science','12134002','bachelor','Faculty of Engineering, Built Environment and IT',30,'2026-06-30',NULL,'https://www.up.ac.za/programmes/undergraduate/bsc-computer-science/2027',2027,'S021');
 INSERT INTO courses VALUES ('UP-LLB','UP','Bachelor of Laws [LLB]','04130012','bachelor','Faculty of Law',35,'2026-06-30',NULL,'https://www.up.ac.za/programmes/undergraduate/bachelor-of-laws-llb/2027',2027,'S022');
@@ -93,4 +92,3 @@ INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_req
 INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('TUT-DIP-CSE',3,'PHYS_SCI',4,NULL,NULL,'S033');
 INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('TUT-DIP-CSE',3,'TECH_SCI',4,NULL,NULL,'S033');
 INSERT INTO match_config DEFAULT VALUES;
-COMMIT;
