@@ -1,6 +1,6 @@
 # Iteration 0: matching rules and near-miss rule
 
-Status: plain-language rules are drafted; Kwena and Nana still need to agree on them. Course data in `data/source_sheet.csv` and `data/seed.sql` comes from official institution pages checked on 2026-10-16. Anything still marked CONFIRM must be checked on the official source before it is shown to learners.
+Status: Kwena and Nana agreed on these plain-language APS and likelihood rules on 2026-10-21. The best-six APS method remains an explicitly unconfirmed draft for UJ, UP, and TUT and must be shown with a caveat until checked against official sources. Course data in `data/source_sheet.csv` and `data/seed.sql` comes from official institution pages checked on 2026-10-16. Anything still marked CONFIRM must be checked on the official source before it is shown to learners.
 
 ## 1. Inputs and outputs
 
