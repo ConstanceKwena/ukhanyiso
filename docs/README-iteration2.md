@@ -46,10 +46,11 @@ git push origin work-branch
 
 ## Open decisions
 
-1. **Label names**: Safe / Possible / Stretch (front end) or Likely / Possible / Unlikely (rules)?
-2. **Rate limiting** (test case S-02): needs Kwena's number.
-3. **Old endpoint** `/api/matching/process`: remove once the front end uses `/api/match` (review H5).
-4. **Tests of the old security class**: rename and fix (review H1, H4). I did not edit your teammates' files.
-5. Still unconfirmed data (unchanged): UJ closing time, and how many subjects count towards APS at each institution. Results carry caveats for these.
+1. **Rate limiting** (test case S-02): needs Kwena's number.
+2. **Security checklist sign-off**: verify current GitHub secret-scanning and Dependabot alert settings, and agree on the plain-language APS/label rules with Nana.
+3. Still unconfirmed data (unchanged): UJ closing time, and how many subjects count towards APS at each institution. Results carry caveats for these.
+
+The unused `/api/matching/process` persistence endpoint and its obsolete security test class were removed on 2026-10-21. The live `/api/match` tests now assert that the old write endpoint is unavailable.
+The UI and fake-data labels now use the same Likely / Possible / Unlikely wording as the matching rules and API.
 
 Update 2026-10-21: `mvn clean test` passes (78 tests), including the Spring and H2 tests. The "Not checked" section above is out of date.

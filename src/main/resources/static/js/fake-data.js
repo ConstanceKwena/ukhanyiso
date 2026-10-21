@@ -1,7 +1,7 @@
 // Keep ALL field names here. Rename in this file only when the API contract arrives.
 const FAKE_RESULTS = [
-    { course: "BSc Computer Science", institution: "Example University", requiredAps: 34, yourAps: 36, label: "Safe", closingDate: "2026-09-30" },
-    { course: "BCom Accounting", institution: "Example University", requiredAps: 32, yourAps: 30, label: "Stretch", closingDate: "2026-09-30" },
+    { course: "BSc Computer Science", institution: "Example University", requiredAps: 34, yourAps: 36, label: "Likely", closingDate: "2026-09-30" },
+    { course: "BCom Accounting", institution: "Example University", requiredAps: 32, yourAps: 30, label: "Unlikely", closingDate: "2026-09-30" },
     { course: "National Diploma: IT", institution: "Example TVET College", requiredAps: 28, yourAps: 30, label: "Possible", closingDate: "2026-11-15" }
 ];
 

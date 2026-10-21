@@ -10,5 +10,5 @@ button.secondary{background:#eee;color:#111}
 .error{color:#b00020;margin-top:8px}
 .card{border:1px solid #ddd;border-radius:8px;padding:12px;margin:12px 0}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-weight:700;font-size:.85rem}
-.Safe{background:#d4f5dd}.Possible{background:#fff3c4}.Stretch{background:#ffd9d9}
+.likely{background:#d4f5dd}.possible{background:#fff3c4}.unlikely{background:#ffd9d9}
 .disclaimer{font-size:.85rem;color:#555}

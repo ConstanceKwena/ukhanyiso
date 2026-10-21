@@ -34,8 +34,11 @@ Roadmap (not built yet): first-year survival hub, WhatsApp bot.
 2. Create your env file:
    ```bash
    cp .env.example .env
+   set -a
+   . ./.env
+   set +a
    ```
-   Fill in the values. Never commit `.env`.
+   `.env.example` contains the local server port only; this app currently needs no credentials or external service keys. Never commit `.env`.
 3. Start the app:
    ```bash
    ./mvnw spring-boot:run
@@ -46,7 +49,7 @@ Requirements: Java 17 or newer (TODO: confirm version), Git.
 
 ## Demo account
 
-> TODO (Kwena): add the demo login for judges once it exists. Fake data only, no real learner info.
+The judge demo is not available yet. When it is added, it must use a clearly labelled fictional profile and synthetic marks only. Do not enter, upload, or store real learner names, ID numbers, contact details, marks, household-income details, or documents in the demo. Use a preloaded synthetic profile rather than asking judges to use a learner's account or personal information.
 
 Live app: TODO (add the hosted URL).
 

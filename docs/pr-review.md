@@ -3,6 +3,8 @@
 Reviewed: the commits on `work-branch` up to `06c7e6b Add APS calculator and unit tests`, as uploaded on 2026-10-20.
 Not reviewed: the GitHub pull-request pages themselves (comments, approvals, who opened what). I only had the code. If a PR is open, paste its link or diff and I'll review it the same way.
 
+Resolution update (2026-10-21): This is a historical review. H1/H4's obsolete `SecurityTestSuites` was removed, and H5's unused unauthenticated persistence endpoint and related classes were removed. `MatchApiTest` verifies the old endpoint returns 404; `mvn clean test -q` passes 79 tests. Remaining GitHub security-setting and Nana/Kwena rule-agreement checks are listed in `docs/README-iteration0.md`.
+
 Severity: **High** = breaks the build, hides failures or leaks data. **Medium** = confusing or risky, fix soon. **Low** = tidy-up.
 
 ## High
