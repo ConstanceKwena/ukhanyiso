@@ -77,4 +77,5 @@ Plans, rules, roles and the submission checklist are in the [wiki](https://githu
 
 ## Data sources
 
-Course requirements and closing dates come from official institution pages. Each entry in the source sheet records the APS, subjects, closing date, official link and the date it was checked. Always confirm with the institution before applying.
+Course requirements and closi
+ng dates come from official institution pages. Each entry in the source sheet records the APS, subjects, closing date, official link and the date it was checked. Always confirm with the institution before applying.
