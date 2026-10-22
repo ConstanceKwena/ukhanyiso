@@ -39,17 +39,18 @@ Roadmap (not built yet): first-year survival hub, WhatsApp bot.
    `.env.example` contains the local server port only; this app currently needs no credentials or external service keys. Never commit `.env`.
 3. Start the app:
    ```bash
-   mvn spring-boot:run
+   ./mvnw spring-boot:run
    ```
+   On Windows use `mvnw.cmd spring-boot:run`. If port 8080 is taken, run `PORT=8081 ./mvnw spring-boot:run` and open http://localhost:8081.
 4. Open http://localhost:8080 (Spring Boot default port).
 
-Requirements: Java 17 or newer (TODO Nhlanhla: confirm version), Maven, Git.
+Requirements: Java 17 or newer and Git. Maven is not needed because the repo includes the Maven wrapper (`mvnw`).
 
 ## Demo account
 
 The judge demo is not available yet. When it is added, it must use a clearly labelled fictional profile and synthetic marks only. Do not enter, upload, or store real learner names, ID numbers, contact details, marks, household-income details, or documents in the demo. Use a preloaded synthetic profile rather than asking judges to use a learner's account or personal information.
 
-Live app: not hosted. The demo runs locally with `mvn spring-boot:run`. To try it on a phone, connect both devices to the same Wi-Fi and open `http://<laptop-ip>:8080`.
+Live app: not hosted. The demo runs locally with `./mvnw spring-boot:run`. To try it on a phone, connect both devices to the same Wi-Fi and open `http://<laptop-ip>:8080`.
 
 The demo uses an in-memory H2 database, so saved checklist progress is lost on restart. This is deliberate for the demo. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 
