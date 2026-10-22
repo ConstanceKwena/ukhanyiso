@@ -69,3 +69,17 @@ CREATE TABLE match_config (
     closing_soon_days    INTEGER NOT NULL DEFAULT 14,
     likely_aps_margin    INTEGER NOT NULL DEFAULT 3    -- APS points above the cut-off needed for 'Likely'
 );
+
+CREATE TABLE app_users (
+    user_id       VARCHAR(100) PRIMARY KEY,
+    password_hash VARCHAR(500) NOT NULL,
+    display_name  VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE checklist_progress (
+    user_id      VARCHAR(100) NOT NULL REFERENCES app_users(user_id),
+    item_id      VARCHAR(80) NOT NULL,
+    completed    INTEGER NOT NULL DEFAULT 0,
+    updated_at  TIMESTAMP NOT NULL,
+    PRIMARY KEY (user_id, item_id)
+);
