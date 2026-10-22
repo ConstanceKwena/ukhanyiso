@@ -7,17 +7,27 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<nav><a href="/index.html">Marks</a><a href="/results.html">Results</a><a href="/funding.html">Funding</a></nav>
-<h1>Courses for you</h1>
-<div id="list"></div>
-<p class="disclaimer" id="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
+<nav aria-label="Main navigation">
+    <a href="/index.html">Marks</a>
+    <a href="/results.html" aria-current="page">Results</a>
+    <a href="/funding.html">Funding</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Your course matches</p>
+        <h1>Courses to explore</h1>
+        <p>These results compare your marks with each course's published minimum requirements.</p>
+    </header>
+    <div id="list" aria-live="polite"></div>
+    <p class="disclaimer" id="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
+</main>
 <script>
     // Backend code -> what the learner sees + the CSS class the page already has.
     // To change a label name, only change "text" here.
     const LABELS = {
-        LIKELY:   { text: "Likely",   css: "Safe" },
-        POSSIBLE: { text: "Possible", css: "Possible" },
-        UNLIKELY: { text: "Stretch",  css: "Stretch" }
+        LIKELY:   { text: "Likely",   css: "likely" },
+        POSSIBLE: { text: "Possible", css: "possible" },
+        UNLIKELY: { text: "Unlikely", css: "unlikely" }
     };
 
     const list = document.getElementById("list");
@@ -46,7 +56,7 @@
         showMessage("No courses matched your marks.");
     } else {
         data.results.forEach(r => {
-            const c = el("div", null, "card");
+            const c = el("article", null, "card");
 
             c.appendChild(el("strong", r.course));
 
@@ -58,10 +68,10 @@
 
             if (r.deadline === "CLOSED") {
                 c.appendChild(document.createTextNode(" "));
-                c.appendChild(el("span", "Applications closed", "badge"));
+                c.appendChild(el("span", "Applications closed", "badge closed"));
             } else if (r.deadline === "CLOSING_SOON") {
                 c.appendChild(document.createTextNode(" "));
-                c.appendChild(el("span", "Closing soon", "badge"));
+                c.appendChild(el("span", "Closing soon", "badge closing-soon"));
             }
 
             const closes = r.closingDate ? `Closes ${r.closingDate}` : "Closing date not confirmed";
