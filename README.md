@@ -20,11 +20,9 @@ Roadmap (not built yet): first-year survival hub, WhatsApp bot.
 |---|---|
 | Frontend | HTML, CSS, JavaScript (mobile-first) |
 | Backend | Java, Spring Boot (Maven) |
-| Database | SQLite |
+| Database | H2 (in-memory). Demo data resets when the app restarts |
 
 ## Run it locally
-
-> TODO (Nhlanhla): confirm the Java version, then delete this note.
 
 1. Clone the repo:
    ```bash
@@ -41,19 +39,19 @@ Roadmap (not built yet): first-year survival hub, WhatsApp bot.
    `.env.example` contains the local server port only; this app currently needs no credentials or external service keys. Never commit `.env`.
 3. Start the app:
    ```bash
-   ./mvnw spring-boot:run
+   mvn spring-boot:run
    ```
 4. Open http://localhost:8080 (Spring Boot default port).
 
-Requirements: Java 17 or newer (TODO: confirm version), Git.
+Requirements: Java 17 or newer (TODO Nhlanhla: confirm version), Maven, Git.
 
 ## Demo account
 
 The judge demo is not available yet. When it is added, it must use a clearly labelled fictional profile and synthetic marks only. Do not enter, upload, or store real learner names, ID numbers, contact details, marks, household-income details, or documents in the demo. Use a preloaded synthetic profile rather than asking judges to use a learner's account or personal information.
 
-Live app: TODO (add the hosted URL).
+Live app: not hosted. The demo runs locally with `mvn spring-boot:run`. To try it on a phone, connect both devices to the same Wi-Fi and open `http://<laptop-ip>:8080`.
 
-Checklist API details and the H2-versus-SQLite deployment decision are in [docs/checklist-api.md](docs/checklist-api.md).
+The demo uses an in-memory H2 database, so saved checklist progress is lost on restart. This is deliberate for the demo. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 
 ## Contributing
 
@@ -79,5 +77,4 @@ Plans, rules, roles and the submission checklist are in the [wiki](https://githu
 
 ## Data sources
 
-Course requirements and closi
-ng dates come from official institution pages. Each entry in the source sheet records the APS, subjects, closing date, official link and the date it was checked. Always confirm with the institution before applying.
+Course requirements and closing dates come from official institution pages. Each entry in the source sheet records the APS, subjects, closing date, official link and the date it was checked. Always confirm with the institution before applying.
