@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: funding</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/index.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html" aria-current="page">Funding</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Plan your applications</p>
+        <h1>Funding and documents</h1>
+        <p>Use this checklist to keep track of documents commonly needed for bursary applications.</p>
+    </header>
+    <div id="list" aria-live="polite"><p>Loading bursaries…</p></div>
+    <p class="disclaimer" id="disclaimer">Always confirm the closing date and documents on the official page before applying.</p>
+</main>
+<script>
+    const list = document.getElementById("list");
+
+    function el(tag, text, className) {
+        const e = document.createElement(tag);
+        if (className) e.className = className;
+        if (text !== undefined && text !== null) e.textContent = text;
+        return e;
+    }
+
+    function badge(card, text, css) {
+        card.appendChild(document.createTextNode(" "));
+        card.appendChild(el("span", text, "badge " + css));
+    }
+
+    function render(b, i) {
+        const c = el("article", null, "card");
+        c.appendChild(el("strong", b.name));
+
+        if (b.deadline === "CLOSED") badge(c, "Applications closed", "closed");
+        else if (b.deadline === "CLOSING_SOON") badge(c, "Closing soon", "closing-soon");
+        if (b.status && b.status !== "verified") badge(c, "Unverified: " + b.status, "possible");
+
+        let closes = "Closing date not confirmed";
+        if (b.closingDate) {
+            closes = "Closes " + b.closingDate + (b.closingTime ? " at " + b.closingTime.slice(0, 5) : "");
+        }
+        c.appendChild(el("p", closes));
+        if (b.whoItsFor) c.appendChild(el("p", "Who it's for: " + b.whoItsFor));
+
+        (b.documents || []).forEach((doc, j) => {
+            const l = document.createElement("label");
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.id = "d" + i + "-" + j;
+            l.append(cb, " " + doc);
+            c.appendChild(l);
+        });
+
+        if (b.notes) c.appendChild(el("p", "Note: " + b.notes));
+
+        if (b.officialLink && String(b.officialLink).startsWith("https://")) {
+            const p = el("p");
+            const a = el("a", "Open official page");
+            a.href = b.officialLink;
+            a.rel = "noopener noreferrer";
+            a.target = "_blank";
+            p.appendChild(a);
+            c.appendChild(p);
+        }
+        return c;
+    }
+
+    fetch("/api/bursaries")
+        .then(res => { if (!res.ok) throw new Error("bad status"); return res.json(); })
+        .then(data => {
+            list.textContent = "";
+            if (!data.bursaries || data.bursaries.length === 0) {
+                list.appendChild(el("p", "No bursaries to show yet."));
+                return;
+            }
+            data.bursaries.forEach((b, i) => list.appendChild(render(b, i)));
+            if (data.disclaimer) document.getElementById("disclaimer").textContent = data.disclaimer;
+        })
+        .catch(() => {
+            list.textContent = "";
+            list.appendChild(el("p", "We could not load the bursaries. Please try again."));
+        });
+</script>
+</body>
+</html>
