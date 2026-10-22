@@ -1,0 +1,14 @@
+*{box-sizing:border-box}
+body{font-family:system-ui,sans-serif;margin:0;padding:16px;max-width:600px;margin-inline:auto;line-height:1.4;color:#1a1a1a}
+h1{font-size:1.4rem}
+nav a{margin-right:12px}
+label{display:block;margin-top:12px;font-weight:600}
+select,input,button{width:100%;padding:12px;font-size:1rem;margin-top:4px}
+button{background:#0a5;color:#fff;border:0;border-radius:6px;cursor:pointer;min-height:44px}
+button.secondary{background:#eee;color:#111}
+.row{display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end}
+.error{color:#b00020;margin-top:8px}
+.card{border:1px solid #ddd;border-radius:8px;padding:12px;margin:12px 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-weight:700;font-size:.85rem}
+.likely{background:#d4f5dd}.possible{background:#fff3c4}.unlikely{background:#ffd9d9}
+.disclaimer{font-size:.85rem;color:#555}
