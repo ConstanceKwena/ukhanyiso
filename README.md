@@ -53,6 +53,8 @@ The judge demo is not available yet. When it is added, it must use a clearly lab
 
 Live app: TODO (add the hosted URL).
 
+Checklist API details and the H2-versus-SQLite deployment decision are in [docs/checklist-api.md](docs/checklist-api.md).
+
 ## Contributing
 
 1. Never push to `main`. Work on a branch: `it<number>-<name>-<task>`.

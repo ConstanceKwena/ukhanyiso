@@ -1,5 +1,12 @@
 # API contract: POST /api/match (iteration 2)
 
+## Bursary endpoint
+
+After deployment, the read-only bursary list is available at `GET {HOSTED_URL}/api/bursaries`.
+The endpoint returns five synthetic/public-source records and deadline labels. A `POST` to this path is rejected with `405 Method Not Allowed`.
+
+The hosted URL is not a code setting. Once the app is deployed, replace `{HOSTED_URL}` with the deployment address and use that base URL for hosted smoke tests.
+
 This is what the front end calls to replace `FAKE_RESULTS` in `static/js/fake-data.js`.
 The percentage-to-level and institution APS calculation rules are specified in
 [aps-calculator-spec.md](aps-calculator-spec.md).
