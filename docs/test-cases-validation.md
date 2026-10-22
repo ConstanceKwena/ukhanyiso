@@ -10,8 +10,8 @@
 | V-06 | Empty mark | "Please fill in all required fields." |
 | V-07 | `<script>alert(1)</script>` as subject | Rejected, never echoed back |
 | V-08 | Maths 0 and Maths 100 | Accepted (boundaries) |
-| S-01 | 10 requests in one minute | Allowed |
-| S-02 | Request above the limit (TODO: ask Kwena) | "Too many attempts. Please wait a minute and try again." |
+| S-01 | First 10 `POST /api/match` requests from one client address in a 60-second window starting with its first request | Allowed |
+| S-02 | 11th `POST /api/match` request from the same client address in that window | HTTP 429; "Too many attempts. Please wait a minute and try again." A different client address has its own limit. |
 | S-03 | Oversized body or unexpected extra field | Rejected |
 | V-09 | Mathematics and Mathematical Literacy | "Some of these subjects can't be taken together." |
 | V-10 | Computer Applications Technology and Information Technology | "Some of these subjects can't be taken together." |

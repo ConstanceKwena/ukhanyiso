@@ -46,9 +46,10 @@ git push origin work-branch
 
 ## Open decisions
 
-1. **Rate limiting** (test case S-02): needs Kwena's number.
-2. **Security checklist sign-off**: verify current GitHub secret-scanning and Dependabot alert settings, and agree on the plain-language APS/label rules with Nana.
-3. Still unconfirmed data (unchanged): UJ closing time, and how many subjects count towards APS at each institution. Results carry caveats for these.
+1. **Security checklist sign-off**: verify current GitHub secret-scanning and Dependabot alert settings.
+2. Still unconfirmed data (unchanged): UJ closing time, and how many subjects count towards APS at each institution. Results carry caveats for these.
+
+The Iteration 1 S-02 rate limit is now set to 10 `POST /api/match` requests per client address in 60 seconds; excess requests receive HTTP 429. The limit and response are covered by `MatchApiTest`.
 
 The unused `/api/matching/process` persistence endpoint and its obsolete security test class were removed on 2026-10-21. The live `/api/match` tests now assert that the old write endpoint is unavailable.
 The UI and fake-data labels now use the same Likely / Possible / Unlikely wording as the matching rules and API.

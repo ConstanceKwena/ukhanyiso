@@ -7,6 +7,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,6 +27,8 @@ class MatchApiTest {
     @Autowired
     CatalogRepository repository;
 
+    private static final AtomicInteger CLIENT_SEQUENCE = new AtomicInteger();
+
     static final String GOOD = """
             {"marks":[
               {"subject":"English Home Language","mark":72},{"subject":"Mathematics","mark":74},
@@ -32,7 +37,17 @@ class MatchApiTest {
               {"subject":"Life Orientation","mark":80}]}""";
 
     private org.springframework.test.web.servlet.ResultActions send(String body) throws Exception {
-        return mvc.perform(post("/api/match").contentType(MediaType.APPLICATION_JSON).content(body));
+        return mvc.perform(post("/api/match")
+                .with(from("192.0.2." + (CLIENT_SEQUENCE.incrementAndGet() % 250 + 1)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    private static RequestPostProcessor from(String address) {
+        return request -> {
+            request.setRemoteAddr(address);
+            return request;
+        };
     }
 
     @Test
@@ -53,7 +68,8 @@ class MatchApiTest {
     void includeAllAddsCoursesThatDoNotFit() throws Exception {
         String body = "{\"marks\":[{\"subject\":\"Mathematics\",\"mark\":20}]}";
         send(body).andExpect(jsonPath("$.results.length()").value(0));
-        mvc.perform(post("/api/match").param("includeAll", "true").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/api/match").with(from("192.0.2.251")).param("includeAll", "true")
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.results.length()").value(12));
     }
 
@@ -98,8 +114,28 @@ class MatchApiTest {
 
     @Test
     void badIncludeAllValueIsRejected() throws Exception {
-        mvc.perform(post("/api/match").param("includeAll", "maybe").contentType(MediaType.APPLICATION_JSON).content(GOOD))
+        mvc.perform(post("/api/match").with(from("192.0.2.252")).param("includeAll", "maybe")
+                        .contentType(MediaType.APPLICATION_JSON).content(GOOD))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void allowsTenRequestsPerClientAndRejectsTheEleventhWith429() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(post("/api/match").with(from("198.51.100.10"))
+                            .contentType(MediaType.APPLICATION_JSON).content(GOOD))
+                    .andExpect(status().isOk());
+        }
+
+        mvc.perform(post("/api/match").with(from("198.51.100.10"))
+                        .contentType(MediaType.APPLICATION_JSON).content(GOOD))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.errors[0]")
+                        .value("Too many attempts. Please wait a minute and try again."));
+
+        mvc.perform(post("/api/match").with(from("198.51.100.11"))
+                        .contentType(MediaType.APPLICATION_JSON).content(GOOD))
+                .andExpect(status().isOk());
     }
 
     @Test
