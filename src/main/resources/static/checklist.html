@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: my checklist</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/index.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html">Funding</a>
+    <a href="/checklist.html" aria-current="page">My checklist</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Demo account</p>
+        <h1>My application checklist</h1>
+        <p>Tick each step as you finish it. Your progress is saved to the demo account.</p>
+    </header>
+    <p id="summary" class="form-note" aria-live="polite"></p>
+    <p id="message" class="error" role="alert" aria-live="polite"></p>
+    <div id="list" aria-live="polite"></div>
+    <div class="form-actions">
+        <button type="button" class="secondary" id="logout">Log out</button>
+    </div>
+    <p class="disclaimer">Demo only. Do not upload or enter real documents or personal details.</p>
+</main>
+<script>
+    const list = document.getElementById("list");
+    const summary = document.getElementById("summary");
+    const message = document.getElementById("message");
+    const logout = document.getElementById("logout");
+    let csrf = "";
+    let progress = {};
+    let items = [];
+
+    function el(tag, text, className) {
+        const e = document.createElement(tag);
+        if (className) e.className = className;
+        if (text !== undefined && text !== null) e.textContent = text;
+        return e;
+    }
+
+    function updateSummary() {
+        const done = items.filter(i => progress[i.id]).length;
+        summary.textContent = `${done} of ${items.length} steps done`;
+    }
+
+    function showError(text, retry) {
+        message.textContent = text + " ";
+        if (retry) {
+            const b = el("button", "Try again", "secondary");
+            b.type = "button";
+            b.onclick = retry;
+            message.appendChild(b);
+        }
+    }
+
+    function render() {
+        list.textContent = "";
+        items.forEach(item => {
+            const card = el("article", null, "card");
+            const label = document.createElement("label");
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.checked = !!progress[item.id];
+            cb.onchange = () => save(item, cb);
+            label.append(cb, " " + item.label);
+            card.appendChild(label);
+            list.appendChild(card);
+        });
+        updateSummary();
+    }
+
+    async function save(item, cb) {
+        const wanted = cb.checked;
+        message.textContent = "";
+        cb.disabled = true;
+        try {
+            const res = await fetch("/api/checklist", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+                body: JSON.stringify({ itemId: item.id, completed: wanted })
+            });
+            if (res.status === 401) { location.href = "/login.html"; return; }
+            if (!res.ok) throw new Error("bad status");
+            const data = await res.json();
+            csrf = data.csrfToken;
+            progress = data.progress;
+            updateSummary();
+        } catch (err) {
+            cb.checked = !wanted;
+            showError("We could not save that change.");
+        } finally {
+            cb.disabled = false;
+        }
+    }
+
+    async function load() {
+        message.textContent = "";
+        list.textContent = "Loading your checklist…";
+        try {
+            const res = await fetch("/api/checklist");
+            if (res.status === 401) { location.href = "/login.html"; return; }
+            if (!res.ok) throw new Error("bad status");
+            const data = await res.json();
+            items = data.items;
+            progress = data.progress;
+            csrf = data.csrfToken;
+            render();
+        } catch (err) {
+            list.textContent = "";
+            summary.textContent = "";
+            showError("We could not load your checklist.", load);
+        }
+    }
+
+    logout.onclick = async () => {
+        try {
+            await fetch("/api/auth/logout", { method: "POST", headers: { "X-CSRF-Token": csrf } });
+        } catch (err) { /* leave the page either way */ }
+        location.href = "/login.html";
+    };
+
+    load();
+</script>
+</body>
+</html>
