@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ukhanyiso
+    runtime: docker
+    plan: free
+    branch: work-branch
+    autoDeploy: true
+    healthCheckPath: /index.html
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx350m
