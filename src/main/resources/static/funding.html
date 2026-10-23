@@ -1,68 +1,70 @@
 
-function render(b, i) {
-const card = document.createElement("article");
-card.className = "card";
+<script>
+    function render(b, i) {
+        const card = document.createElement("article");
+        card.className = "card";
 
-const title = document.createElement("h2");
-title.textContent = b.name || "Bursary";
-card.appendChild(title);
+        const title = document.createElement("h2");
+        title.textContent = b.name || "Bursary";
+        card.appendChild(title);
 
-const deadline = document.createElement("p");
+        const deadline = document.createElement("p");
 
-if (b.deadline === "CLOSED") {
-deadline.textContent = "Applications closed";
-} else if (b.deadline === "CLOSING_SOON") {
-deadline.textContent = "Closing soon";
-} else if (b.closingDate) {
-deadline.textContent = "Closing date: " + b.closingDate;
-} else {
-deadline.textContent = "Closing date not confirmed";
-}
+        if (b.deadline === "CLOSED") {
+            deadline.textContent = "Applications closed";
+        } else if (b.deadline === "CLOSING_SOON") {
+            deadline.textContent = "Closing soon";
+        } else if (b.closingDate) {
+            deadline.textContent = "Closing date: " + b.closingDate;
+        } else {
+            deadline.textContent = "Closing date not confirmed";
+        }
 
-card.appendChild(deadline);
+        card.appendChild(deadline);
 
-if (b.whoItsFor) {
-const eligibility = document.createElement("p");
-eligibility.textContent = "Who can apply: " + b.whoItsFor;
-card.appendChild(eligibility);
-}
+        if (b.whoItsFor) {
+            const eligibility = document.createElement("p");
+            eligibility.textContent = "Who can apply: " + b.whoItsFor;
+            card.appendChild(eligibility);
+        }
 
-const heading = document.createElement("h3");
-heading.textContent = "Documents required";
-card.appendChild(heading);
+        const heading = document.createElement("h3");
+        heading.textContent = "Documents required";
+        card.appendChild(heading);
 
-(b.documents || []).forEach((doc, j) => {
-const label = document.createElement("label");
-const checkbox = document.createElement("input");
+        (b.documents || []).forEach((doc, j) => {
+            const label = document.createElement("label");
+            const checkbox = document.createElement("input");
 
-checkbox.type = "checkbox";
-checkbox.id = "document-" + i + "-" + j;
+            checkbox.type = "checkbox";
+            checkbox.id = "document-" + i + "-" + j;
 
-label.appendChild(checkbox);
-label.appendChild(document.createTextNode(" " + doc));
-card.appendChild(label);
-});
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(" " + doc));
+            card.appendChild(label);
+        });
 
-const checked = document.createElement("p");
-checked.textContent = "Official source last checked: "
-+ (b.lastChecked || "Not verified yet");
-card.appendChild(checked);
+        const checked = document.createElement("p");
+        checked.textContent = "Official source last checked: "
+            + (b.lastChecked || "Not verified yet");
+        card.appendChild(checked);
 
-if (b.notes) {
-const notes = document.createElement("p");
-notes.textContent = "Important: " + b.notes;
-card.appendChild(notes);
-}
+        if (b.notes) {
+            const notes = document.createElement("p");
+            notes.textContent = "Important: " + b.notes;
+            card.appendChild(notes);
+        }
 
-if (b.officialLink &&
-b.officialLink.startsWith("https://")) {
-const link = document.createElement("a");
-link.href = b.officialLink;
-link.target = "_blank";
-link.rel = "noopener noreferrer";
-link.textContent = "Visit official bursary website";
-card.appendChild(link);
-}
+        if (b.officialLink &&
+            b.officialLink.startsWith("https://")) {
+            const link = document.createElement("a");
+            link.href = b.officialLink;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "Visit official bursary website";
+            card.appendChild(link);
+        }
 
-return card;
-}
+        return card;
+    }
+</script>
