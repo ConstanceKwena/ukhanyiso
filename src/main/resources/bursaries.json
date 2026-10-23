@@ -1,7 +1,85 @@
+
 [
-  {"id":"B001","name":"Astron Energy Bursary 2027","type":"Corporate","closingDate":"2026-10-26","closingTime":"12:00:00","whoItsFor":"South African citizens under 35, with at least a 70% average; fields include engineering, IT, computer science, finance, accounting, commerce and data analytics.","documents":["Certified ID documents of parents or guardians","Proof of other bursary or NSFAS funding where applicable","2027 acceptance letter","Certified academic records and registration proof where applicable"],"officialLink":null,"status":"unverified","notes":"Closes 12:00 midday on Monday 26 Oct 2026. No official link found yet; confirm the application portal before applying."},
-  {"id":"B002","name":"NSFAS 2027","type":"Government funding","closingDate":"2026-10-31","closingTime":null,"whoItsFor":"Students at public universities and TVET colleges who qualify financially.","documents":["Signed NSFAS consent form","Declaration or disability forms where applicable","Orphan and vulnerable child form where applicable"],"officialLink":"https://www.nsfas.org.za","status":"conflicting","notes":"Sources differ on the closing date. Apply through the official myNSFAS portal."},
-  {"id":"B003","name":"ISFAP Bursary 2027","type":"Fund (missing middle)","closingDate":"2026-10-31","closingTime":null,"whoItsFor":"First-year undergraduates in 2027 from households earning R600,000 a year or less, accepted at a partner university, in selected fields.","documents":["Signed ISFAP funding application consent form","Certified ID documents of parents, guardians and household earners"],"officialLink":"https://applyonline.isfap.org.za","status":"unverified","notes":"Fields and partner universities change yearly. Confirm the portal status before applying."},
-  {"id":"B004","name":"JDK Benefit Trust Bursary 2027","type":"Trust","closingDate":"2026-10-31","closingTime":null,"whoItsFor":"Black South African citizens aged 17 to 21, in matric or having finished first or second year, in eligible fields at recognised institutions.","documents":["Documents listed on the official application form"],"officialLink":"https://jdkbenefittrust.co.za/application-form/","status":"partial","notes":"Sources disagree about the closing date. Confirm on the official application page."},
-  {"id":"B005","name":"Funza Lushaka Bursary 2027","type":"Government (teaching)","closingDate":"2027-01-31","closingTime":null,"whoItsFor":"Students training to teach in priority subjects who need a university place and agree to teach after graduating.","documents":["Online application","Certified copies of required documents; check the 2027 list"],"officialLink":"https://www.funzalushaka.doe.gov.za","status":"unverified","notes":"The date shown is for new applicants; returning bursars may have a different deadline. Confirm before applying."}
+  {
+    "id": "B001",
+    "name": "Astron Energy Bursary 2027",
+    "type": "Corporate",
+    "closingDate": "2026-10-26",
+    "closingTime": "12:00:00",
+    "whoItsFor": "South African citizens under 35, with at least a 70% average; fields include engineering, IT, computer science, finance, accounting, commerce and data analytics.",
+    "documents": [
+      "Certified ID documents of parents or guardians",
+      "Proof of other bursary or NSFAS funding where applicable",
+      "2027 acceptance letter",
+      "Certified academic records and registration proof where applicable"
+    ],
+    "officialLink": null,
+    "status": "unverified",
+    "notes": "Closes 12:00 midday on Monday 26 Oct 2026. No official link found yet; confirm the application portal before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B002",
+    "name": "NSFAS 2027",
+    "type": "Government funding",
+    "closingDate": "2026-10-31",
+    "closingTime": null,
+    "whoItsFor": "Students at public universities and TVET colleges who qualify financially.",
+    "documents": [
+      "Signed NSFAS consent form",
+      "Declaration or disability forms where applicable",
+      "Orphan and vulnerable child form where applicable"
+    ],
+    "officialLink": "https://www.nsfas.org.za",
+    "status": "conflicting",
+    "notes": "Sources differ on the closing date. Apply through the official myNSFAS portal.",
+    "lastChecked": null
+  },
+  {
+    "id": "B003",
+    "name": "ISFAP Bursary 2027",
+    "type": "Fund (missing middle)",
+    "closingDate": "2026-10-31",
+    "closingTime": null,
+    "whoItsFor": "First-year undergraduates in 2027 from households earning R600,000 a year or less, accepted at a partner university, in selected fields.",
+    "documents": [
+      "Signed ISFAP funding application consent form",
+      "Certified ID documents of parents, guardians and household earners"
+    ],
+    "officialLink": "https://applyonline.isfap.org.za",
+    "status": "unverified",
+    "notes": "Fields and partner universities change yearly. Confirm the portal status before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B004",
+    "name": "JDK Benefit Trust Bursary 2027",
+    "type": "Trust",
+    "closingDate": "2026-10-31",
+    "closingTime": null,
+    "whoItsFor": "Black South African citizens aged 17 to 21, in matric or having finished first or second year, in eligible fields at recognised institutions.",
+    "documents": [
+      "Documents listed on the official application form"
+    ],
+    "officialLink": "https://jdkbenefittrust.co.za/application-form/",
+    "status": "partial",
+    "notes": "Sources disagree about the closing date. Confirm on the official application page.",
+    "lastChecked": null
+  },
+  {
+    "id": "B005",
+    "name": "Funza Lushaka Bursary 2027",
+    "type": "Government (teaching)",
+    "closingDate": "2027-01-31",
+    "closingTime": null,
+    "whoItsFor": "Students training to teach in priority subjects who need a university place and agree to teach after graduating.",
+    "documents": [
+      "Online application",
+      "Certified copies of required documents; check the 2027 list"
+    ],
+    "officialLink": "https://www.funzalushaka.doe.gov.za",
+    "status": "unverified",
+    "notes": "The date shown is for new applicants; returning bursars may have a different deadline. Confirm before applying.",
+    "lastChecked": null
+  }
 ]

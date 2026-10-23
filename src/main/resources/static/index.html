@@ -1,137 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ukhanyiso: enter your marks</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-<nav aria-label="Main navigation">
-    <a href="/index.html" aria-current="page">Marks</a>
-    <a href="/results.html">Results</a>
-    <a href="/funding.html">Funding</a>
-    <a href="/checklist.html">My checklist</a>
-</nav>
-<main>
-    <header class="page-heading">
-        <p class="eyebrow">From APS to graduation</p>
-        <h1>Check courses that fit your marks</h1>
-        <p>Enter your matric subject marks to see courses that meet their published minimum requirements.</p>
-    </header>
-    <form id="marks-form" novalidate aria-describedby="errors">
-        <p class="form-note">Add at least one subject. Life Orientation is accepted but does not count towards APS. You can enter up to 12 subjects.</p>
-        <div id="rows" class="subject-list"></div>
-        <div class="form-actions">
-            <button type="button" class="secondary" id="add">Add a subject</button>
-            <button type="submit" id="submit">See matching courses</button>
-        </div>
-        <p id="errors" class="error" role="alert" aria-live="polite"></p>
-        <p class="form-note">Your marks are used to check course requirements. They are not saved to a learner profile.</p>
-    </form>
-</main>
-<script src="/js/validate.js"></script>
-<script>
-    const rowsEl = document.getElementById("rows");
-    const addButton = document.getElementById("add");
-    let rowNumber = 0;
 
-    function addRow() {
-        if (rowsEl.children.length >= 12) return;
-        const number = ++rowNumber;
-        const d = document.createElement("div");
-        d.className = "row";
-        d.setAttribute("role", "group");
-        d.setAttribute("aria-label", `Subject ${number}`);
-        const subjectLabel = document.createElement("label");
-        subjectLabel.htmlFor = `subject-${number}`;
-        subjectLabel.textContent = "Subject";
-        const sel = document.createElement("select");
-        sel.id = `subject-${number}`;
-        sel.name = "subject";
-        const blank = document.createElement("option");
-        blank.value = ""; blank.textContent = "Choose subject";
-        sel.appendChild(blank);
-        SUBJECTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; sel.appendChild(o); });
-        const markLabel = document.createElement("label");
-        markLabel.htmlFor = `mark-${number}`;
-        markLabel.textContent = "Mark (%)";
-        const mark = document.createElement("input");
-        mark.id = `mark-${number}`;
-        mark.name = "mark";
-        mark.type = "number"; mark.min = 0; mark.max = 100; mark.step = 1; mark.placeholder = "e.g. 75";
-        mark.inputMode = "numeric";
-        const rm = document.createElement("button");
-        rm.type = "button"; rm.className = "remove-button"; rm.textContent = "Remove";
-        rm.setAttribute("aria-label", `Remove subject row ${number}`);
-        rm.onclick = () => {
-            d.remove();
-            addButton.disabled = rowsEl.children.length >= 12;
-        };
-        const subjectField = document.createElement("div");
-        subjectField.className = "field";
-        subjectField.append(subjectLabel, sel);
-        const markField = document.createElement("div");
-        markField.className = "field";
-        markField.append(markLabel, mark);
-        d.append(subjectField, markField, rm);
-        rowsEl.appendChild(d);
-        addButton.disabled = rowsEl.children.length >= 12;
-    }
+<section class="privacy-notice" aria-labelledby="privacy-heading">
+    <h2 id="privacy-heading">Privacy notice (POPIA)</h2>
 
-    for (let i = 0; i < 4; i++) addRow();
-    addButton.onclick = addRow;
+    <p>
+        Ukhanyiso uses the matric marks you enter to calculate
+        possible course matches. In this prototype, marks are sent
+        to the application server for calculation and are not saved
+        to a learner profile.
+    </p>
 
-    const form = document.getElementById("marks-form");
-    form.addEventListener("input", () => {
-        document.getElementById("errors").textContent = "";
-    });
-    form.addEventListener("change", () => {
-        document.getElementById("errors").textContent = "";
-    });
-    form.onsubmit = async e => {
-        e.preventDefault();
-        const submitButton = document.getElementById("submit");
-        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input").value }));
-        const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
-        const box = document.getElementById("errors");
-        box.textContent = errors.join(" ");
-        if (errors.length > 0) return;
+    <p>
+        Please use fictional data for this hackathon demonstration.
+        Do not enter real identity numbers, contact details,
+        household-income information, or upload personal documents.
+    </p>
 
-        submitButton.disabled = true;
-        submitButton.textContent = "Checking courses…";
-        try {
-            const res = await fetch("/api/match", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ marks: rows })
-            });
-            let data;
-            try {
-                data = await res.json();
-            } catch (err) {
-                data = null;
-            }
-            if (!res.ok) {
-                box.textContent = (data && Array.isArray(data.errors) && data.errors.length > 0
-                    ? data.errors
-                    : ["Something went wrong. Please try again."]).join(" ");
-                return;
-            }
-            if (!data || !Array.isArray(data.results)) {
-                box.textContent = "We received an unexpected response. Please try again.";
-                return;
-            }
-            sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
-            location.href = "/results.html";
-        } catch (err) {
-            box.textContent = "We could not complete your request. Please try again.";
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = "See matching courses";
-        }
-    };
-</script>
-</body>
-</html>
+    <p>
+        Ukhanyiso is a prototype, not an official university,
+        TVET college, NSFAS, or bursary application service.
+        Confirm all requirements with the relevant institution.
+    </p>
+
+    <p>
+        Before public release, the project team must publish the
+        responsible party's contact details, processing purposes,
+        retention periods, data-subject rights, and privacy-request
+        process.
+    </p>
+</section>

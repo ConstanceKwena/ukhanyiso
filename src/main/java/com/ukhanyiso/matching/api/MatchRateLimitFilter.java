@@ -1,3 +1,4 @@
+
 package com.ukhanyiso.matching.api;
 
 import jakarta.servlet.FilterChain;
@@ -14,14 +15,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/** Limits POST /api/match to ten requests per client in a 60-second window. */
 @Component
 public final class MatchRateLimitFilter extends OncePerRequestFilter {
 
-    static final int MAX_REQUESTS = 10;
+    static final int MAX_REQUESTS = 60;
+    static final int MATCH_MAX_REQUESTS = 10;
     static final long WINDOW_MILLIS = 60_000;
     private static final int MAX_TRACKED_CLIENTS = 10_000;
-    private static final String TOO_MANY_REQUESTS =
+
+    private static final String ERROR =
             "{\"errors\":[\"Too many attempts. Please wait a minute and try again.\"]}";
 
     private final Clock clock;
@@ -33,8 +35,7 @@ public final class MatchRateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !"POST".equalsIgnoreCase(request.getMethod())
-                || !"/api/match".equals(request.getRequestURI());
+        return !request.getRequestURI().startsWith("/api/");
     }
 
     @Override
@@ -43,36 +44,58 @@ public final class MatchRateLimitFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain chain
     ) throws ServletException, IOException {
-        if (!allow(request.getRemoteAddr())) {
+
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        int limit = "POST".equalsIgnoreCase(method)
+                && "/api/match".equals(path)
+                ? MATCH_MAX_REQUESTS
+                : MAX_REQUESTS;
+
+        String key = request.getRemoteAddr() + "|" + method + "|" + path;
+
+        if (!allow(key, limit)) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/json");
-            response.getWriter().write(TOO_MANY_REQUESTS);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(ERROR);
             return;
         }
+
         chain.doFilter(request, response);
     }
 
-    private synchronized boolean allow(String clientAddress) {
+    private synchronized boolean allow(String key, int limit) {
         long now = clock.millis();
-        Iterator<Map.Entry<String, Window>> iterator = clients.entrySet().iterator();
+
+        Iterator<Map.Entry<String, Window>> iterator =
+                clients.entrySet().iterator();
+
         while (iterator.hasNext()) {
             Window window = iterator.next().getValue();
-            if (now < window.startedAt || now - window.startedAt >= WINDOW_MILLIS) {
+
+            if (now < window.startedAt
+                    || now - window.startedAt >= WINDOW_MILLIS) {
                 iterator.remove();
             }
         }
 
-        Window window = clients.get(clientAddress);
+        Window window = clients.get(key);
+
         if (window == null) {
             if (clients.size() >= MAX_TRACKED_CLIENTS) {
                 return false;
             }
-            clients.put(clientAddress, new Window(now, 1));
+
+            clients.put(key, new Window(now, 1));
             return true;
         }
-        if (window.requests >= MAX_REQUESTS) {
+
+        if (window.requests >= limit) {
             return false;
         }
+
         window.requests++;
         return true;
     }

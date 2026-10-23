@@ -1,11 +1,14 @@
+
 package com.ukhanyiso.bursary;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/** Response of GET /api/bursaries. */
-public record BursaryResponse(List<Item> bursaries, String disclaimer) {
+public record BursaryResponse(
+        List<Item> bursaries,
+        String disclaimer
+) {
     public record Item(
             String id,
             String name,
@@ -17,6 +20,7 @@ public record BursaryResponse(List<Item> bursaries, String disclaimer) {
             List<String> documents,
             String officialLink,
             String status,
-            String notes
-    ) { }
+            String notes,
+            LocalDate lastChecked
+    ) {}
 }
