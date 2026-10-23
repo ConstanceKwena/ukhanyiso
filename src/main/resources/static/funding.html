@@ -1,70 +1,134 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: funding</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/index.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html" aria-current="page">Funding</a>
+    <a href="/checklist.html">My checklist</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Funding</p>
+        <h1>Bursaries and funding</h1>
+        <p>Check closing dates and tick off the documents you need to gather.</p>
+    </header>
+    <div id="list" aria-live="polite"></div>
+    <p class="disclaimer" id="disclaimer">Bursary details may change. Always confirm the closing date and required documents on the official page before applying.</p>
+</main>
 <script>
+    const list = document.getElementById("list");
+    const STATUS = {
+        verified: { text: "Verified", css: "fit-match" },
+        partial: { text: "Partly verified", css: "fit-unknown" },
+        conflicting: { text: "Sources disagree: check carefully", css: "fit-no-match" },
+        unverified: { text: "Not verified yet", css: "fit-unknown" }
+    };
+
+    function el(tag, text, className) {
+        const e = document.createElement(tag);
+        if (className) e.className = className;
+        if (text !== undefined && text !== null) e.textContent = text;
+        return e;
+    }
+
     function render(b, i) {
-        const card = document.createElement("article");
-        card.className = "card";
-
-        const title = document.createElement("h2");
-        title.textContent = b.name || "Bursary";
-        card.appendChild(title);
-
-        const deadline = document.createElement("p");
+        const card = el("article", null, "card");
+        card.appendChild(el("h2", b.name || "Bursary"));
 
         if (b.deadline === "CLOSED") {
-            deadline.textContent = "Applications closed";
+            card.appendChild(el("span", "Applications closed", "badge closed"));
         } else if (b.deadline === "CLOSING_SOON") {
-            deadline.textContent = "Closing soon";
-        } else if (b.closingDate) {
-            deadline.textContent = "Closing date: " + b.closingDate;
-        } else {
-            deadline.textContent = "Closing date not confirmed";
+            card.appendChild(el("span", "Closing soon", "badge closing-soon"));
+        } else if (b.deadline === "OPEN") {
+            card.appendChild(el("span", "Applications open", "badge likely"));
         }
+        const status = STATUS[b.status] || STATUS.unverified;
+        card.appendChild(el("span", status.text, "badge " + status.css));
 
-        card.appendChild(deadline);
+        let closing = "Closing date not confirmed";
+        if (b.closingDate) {
+            closing = "Closing date: " + b.closingDate;
+            if (b.closingTime) closing += " at " + String(b.closingTime).slice(0, 5);
+        }
+        card.appendChild(el("p", closing));
 
         if (b.whoItsFor) {
-            const eligibility = document.createElement("p");
-            eligibility.textContent = "Who can apply: " + b.whoItsFor;
-            card.appendChild(eligibility);
+            card.appendChild(el("p", "Who can apply: " + b.whoItsFor));
         }
 
-        const heading = document.createElement("h3");
-        heading.textContent = "Documents required";
-        card.appendChild(heading);
+        if (Array.isArray(b.documents) && b.documents.length > 0) {
+            card.appendChild(el("h3", "Documents required"));
+            b.documents.forEach((doc, j) => {
+                const label = document.createElement("label");
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.id = "document-" + i + "-" + j;
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(" " + doc));
+                card.appendChild(label);
+            });
+        }
 
-        (b.documents || []).forEach((doc, j) => {
-            const label = document.createElement("label");
-            const checkbox = document.createElement("input");
-
-            checkbox.type = "checkbox";
-            checkbox.id = "document-" + i + "-" + j;
-
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(" " + doc));
-            card.appendChild(label);
-        });
-
-        const checked = document.createElement("p");
-        checked.textContent = "Official source last checked: "
-            + (b.lastChecked || "Not verified yet");
-        card.appendChild(checked);
+        card.appendChild(el("p", "Official source last checked: " + (b.lastChecked || "Not verified yet")));
 
         if (b.notes) {
-            const notes = document.createElement("p");
-            notes.textContent = "Important: " + b.notes;
-            card.appendChild(notes);
+            card.appendChild(el("p", "Important: " + b.notes));
         }
 
-        if (b.officialLink &&
-            b.officialLink.startsWith("https://")) {
-            const link = document.createElement("a");
+        if (b.officialLink && String(b.officialLink).startsWith("https://")) {
+            const link = el("a", "Visit official bursary website");
             link.href = b.officialLink;
             link.target = "_blank";
             link.rel = "noopener noreferrer";
-            link.textContent = "Visit official bursary website";
-            card.appendChild(link);
+            const p = document.createElement("p");
+            p.appendChild(link);
+            card.appendChild(p);
+        } else {
+            card.appendChild(el("p", "No official link confirmed yet."));
         }
 
         return card;
     }
+
+    function showError(text) {
+        list.textContent = "";
+        const p = el("p", text + " ", "error");
+        const retry = el("button", "Try again", "secondary");
+        retry.type = "button";
+        retry.onclick = load;
+        p.appendChild(retry);
+        list.appendChild(p);
+    }
+
+    async function load() {
+        list.textContent = "Loading bursaries…";
+        try {
+            const res = await fetch("/api/bursaries");
+            if (!res.ok) throw new Error("bad status");
+            const data = await res.json();
+            list.textContent = "";
+            if (!Array.isArray(data.bursaries) || data.bursaries.length === 0) {
+                list.appendChild(el("p", "No bursaries to show right now."));
+            } else {
+                data.bursaries.forEach((b, i) => list.appendChild(render(b, i)));
+            }
+            if (data.disclaimer) {
+                document.getElementById("disclaimer").textContent = data.disclaimer;
+            }
+        } catch (err) {
+            showError("We could not load the bursaries.");
+        }
+    }
+
+    load();
 </script>
+</body>
+</html>
