@@ -2,12 +2,12 @@
 
 ## Bursary endpoint
 
-After deployment, the read-only bursary list is available at `GET {HOSTED_URL}/api/bursaries`.
+After deployment, the read-only bursary list is available at `GET https://ukhanyiso.onrender.com/api/bursaries`.
 The endpoint returns five synthetic/public-source records and deadline labels. A `POST` to this path is rejected with `405 Method Not Allowed`.
 
-The hosted URL is not a code setting. Once the app is deployed, replace `{HOSTED_URL}` with the deployment address and use that base URL for hosted smoke tests.
+The hosted app is at https://ukhanyiso.onrender.com. Use that base URL for hosted smoke tests.
 
-This is what the front end calls to replace `FAKE_RESULTS` in `static/js/fake-data.js`.
+The front end currently calls this endpoint directly from `static/index.html` and stores the real response in session storage for `static/results.html`. There are no demo course or bursary results in use.
 The percentage-to-level and institution APS calculation rules are specified in
 [aps-calculator-spec.md](aps-calculator-spec.md).
 
@@ -73,7 +73,7 @@ Results are already ranked (rules doc section 7). Show them in the order receive
 
 ## For the front end
 
-1. `index.html` has `// TODO: call the APS endpoint`: send `rows` as `{ marks: rows }` with `fetch("/api/match", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ marks: rows }) })`, keep the client checks, and show `errors` from a 400.
-2. The canonical labels are `LIKELY`, `POSSIBLE`, and `UNLIKELY`, as defined in `matching-rules.md` and returned by the API. The page displays them as "Likely", "Possible", and "Unlikely"; the fake-data fixture uses the same display wording. Confirm the wording with Nana before treating the rules as team-approved.
+1. `index.html` sends `rows` as `{ marks: rows }` with `fetch("/api/match", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ marks: rows }) })`, keeps the client checks, and displays API validation errors.
+2. The canonical labels are `LIKELY`, `POSSIBLE`, and `UNLIKELY`, as defined in `matching-rules.md` and returned by the API. The page displays them as "Likely", "Possible", and "Unlikely". Confirm the wording with Nana before treating the rules as team-approved.
 3. Use `textContent` (as `results.html` already does) for every string from the API.
 4. Rate limiting applies to `POST /api/match` by the servlet's remote client address. The first 10 requests are allowed; further requests receive HTTP 429 until 60 seconds after the first request. The counter is in-memory and per application instance. Do not trust caller-supplied forwarded-IP headers as identity. Behind a reverse proxy, configure trusted proxy address handling; for multiple app instances, use a shared rate limiter.

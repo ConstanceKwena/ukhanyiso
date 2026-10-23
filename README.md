@@ -1,6 +1,6 @@
 # Ukhanyiso
 
-Ukhanyiso guides a learner from matric marks to campus. It shows the university and TVET courses a learner qualifies for, plus the funding and documents they need to apply.
+Ukhanyiso guides a learner from matric marks to campus. It shows the university and university-of-technology courses a learner qualifies for, plus the funding and documents they need to apply. TVET college courses are on the roadmap.
 
 Built by **Ubuntu Innovators** for the FNB App of the Year Hackathon 2026.
 Challenge: **Access to higher education**.
@@ -49,7 +49,7 @@ Requirements: Java 17 or newer (TODO Nhlanhla: confirm version), Maven, Git.
 
 The judge demo is not available yet. When it is added, it must use a clearly labelled fictional profile and synthetic marks only. Do not enter, upload, or store real learner names, ID numbers, contact details, marks, household-income details, or documents in the demo. Use a preloaded synthetic profile rather than asking judges to use a learner's account or personal information.
 
-Live app: not hosted. The demo runs locally with `mvn spring-boot:run`. To try it on a phone, connect both devices to the same Wi-Fi and open `http://<laptop-ip>:8080`.
+Live app: https://ukhanyiso.onrender.com (free hosting: it sleeps when idle and the first request can take about a minute; saved checklist ticks reset when it restarts).
 
 The demo uses an in-memory H2 database, so saved checklist progress is lost on restart. This is deliberate for the demo. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 

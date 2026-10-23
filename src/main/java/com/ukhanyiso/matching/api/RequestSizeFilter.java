@@ -1,3 +1,4 @@
+
 package com.ukhanyiso.matching.api;
 
 import jakarta.servlet.FilterChain;
@@ -9,24 +10,38 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Rejects oversized bodies on /api/match before they are read (test case S-03). A real marks request is under 1 KB.
- * Limit: a request sent without a Content-Length header is not caught here; MarksValidator still caps it at 12 subjects.
- */
 @Component
 public class RequestSizeFilter extends OncePerRequestFilter {
 
-    static final long MAX_BYTES = 4096;
+    static final long MAX_API_BYTES = 16_384;
+    static final long MAX_MATCH_BYTES = 4_096;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        if (request.getRequestURI().startsWith("/api/match") && request.getContentLengthLong() > MAX_BYTES) {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getRequestURI().startsWith("/api/");
+    }
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain
+    ) throws ServletException, IOException {
+
+        long limit = "/api/match".equals(request.getRequestURI())
+                ? MAX_MATCH_BYTES
+                : MAX_API_BYTES;
+
+        if (request.getContentLengthLong() > limit) {
             response.setStatus(413);
             response.setContentType("application/json");
-            response.getWriter().write("{\"errors\":[\"That request is too large.\"]}");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(
+                    "{\"errors\":[\"That request is too large.\"]}"
+            );
             return;
         }
+
         chain.doFilter(request, response);
     }
 }
