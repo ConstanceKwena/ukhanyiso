@@ -24,12 +24,14 @@ body {
 
 nav {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--border);
 }
 
 nav a {
+    flex: 1 1 auto;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
@@ -69,6 +71,35 @@ main {
     max-width: 58ch;
     margin: 0;
     color: var(--muted);
+}
+
+.label-guide {
+    margin: 20px 0;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--green);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.label-guide h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.label-guide ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.label-guide li + li {
+    margin-top: 6px;
+}
+
+.label-guide p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
 .eyebrow {
@@ -212,6 +243,18 @@ input:focus-visible {
     font-size: 1.1rem;
 }
 
+.card h2 {
+    display: inline;
+    margin: 0 8px 0 0;
+    font-size: 1.15rem;
+    line-height: 1.4;
+}
+
+.card h3 {
+    margin: 16px 0 0;
+    font-size: 1rem;
+}
+
 .card p {
     margin: 10px 0 0;
 }
@@ -261,6 +304,27 @@ input:focus-visible {
     color: #842e25;
 }
 
+.fit-match {
+    background: #d9f1e2;
+    color: #145d35;
+}
+
+.fit-near-miss,
+.fit-needs-confirmation {
+    background: #fff0c2;
+    color: #674b00;
+}
+
+.fit-no-match {
+    background: #fbe0dd;
+    color: #842e25;
+}
+
+.fit-unknown {
+    background: #edf1ee;
+    color: #34473d;
+}
+
 @media (max-width: 520px) {
     body {
         width: min(100% - 24px, 720px);
@@ -268,11 +332,14 @@ input:focus-visible {
     }
 
     nav {
-        gap: 2px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
     }
 
     nav a {
-        padding-inline: 12px;
+        justify-content: center;
+        padding-inline: 8px;
     }
 
     main {

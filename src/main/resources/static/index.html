@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ukhanyiso: enter your marks</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,7 +20,8 @@
         <h1>Check courses that fit your marks</h1>
         <p>Enter your matric subject marks to see courses that meet their published minimum requirements.</p>
     </header>
-    <form id="marks-form" novalidate>
+    <form id="marks-form" novalidate aria-describedby="errors">
+        <p class="form-note">Add at least one subject. Life Orientation is accepted but does not count towards APS. You can enter up to 12 subjects.</p>
         <div id="rows" class="subject-list"></div>
         <div class="form-actions">
             <button type="button" class="secondary" id="add">Add a subject</button>
@@ -29,7 +31,6 @@
         <p class="form-note">Your marks are used to check course requirements. They are not saved to a learner profile.</p>
     </form>
 </main>
-<script src="/js/fake-data.js"></script>
 <script src="/js/validate.js"></script>
 <script>
     const rowsEl = document.getElementById("rows");
@@ -41,6 +42,8 @@
         const number = ++rowNumber;
         const d = document.createElement("div");
         d.className = "row";
+        d.setAttribute("role", "group");
+        d.setAttribute("aria-label", `Subject ${number}`);
         const subjectLabel = document.createElement("label");
         subjectLabel.htmlFor = `subject-${number}`;
         subjectLabel.textContent = "Subject";
@@ -80,7 +83,14 @@
     for (let i = 0; i < 4; i++) addRow();
     addButton.onclick = addRow;
 
-    document.getElementById("marks-form").onsubmit = async e => {
+    const form = document.getElementById("marks-form");
+    form.addEventListener("input", () => {
+        document.getElementById("errors").textContent = "";
+    });
+    form.addEventListener("change", () => {
+        document.getElementById("errors").textContent = "";
+    });
+    form.onsubmit = async e => {
         e.preventDefault();
         const submitButton = document.getElementById("submit");
         const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input").value }));
@@ -97,15 +107,26 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ marks: rows })
             });
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch (err) {
+                data = null;
+            }
             if (!res.ok) {
-                box.textContent = (data.errors || ["Something went wrong. Please try again."]).join(" ");
+                box.textContent = (data && Array.isArray(data.errors) && data.errors.length > 0
+                    ? data.errors
+                    : ["Something went wrong. Please try again."]).join(" ");
+                return;
+            }
+            if (!data || !Array.isArray(data.results)) {
+                box.textContent = "We received an unexpected response. Please try again.";
                 return;
             }
             sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
             location.href = "/results.html";
         } catch (err) {
-            box.textContent = "We could not reach the server. Please try again.";
+            box.textContent = "We could not complete your request. Please try again.";
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = "See matching courses";
