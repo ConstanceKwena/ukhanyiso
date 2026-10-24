@@ -1,3 +1,12 @@
+---
+title: Ukhanyiso
+emoji: 🎓
+colorFrom: green
+colorTo: yellow
+sdk: docker
+app_port: 7860
+---
+
 # Ukhanyiso
 
 Ukhanyiso guides a learner from matric marks to campus. It shows the university and university-of-technology courses a learner qualifies for, plus the funding and documents they need to apply. TVET college courses are on the roadmap.
@@ -55,7 +64,20 @@ After signing in, enter fictional matric marks yourself. Marks are sent to the s
 
 For an HTTPS deployment, set `SESSION_COOKIE_SECURE=true`; leave it unset for local HTTP development.
 
-Live app: https://ukhanyiso.onrender.com (free hosting: it sleeps when idle and the first request can take about a minute; saved checklist ticks reset when it restarts).
+## Deploy to Hugging Face Spaces
+
+The app can run as a public Docker Space. Create a new Space on Hugging Face, select **Docker** as the SDK, and set its visibility to **Public** if judges need to open it without an invitation. The Dockerfile listens on port 7860, as required by the Space configuration above.
+
+To deploy this branch, add the Space repository as a Git remote and push this branch to the Space's `main` branch:
+
+```bash
+git remote add huggingface https://huggingface.co/spaces/<your-account>/<your-space>
+git push huggingface HEAD:main
+```
+
+Replace `<your-account>` and `<your-space>` with the values from the Space URL. Hugging Face may ask you to sign in or authenticate Git when pushing. Do not put an access token in the remote URL or commit it to this repository.
+
+The public app URL will be `https://<your-account>-<your-space>.hf.space`. Wait for the Space build to finish, then open that URL and test sign-up and the learner journey using fictional details only. On the free tier the Space may sleep while idle; its in-memory H2 database is cleared whenever the app restarts, so accounts and checklist progress do not persist through restarts.
 
 The app uses an in-memory H2 database, so accounts and checklist progress are lost on restart. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 
