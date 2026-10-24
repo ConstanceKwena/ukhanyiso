@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: start here</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/start.html" aria-current="page">Start</a>
+    <a href="/plan.html">Budget</a>
+    <a href="/checklist.html">My checklist</a>
+    <a href="/signup.html">Sign up</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Marks, courses and funding</p>
+        <h1>See your courses and bursaries in one go</h1>
+        <p>Enter your marks. We show courses that fit, then bursaries to look at. Nothing is saved.</p>
+    </header>
+    <form id="marks-form" novalidate>
+        <div id="rows" class="subject-list"></div>
+        <div class="form-actions">
+            <button type="button" class="secondary" id="add">Add a subject</button>
+            <button type="submit" id="submit">Show my options</button>
+        </div>
+        <p id="errors" class="error" role="alert"></p>
+    </form>
+    <section id="courses" hidden>
+        <h2>Courses that fit your marks</h2>
+        <div id="course-list"></div>
+        <p><a href="/results.html">See every detail and try "what if my marks were higher"</a></p>
+    </section>
+    <section id="bursaries" hidden>
+        <h2>Bursaries to look at</h2>
+        <div id="bursary-list"></div>
+        <p><a href="/funding.html">See documents, reminders and sharing</a> · <a href="/plan.html">Plan your budget</a> · <a href="/signup.html">Sign up to save your progress</a></p>
+    </section>
+    <p class="disclaimer">Guides only. Meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
+</main>
+<script src="/js/validate.js"></script>
+<script src="/js/subject-picker.js"></script>
+<script src="/js/site.js"></script>
+<script>
+    const rowsEl = document.getElementById("rows");
+    const errorsEl = document.getElementById("errors");
+    function el(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+    function addRow(subject) {
+        const d = el("div");
+        const s = el("select");
+        s.name = "subject";
+        s.setAttribute("aria-label", "Subject");
+        const blank = el("option", "Choose subject"); blank.value = ""; s.appendChild(blank);
+        SUBJECTS.forEach(n => { const o = el("option", n); o.value = n; if (n === subject) o.selected = true; s.appendChild(o); });
+        const m = el("input");
+        m.name = "mark"; m.type = "number"; m.inputMode = "numeric"; m.min = 0; m.max = 100;
+        m.setAttribute("aria-label", "Mark in percent");
+        d.append(s, m);
+        rowsEl.appendChild(d);
+    }
+    ["English Home Language", "Mathematics", "Life Orientation"].forEach(addRow);
+    document.getElementById("add").onclick = () => { if (rowsEl.children.length < 12) addRow(); };
+    function courseCard(r) {
+        const c = el("article", null, "card");
+        c.appendChild(el("h3", r.course || "Course"));
+        if (r.label) c.appendChild(el("span", r.label.charAt(0) + r.label.slice(1).toLowerCase(), "badge " + r.label.toLowerCase()));
+        c.appendChild(el("p", (r.institution || "") + (Number.isFinite(r.requiredAps) ? " · Needs APS " + r.requiredAps : "") + (Number.isFinite(r.yourAps) ? " · Your APS " + r.yourAps : "")));
+        if (Array.isArray(r.suggestions) && r.suggestions[0]) c.appendChild(el("p", r.suggestions[0]));
+        return c;
+    }
+    function bursaryCard(b, avg) {
+        const c = el("article", null, "card");
+        c.appendChild(el("h3", b.name || "Bursary"));
+        c.appendChild(el("p", b.closingDate ? "Closing date: " + b.closingDate + (b.closingTime ? " at " + String(b.closingTime).slice(0, 5) : "") : "Closing date not confirmed"));
+        if (b.whoItsFor) c.appendChild(el("p", "Who can apply: " + b.whoItsFor));
+        const m = /(\d{2,3})% average/.exec(b.whoItsFor || "");
+        if (m && avg !== null) {
+            const ok = avg >= Number(m[1]);
+            c.appendChild(el("span", ok ? "Your average (" + avg + "%) meets the listed minimum" : "Your average (" + avg + "%) is below the listed minimum (" + m[1] + "%)", "badge " + (ok ? "fit-match" : "fit-near-miss")));
+        } else {
+            c.appendChild(el("span", "Check the conditions yourself", "badge fit-unknown"));
+        }
+        return c;
+    }
+    document.getElementById("marks-form").onsubmit = async e => {
+        e.preventDefault();
+        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector('input[name="mark"]').value }));
+        const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
+        errorsEl.textContent = errors.join(" ");
+        if (errors.length > 0) return;
+        const btn = document.getElementById("submit");
+        btn.disabled = true; btn.textContent = "Checking…";
+        try {
+            const res = await fetch("/api/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ marks: rows }) });
+            const data = await res.json().catch(() => null);
+            if (res.status === 429) { errorsEl.textContent = "Too many tries. Please wait a minute."; return; }
+            if (!res.ok || !data || !Array.isArray(data.results)) { errorsEl.textContent = (data && data.errors ? data.errors : ["Something went wrong. Please try again."]).join(" "); return; }
+            try {
+                sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
+                sessionStorage.setItem("ukhanyiso-marks", JSON.stringify(rows));
+            } catch (err) { }
+            const list = document.getElementById("course-list");
+            list.textContent = "";
+            if (data.results.length === 0) list.appendChild(el("p", "No matching or near-miss courses for these marks."));
+            data.results.slice(0, 5).forEach(r => list.appendChild(courseCard(r)));
+            document.getElementById("courses").hidden = false;
+            const graded = rows.filter(r => r.subject !== "Life Orientation");
+            const avg = graded.length ? Math.round(graded.reduce((s, r) => s + Number(r.mark), 0) / graded.length) : null;
+            const bl = document.getElementById("bursary-list");
+            bl.textContent = "";
+            try {
+                const br = await fetch("/api/bursaries");
+                const bj = await br.json();
+                const open = (bj.bursaries || []).filter(b => b.deadline !== "CLOSED")
+                    .sort((a, b) => (a.closingDate || "9999").localeCompare(b.closingDate || "9999"));
+                if (open.length === 0) bl.appendChild(el("p", "No open bursaries to show right now."));
+                open.forEach(b => bl.appendChild(bursaryCard(b, avg)));
+            } catch (err) {
+                bl.appendChild(el("p", "We could not load bursaries. Please try again."));
+            }
+            document.getElementById("bursaries").hidden = false;
+            document.getElementById("courses").scrollIntoView();
+        } catch (err) {
+            errorsEl.textContent = "We could not complete your request. Please try again.";
+        } finally {
+            btn.disabled = false; btn.textContent = "Show my options";
+        }
+    };
+</script>
+</body>
+</html>

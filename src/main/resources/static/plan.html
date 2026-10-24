@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: keep your funding</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/index.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html">Funding</a>
+    <a href="/plan.html" aria-current="page">Keep my funding</a>
+    <a href="/checklist.html">My checklist</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Stay funded</p>
+        <h1>Keep your funding and plan your money</h1>
+        <p>Enter your own numbers. Nothing is saved or sent anywhere.</p>
+    </header>
+    <form id="plan" novalidate>
+        <h2>Your funding</h2>
+        <div class="field"><label for="funding">Funding you receive each month (R)</label>
+            <input id="funding" type="number" inputmode="numeric" min="0" placeholder="e.g. 3000"></div>
+        <div class="field"><label for="months">Months funded this year</label>
+            <input id="months" type="number" inputmode="numeric" min="1" max="12" placeholder="e.g. 10"></div>
+        <div class="field"><label for="required">Average you must keep to renew (%)</label>
+            <input id="required" type="number" inputmode="numeric" min="0" max="100" placeholder="e.g. 65"></div>
+        <div class="field"><label for="current">Your current average (%)</label>
+            <input id="current" type="number" inputmode="numeric" min="0" max="100" placeholder="e.g. 68"></div>
+        <h2>Your first month</h2>
+        <div class="field"><label for="worth">What your bursary is worth for the year (R)</label>
+            <input id="worth" type="number" inputmode="numeric" min="0" placeholder="e.g. 30000"></div>
+        <div class="field"><label for="startup">Start-up costs before funding arrives (R): registration, deposit, books, travel</label>
+            <input id="startup" type="number" inputmode="numeric" min="0" placeholder="e.g. 2500"></div>
+        <div class="field"><label for="weeks">Weeks until your first payout</label>
+            <input id="weeks" type="number" inputmode="numeric" min="0" max="26" placeholder="e.g. 6"></div>
+        <h2>Your monthly costs (R)</h2>
+        <div class="field"><label for="c-home">Accommodation</label><input id="c-home" class="cost" type="number" inputmode="numeric" min="0" placeholder="e.g. 1500"></div>
+        <div class="field"><label for="c-food">Food</label><input id="c-food" class="cost" type="number" inputmode="numeric" min="0" placeholder="e.g. 900"></div>
+        <div class="field"><label for="c-travel">Transport</label><input id="c-travel" class="cost" type="number" inputmode="numeric" min="0" placeholder="e.g. 400"></div>
+        <div class="field"><label for="c-data">Data and airtime</label><input id="c-data" class="cost" type="number" inputmode="numeric" min="0" placeholder="e.g. 200"></div>
+        <div class="field"><label for="c-other">Other</label><input id="c-other" class="cost" type="number" inputmode="numeric" min="0" placeholder="e.g. 100"></div>
+        <div class="form-actions"><button type="submit">Check my plan</button></div>
+    </form>
+    <div id="result" aria-live="polite"></div>
+    <p class="disclaimer">A planning aid that uses only the numbers you enter, not financial advice. Renewal rules differ for every funder, so confirm yours. Later, this page will hand over to the FNB financial planner (not connected yet).</p>
+</main>
+<script src="/js/site.js"></script>
+<script>
+    const num = id => Math.max(0, Number(document.getElementById(id).value) || 0);
+    document.getElementById("plan").onsubmit = e => {
+        e.preventDefault();
+        const filled = [...document.querySelectorAll("#plan input")].some(i => i.value.trim() !== "");
+        if (!filled || num("funding") === 0) {
+            const box0 = document.getElementById("result");
+            box0.textContent = "";
+            const msg = document.createElement("p");
+            msg.className = "error";
+            msg.textContent = "Enter the funding you receive each month, and your own costs, to see your plan.";
+            box0.appendChild(msg);
+            Site.say("Enter your numbers first.");
+            return;
+        }
+        const costs = [...document.querySelectorAll(".cost")].reduce((s, i) => s + (Number(i.value) || 0), 0);
+        const left = num("funding") - costs;
+        const months = Math.min(12, Math.max(1, num("months")));
+        const gap = num("current") - num("required");
+        const lines = [
+            "Your costs are R" + costs + " a month. Your funding is R" + num("funding") + " a month.",
+            left >= 0
+                ? "You have R" + left + " left each month, R" + (left * months) + " over " + months + " months."
+                : "You are R" + (-left) + " short each month, R" + (-left * months) + " over " + months + " months. Talk to your financial aid office or look for ways to cut costs.",
+        ];
+        if (num("required") > 0 && num("current") > 0) {
+            lines.push(gap >= 0
+                ? "Your average is " + gap + " points above the renewal minimum."
+                : "Your average is " + (-gap) + " points below the renewal minimum. Ask your tutor or support office for help soon.");
+        }
+        const worth = num("worth"), startup = num("startup"), weeks = num("weeks");
+        if (worth > 0) lines.push("Your bursary is worth R" + worth + " this year. To keep it, stay at or above " + num("required") + "%. You are at " + num("current") + "%.");
+        if (startup > 0 || weeks > 0) {
+            const need = Math.round(startup + costs * (weeks / 4.33));
+            lines.push("Before your first payout you need about R" + need + " in cash: R" + startup + " for start-up costs plus about " + weeks + " weeks of living costs.");
+        }
+        const box = document.getElementById("result");
+        box.textContent = "";
+        const card = document.createElement("article");
+        card.className = "card";
+        const h = document.createElement("h2");
+        h.textContent = "Your plan";
+        card.appendChild(h);
+        lines.forEach(t => { const p = document.createElement("p"); p.textContent = t; card.appendChild(p); });
+        box.appendChild(card);
+        Site.say("Plan updated.");
+    };
+</script>
+</body>
+</html>

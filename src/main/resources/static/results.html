@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ukhanyiso: your courses</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,6 +12,7 @@
     <a href="/index.html">Marks</a>
     <a href="/results.html" aria-current="page">Results</a>
     <a href="/funding.html">Funding</a>
+    <a href="/checklist.html">My checklist</a>
 </nav>
 <main>
     <header class="page-heading">
@@ -18,16 +20,30 @@
         <h1>Courses to explore</h1>
         <p>These results compare your marks with each course's published minimum requirements.</p>
     </header>
+    <section class="label-guide" aria-labelledby="label-guide-heading">
+        <h2 id="label-guide-heading">How to read likelihood labels</h2>
+        <ul>
+            <li><strong>Likely:</strong> you meet the checked requirements and are at least 3 APS points above the minimum.</li>
+            <li><strong>Possible:</strong> you meet the checked requirements but are less than 3 APS points above the minimum.</li>
+            <li><strong>Unlikely:</strong> one or more requirements are not met. Near-miss cards explain the gap and next steps.</li>
+        </ul>
+        <p>These labels are guides, not admission promises. Confirm requirements with the institution.</p>
+    </section>
     <div id="list" aria-live="polite"></div>
     <p class="disclaimer" id="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
+    <p><a href="/index.html">Try different marks</a></p>
 </main>
 <script>
-    // Backend code -> what the learner sees + the CSS class the page already has.
-    // To change a label name, only change "text" here.
     const LABELS = {
         LIKELY:   { text: "Likely",   css: "likely" },
         POSSIBLE: { text: "Possible", css: "possible" },
         UNLIKELY: { text: "Unlikely", css: "unlikely" }
+    };
+    const FITS = {
+        MATCH: { text: "Meets listed minimum", css: "fit-match" },
+        NEAR_MISS: { text: "Near miss", css: "fit-near-miss" },
+        NO_MATCH: { text: "Does not meet listed minimum", css: "fit-no-match" },
+        CANNOT_CHECK: { text: "Cannot check", css: "fit-unknown" }
     };
 
     const list = document.getElementById("list");
@@ -53,37 +69,66 @@
     if (!data || !Array.isArray(data.results)) {
         showMessage("We have no results to show yet.");
     } else if (data.results.length === 0) {
-        showMessage("No courses matched your marks.");
+        showMessage("No matching or near-miss courses were returned for these marks.");
     } else {
         data.results.forEach(r => {
             const c = el("article", null, "card");
 
-            c.appendChild(el("strong", r.course));
+            c.appendChild(el("h2", r.course || "Course details unavailable"));
+
+            const fit = FITS[r.fit];
+            if (fit) c.appendChild(el("span", fit.text, "badge " + fit.css));
 
             const lab = LABELS[r.label];
             if (lab) {
-                c.appendChild(document.createTextNode(" "));
                 c.appendChild(el("span", lab.text, "badge " + lab.css));
             }
 
             if (r.deadline === "CLOSED") {
-                c.appendChild(document.createTextNode(" "));
                 c.appendChild(el("span", "Applications closed", "badge closed"));
             } else if (r.deadline === "CLOSING_SOON") {
-                c.appendChild(document.createTextNode(" "));
                 c.appendChild(el("span", "Closing soon", "badge closing-soon"));
+            } else if (r.deadline === "OPEN") {
+                c.appendChild(el("span", "Applications open", "badge likely"));
             }
 
-            const closes = r.closingDate ? `Closes ${r.closingDate}` : "Closing date not confirmed";
-            const yours = (r.yourAps === null || r.yourAps === undefined) ? "not checked" : r.yourAps;
-            c.appendChild(el("p", `${r.institution} | Required APS ${r.requiredAps} | Your APS ${yours} | ${closes}`));
+            if (typeof r.institution === "string" && r.institution.trim()) {
+                c.appendChild(el("p", r.institution));
+            }
+            const aps = [];
+            if (Number.isFinite(r.requiredAps)) aps.push(`Required APS: ${r.requiredAps}`);
+            if (Number.isFinite(r.yourAps)) aps.push(`Your APS: ${r.yourAps}`);
+            c.appendChild(el("p", aps.length > 0 ? aps.join(" · ") : "APS details are not available for this course."));
+            c.appendChild(el("p", r.closingDate ? `Listed closing date: ${r.closingDate}` : "Closing date not confirmed"));
 
-            (r.suggestions || []).forEach(s => c.appendChild(el("p", s)));
-            (r.reasons || []).forEach(s => c.appendChild(el("p", s)));
-            (r.caveats || []).forEach(s => c.appendChild(el("p", "Note: " + s)));
+            if (Array.isArray(r.suggestions) && r.suggestions.length > 0) {
+                c.appendChild(el("h3", "Next steps"));
+                r.suggestions.forEach(s => c.appendChild(el("p", s)));
+            }
+            if (r.fit === "NEAR_MISS" && r.deadline !== "CLOSED") {
+                c.appendChild(el("h3", "Path to yes"));
+                if (Array.isArray(r.pathToYes) && r.pathToYes.length > 0) {
+                    r.pathToYes.forEach((opt, n) => {
+                        const parts = (opt.changes || []).map(ch =>
+                            `${ch.subject} from ${ch.fromPercent}% to ${ch.toPercent}% (+${ch.toPercent - ch.fromPercent})`);
+                        c.appendChild(el("p", `Option ${n + 1}: Raise ${parts.join(" and ")} and you would meet the minimum for this course.`));
+                    });
+                } else {
+                    c.appendChild(el("p", "This course needs a large improvement across several subjects. Talk to your teacher about whether that is realistic."));
+                }
+                c.appendChild(el("p", "Final matric marks only change through supplementary exams or remarking. If you are still writing, this shows where to focus. Meeting the minimum does not guarantee admission.", "disclaimer"));
+            }
+            if (Array.isArray(r.reasons) && r.reasons.length > 0) {
+                c.appendChild(el("h3", "Why it may not fit"));
+                r.reasons.forEach(s => c.appendChild(el("p", s)));
+            }
+            if (Array.isArray(r.caveats) && r.caveats.length > 0) {
+                c.appendChild(el("h3", "Things to confirm"));
+                r.caveats.forEach(s => c.appendChild(el("p", s)));
+            }
 
             if (r.officialLink && String(r.officialLink).startsWith("https://")) {
-                const p = el("p", "Source: official page, checked " + (r.sourceChecked || "date unknown") + ". ");
+                const p = el("p", "Official source, checked " + (r.sourceChecked || "date unknown") + ": ");
                 const a = el("a", "Open official page");
                 a.href = r.officialLink;
                 a.rel = "noopener noreferrer";
@@ -100,5 +145,6 @@
         document.getElementById("disclaimer").textContent = data.disclaimer;
     }
 </script>
+    <script src="/js/stage.js" defer></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Ukhanyiso
 
-Ukhanyiso guides a learner from matric marks to campus. It shows the university and TVET courses a learner qualifies for, plus the funding and documents they need to apply.
+Ukhanyiso guides a learner from matric marks to campus. It shows the university and university-of-technology courses a learner qualifies for, plus the funding and documents they need to apply. TVET college courses are on the roadmap.
 
 Built by **Ubuntu Innovators** for the FNB App of the Year Hackathon 2026.
 Challenge: **Access to higher education**.
@@ -9,10 +9,12 @@ Challenge: **Access to higher education**.
 
 - **APS calculator:** enter matric marks and see the courses you qualify for.
 - **Likelihood labels and near-miss suggestions:** rule-based, no machine learning.
+- **Path to yes:** for a course you narrowly missed that is still open, shows the cheapest mark improvements that would meet the minimum (for example "Raise Mathematics from 58% to 60%"). Every suggestion is proven by re-running the real matching rules. Rules: `docs/path-to-yes.md`.
+- **Keep my funding:** a money planner that uses only the numbers the learner types in.
 - **Funding and document checklist:** bursaries, what each needs, and closing dates.
 - **Demo login and save progress.**
 
-Roadmap (not built yet): first-year survival hub, WhatsApp bot.
+Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
 
 ## Tech stack
 
@@ -43,13 +45,13 @@ Roadmap (not built yet): first-year survival hub, WhatsApp bot.
    ```
 4. Open http://localhost:8080 (Spring Boot default port).
 
-Requirements: Java 17 or newer (TODO Nhlanhla: confirm version), Maven, Git.
+Requirements: Java 17 (set in `pom.xml` and the `Dockerfile`), Maven, Git.
 
 ## Demo account
 
 The judge demo is not available yet. When it is added, it must use a clearly labelled fictional profile and synthetic marks only. Do not enter, upload, or store real learner names, ID numbers, contact details, marks, household-income details, or documents in the demo. Use a preloaded synthetic profile rather than asking judges to use a learner's account or personal information.
 
-Live app: not hosted. The demo runs locally with `mvn spring-boot:run`. To try it on a phone, connect both devices to the same Wi-Fi and open `http://<laptop-ip>:8080`.
+Live app: https://ukhanyiso.onrender.com (free hosting: it sleeps when idle and the first request can take about a minute; saved checklist ticks reset when it restarts).
 
 The demo uses an in-memory H2 database, so saved checklist progress is lost on restart. This is deliberate for the demo. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 

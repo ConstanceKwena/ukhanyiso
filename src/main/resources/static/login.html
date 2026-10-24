@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: demo login</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/index.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html">Funding</a>
+    <a href="/checklist.html">My checklist</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Demo account</p>
+        <h1>Log in to save your checklist</h1>
+        <p>This is a demo with a synthetic learner profile. Please do not enter real personal information.</p>
+    </header>
+    <form id="login-form" novalidate>
+        <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="username" maxlength="100">
+        </div>
+        <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" maxlength="200">
+        </div>
+        <div class="form-actions">
+            <button type="submit" id="login-btn">Log in</button>
+        </div>
+        <p id="errors" class="error" role="alert" aria-live="polite"></p>
+    </form>
+</main>
+<script>
+    // Already signed in on this device? Skip the form.
+    fetch("/api/checklist").then(r => { if (r.ok) location.replace("/checklist.html"); }).catch(() => {});
+    const form = document.getElementById("login-form");
+    const box = document.getElementById("errors");
+    const button = document.getElementById("login-btn");
+
+    form.onsubmit = async e => {
+        e.preventDefault();
+        box.textContent = "";
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        if (!email || !password) {
+            box.textContent = "Please enter the demo email and password.";
+            return;
+        }
+        button.disabled = true;
+        button.textContent = "Logging in…";
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            if (res.ok) {
+                location.href = "/checklist.html";
+                return;
+            }
+            box.textContent = res.status === 401
+                ? "That email or password is not right."
+                : "Something went wrong. Please try again.";
+        } catch (err) {
+            box.textContent = "We could not reach the server. Please try again.";
+        }
+        button.disabled = false;
+        button.textContent = "Log in";
+    };
+</script>
+</body>
+</html>

@@ -4,9 +4,6 @@ target/
 *.class
 *.jar
 
-# Local database files
-data/*.db
-
 # Environment variables and secrets
 .env
 .env.*
@@ -16,9 +13,9 @@ data/*.db
 *.log
 
 # IDE and operating system
-.idea/
-*.iml
-out/
+.idea/workspace.xml
+.idea/tasks.xml
 .vscode/
 .DS_Store
 Thumbs.db
+.idea/

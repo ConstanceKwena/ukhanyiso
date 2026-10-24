@@ -12,18 +12,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BursaryDataTest {
     private final List<Bursary> all = new BursaryRepository(new ObjectMapper().findAndRegisterModules()).findAll();
 
-    @Test void loadsFiveBursaries() { assertThat(all).hasSize(5); }
+    @Test void loadsElevenBursaries() { assertThat(all).hasSize(11); }
 
     @Test void idsAreUnique() {
         Set<String> ids = new HashSet<>();
         all.forEach(b -> assertThat(ids.add(b.id())).as("duplicate id " + b.id()).isTrue());
     }
 
-    @Test void everyBursaryHasANameADateAndAtLeastOneDocumentLine() {
+    @Test void everyBursaryHasANameAndAtLeastOneDocumentLine() {
         all.forEach(b -> {
             assertThat(b.name()).isNotBlank();
-            assertThat(b.closingDate()).as(b.id() + " closing date").isNotNull();
             assertThat(b.documents()).as(b.id() + " documents").isNotEmpty();
+        });
+    }
+
+    @Test void aMissingClosingDateIsNeverMarkedVerified() {
+        all.forEach(b -> { if (b.closingDate() == null) assertThat(b.status()).as(b.id() + " status").isNotEqualTo("verified"); });
+    }
+
+    @Test void postgraduateBursariesSayPostgraduateOnly() {
+        all.stream().filter(b -> b.id().compareTo("B006") >= 0).forEach(b ->
+                assertThat(b.whoItsFor()).as(b.id() + " who it's for").startsWith("Postgraduate only"));
+    }
+
+    @Test void aVerifiedBursaryHasAClosingDateALastCheckedDateAndAnOfficialLink() {
+        all.stream().filter(b -> "verified".equals(b.status())).forEach(b -> {
+            assertThat(b.closingDate()).as(b.id() + " closing date").isNotNull();
+            assertThat(b.lastChecked()).as(b.id() + " last checked").isNotNull();
+            assertThat(b.officialLink()).as(b.id() + " link").isNotBlank();
         });
     }
 
