@@ -64,6 +64,7 @@
     </section>
 </main>
 <script src="/js/validate.js"></script>
+<script src="/js/subject-picker.js"></script>
 <script>
     const rowsEl = document.getElementById("rows");
     const addButton = document.getElementById("add");
@@ -125,7 +126,7 @@
     form.onsubmit = async e => {
         e.preventDefault();
         const submitButton = document.getElementById("submit");
-        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input").value }));
+        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector('input[name="mark"]').value }));
         const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
         const box = document.getElementById("errors");
         box.textContent = errors.join(" ");

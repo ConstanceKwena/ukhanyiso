@@ -23,11 +23,11 @@
     <form id="login-form" novalidate>
         <div class="field">
             <label for="email">Email</label>
-            <input id="email" type="email" autocomplete="username" maxlength="100">
+            <input id="email" name="email" type="email" autocomplete="username" maxlength="100">
         </div>
         <div class="field">
             <label for="password">Password</label>
-            <input id="password" type="password" autocomplete="current-password" maxlength="200">
+            <input id="password" name="password" type="password" autocomplete="current-password" maxlength="200">
         </div>
         <div class="form-actions">
             <button type="submit" id="login-btn">Log in</button>
@@ -36,6 +36,8 @@
     </form>
 </main>
 <script>
+    // Already signed in on this device? Skip the form.
+    fetch("/api/checklist").then(r => { if (r.ok) location.replace("/checklist.html"); }).catch(() => {});
     const form = document.getElementById("login-form");
     const box = document.getElementById("errors");
     const button = document.getElementById("login-btn");
