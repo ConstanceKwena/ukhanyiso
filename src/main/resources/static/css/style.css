@@ -23,18 +23,18 @@ body {
 }
 
 nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-bottom: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    padding: 0 0 14px;
     border-bottom: 1px solid var(--border);
 }
 
 nav a {
-    flex: 1 1 auto;
     min-height: 44px;
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     padding: 8px 14px;
     border-radius: 8px;
     color: var(--green-dark);
@@ -42,9 +42,50 @@ nav a {
     text-decoration: none;
 }
 
+.nav-brand {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    padding-inline: 0;
+    color: #17211d;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.site-toolbar {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding-top: 8px;
+}
+
+.site-toolbar label {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.site-toolbar select {
+    width: auto;
+    min-width: 140px;
+    min-height: 40px;
+    padding: 6px 10px;
+}
+
 nav a[aria-current="page"] {
     color: #fff;
     background: var(--green);
+}
+
+.nav-logout {
+    width: auto;
+    min-height: 44px;
+    margin: 0;
+    padding: 8px 14px;
 }
 
 a {
@@ -89,11 +130,23 @@ main {
 
 .label-guide ul {
     margin: 10px 0;
-    padding-left: 20px;
+    padding-inline-start: 1.5rem;
 }
 
-.label-guide li + li {
-    margin-top: 6px;
+ul {
+    padding-inline-start: 1.5rem;
+}
+
+li {
+    padding-inline-start: 0.2rem;
+}
+
+li + li {
+    margin-block-start: 0.4rem;
+}
+
+.field + .field {
+    margin-top: 14px;
 }
 
 .label-guide p {
@@ -163,6 +216,25 @@ input::placeholder {
     color: #718078;
 }
 
+input[type="radio"],
+input[type="checkbox"] {
+    width: 22px;
+    min-height: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    padding: 0;
+    accent-color: var(--green);
+}
+
+.stage-picker label {
+    align-items: flex-start;
+    line-height: 1.45;
+}
+
+.stage-picker input[type="radio"] {
+    margin: 4px 0 0;
+}
+
 button {
     padding: 10px 16px;
     border: 0;
@@ -216,6 +288,23 @@ input:focus-visible {
     color: var(--green-dark);
 }
 
+.button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 10px 16px;
+    border: 1px solid #afc1b6;
+    border-radius: 8px;
+    color: var(--green-dark);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.button-link:hover {
+    background: #f0f6f2;
+}
+
 .secondary:hover:not(:disabled) {
     background: #f0f6f2;
 }
@@ -231,6 +320,13 @@ input:focus-visible {
     min-height: 1.5em;
     margin: 12px 0 0;
     color: #a32222;
+    font-weight: 650;
+}
+
+.success {
+    min-height: 1.5em;
+    margin: 12px 0 0;
+    color: #145d35;
     font-weight: 650;
 }
 
@@ -325,6 +421,117 @@ input:focus-visible {
     color: #34473d;
 }
 
+.calendar-panel {
+    margin: 20px 0;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.calendar-heading,
+.calendar-controls,
+.reminder-card,
+.deadline-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.calendar-heading h2,
+.calendar-panel h2 {
+    margin: 0;
+}
+
+.calendar-controls button {
+    min-width: 48px;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.calendar-weekdays {
+    margin: 16px 0 6px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.calendar-day {
+    position: relative;
+    min-width: 0;
+    min-height: 48px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: inherit;
+}
+
+.calendar-day:disabled {
+    border-color: transparent;
+    background: transparent;
+}
+
+.calendar-day[aria-current="date"] {
+    border-color: var(--green);
+    box-shadow: inset 0 0 0 1px var(--green);
+}
+
+.calendar-day.has-reminders::after {
+    position: absolute;
+    right: 6px;
+    bottom: 5px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    content: "";
+}
+
+.reminder-card,
+.deadline-card {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.reminder-card > div,
+.deadline-card > div {
+    min-width: 0;
+}
+
+.reminder-card p,
+.deadline-card p {
+    margin: 2px 0;
+}
+
+.reminder-card button,
+.deadline-card button {
+    flex: 0 0 auto;
+}
+
+.calendar-form {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.calendar-form .field {
+    min-width: 0;
+}
+
+.calendar-status {
+    min-height: 1.5em;
+}
+
 @media (max-width: 520px) {
     body {
         width: min(100% - 24px, 720px);
@@ -332,14 +539,17 @@ input:focus-visible {
     }
 
     nav {
-        display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 4px;
     }
 
     nav a {
-        justify-content: center;
-        padding-inline: 8px;
+        padding-inline: 6px;
+        font-size: 0.9rem;
+    }
+
+    .nav-brand {
+        font-size: 1.2rem;
     }
 
     main {
@@ -368,6 +578,35 @@ input:focus-visible {
 
     .form-actions {
         flex-direction: column;
+    }
+
+    .stage-picker {
+        padding: 12px;
+    }
+
+    .stage-picker label {
+        gap: 10px;
+    }
+
+    .calendar-panel {
+        padding: 12px;
+    }
+
+    .calendar-day {
+        min-height: 42px;
+        padding: 4px;
+        font-size: 0.9rem;
+    }
+
+    .reminder-card,
+    .deadline-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .reminder-card button,
+    .deadline-card button {
+        width: 100%;
     }
 }
 

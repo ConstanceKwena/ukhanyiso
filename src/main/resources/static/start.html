@@ -10,10 +10,15 @@
 </head>
 <body>
 <nav aria-label="Main navigation">
-    <a href="/start.html" aria-current="page">Start</a>
+    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
+    <a href="/index.html" aria-current="page">Explore</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html">Funding</a>
+    <a href="/calendar.html">Reminders</a>
     <a href="/plan.html">Budget</a>
-    <a href="/checklist.html">My checklist</a>
+    <a href="/checklist.html">Checklist</a>
     <a href="/signup.html">Sign up</a>
+    <a href="/login.html">Log in</a>
 </nav>
 <main>
     <header class="page-heading">
@@ -37,32 +42,59 @@
     <section id="bursaries" hidden>
         <h2>Bursaries to look at</h2>
         <div id="bursary-list"></div>
-        <p><a href="/funding.html">See documents, reminders and sharing</a> · <a href="/plan.html">Plan your budget</a> · <a href="/signup.html">Sign up to save your progress</a></p>
+        <p><a href="/funding.html">See funding and documents</a> · <a href="/calendar.html">Set application reminders</a> · <a href="/plan.html">Plan your budget</a> · <a href="/signup.html">Create an account</a></p>
     </section>
     <p class="disclaimer">Guides only. Meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
 </main>
 <script src="/js/validate.js"></script>
-<script src="/js/subject-picker.js"></script>
 <script src="/js/site.js"></script>
 <script>
     const rowsEl = document.getElementById("rows");
     const errorsEl = document.getElementById("errors");
+    const addButton = document.getElementById("add");
+    let rowNumber = 0;
     function el(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
     function addRow(subject) {
+        if (rowsEl.children.length >= 12) return;
+        const number = ++rowNumber;
         const d = el("div");
+        d.className = "row";
+        d.setAttribute("role", "group");
+        d.setAttribute("aria-label", `Subject ${number}`);
+        const subjectField = el("div", null, "field");
+        const subjectLabel = el("label", "Subject");
+        subjectLabel.htmlFor = `subject-${number}`;
         const s = el("select");
         s.name = "subject";
-        s.setAttribute("aria-label", "Subject");
+        s.id = `subject-${number}`;
         const blank = el("option", "Choose subject"); blank.value = ""; s.appendChild(blank);
-        SUBJECTS.forEach(n => { const o = el("option", n); o.value = n; if (n === subject) o.selected = true; s.appendChild(o); });
+        [...SUBJECTS].sort((a, b) => a.localeCompare(b)).forEach(n => {
+            const o = el("option", n);
+            o.value = n;
+            if (n === subject) o.selected = true;
+            s.appendChild(o);
+        });
+        subjectField.append(subjectLabel, s);
+        const markField = el("div", null, "field");
+        const markLabel = el("label", "Mark (%)");
+        markLabel.htmlFor = `mark-${number}`;
         const m = el("input");
-        m.name = "mark"; m.type = "number"; m.inputMode = "numeric"; m.min = 0; m.max = 100;
-        m.setAttribute("aria-label", "Mark in percent");
-        d.append(s, m);
+        m.id = `mark-${number}`;
+        m.name = "mark"; m.type = "number"; m.inputMode = "numeric"; m.min = 0; m.max = 100; m.step = 1; m.placeholder = "e.g. 75";
+        markField.append(markLabel, m);
+        const remove = el("button", "Remove", "remove-button");
+        remove.type = "button";
+        remove.setAttribute("aria-label", `Remove subject row ${number}`);
+        remove.onclick = () => {
+            d.remove();
+            addButton.disabled = rowsEl.children.length >= 12;
+        };
+        d.append(subjectField, markField, remove);
         rowsEl.appendChild(d);
+        addButton.disabled = rowsEl.children.length >= 12;
     }
     ["English Home Language", "Mathematics", "Life Orientation"].forEach(addRow);
-    document.getElementById("add").onclick = () => { if (rowsEl.children.length < 12) addRow(); };
+    addButton.onclick = () => addRow();
     function courseCard(r) {
         const c = el("article", null, "card");
         c.appendChild(el("h3", r.course || "Course"));

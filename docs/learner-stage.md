@@ -4,8 +4,10 @@ Added 24 October 2026, inside the hackathon window.
 
 The marks page asks "Where are you now?":
 
-- **I'm in Grade 12 now:** the learner enters Grade 11 (or prelim) marks. The results page shows a "Provisional results" banner.
-- **I've finished matric:** the learner enters final marks. No banner.
+- **I'm in Grade 11:** the learner enters their latest school report marks. The results page shows that these are planning estimates.
+- **I'm in Grade 12 with June marks:** the learner gets estimates labelled provisional and can update their marks after later exams.
+- **I'm in Grade 12 with trial/preliminary marks:** the learner gets estimates labelled provisional and can update their marks when final results are released.
+- **I've finished matric:** the learner enters final marks. No provisional banner is shown.
 
 How it works:
 

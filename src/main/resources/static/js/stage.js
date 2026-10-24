@@ -1,7 +1,7 @@
 /*
  * Learner stage option ("Where are you now?").
- * Grade 12 learners enter Grade 11 (or prelim) marks and get a provisional-results banner.
- * Learners who have finished matric enter their final marks.
+ * Grade 11 and in-year matric marks produce provisional results.
+ * Learners who have finished matric can use their final marks.
  * The choice lives in sessionStorage only (it is cleared when the tab closes) and is never sent to the server.
  * The matching engine is not changed.
  */
@@ -9,15 +9,25 @@
     "use strict";
 
     var KEY = "ukhanyiso-stage";
-    var GRADE12 = "GRADE_12";
-    var MATRIC = "MATRIC";
+    var GRADE11 = "GRADE_11";
+    var JUNE = "MATRIC_JUNE";
+    var PRELIM = "MATRIC_PRELIM";
+    var FINAL = "MATRIC_FINAL";
 
     var TEXT = {};
-    TEXT[GRADE12] = {
-        intro: "Enter your Grade 11 final marks, or your Grade 12 prelim marks if you have them, to see provisional results.",
-        note: "Use the marks from your latest report. Your final matric marks may change these results."
+    TEXT[GRADE11] = {
+        intro: "Enter your latest Grade 11 marks to explore courses and funding while you plan ahead.",
+        note: "These are early planning estimates. Your Grade 12 subjects and final matric marks may change your options."
     };
-    TEXT[MATRIC] = {
+    TEXT[JUNE] = {
+        intro: "Enter your Grade 12 June exam marks to explore possible courses and funding.",
+        note: "June marks are provisional estimates. Update your marks after later exams and again when your final results are released."
+    };
+    TEXT[PRELIM] = {
+        intro: "Enter your Grade 12 trial or preliminary exam marks to explore possible courses and funding.",
+        note: "Trial/preliminary marks are provisional estimates. Update your marks when your final matric results are released."
+    };
+    TEXT[FINAL] = {
         intro: "Enter your final matric (NSC) marks to see courses that meet their published minimum requirements.",
         note: "Type the marks from your results statement. Never enter your exam number or ID number here."
     };
@@ -25,7 +35,9 @@
     function getStage() {
         try {
             var s = sessionStorage.getItem(KEY);
-            return s === GRADE12 || s === MATRIC ? s : null;
+            if (s === "GRADE_12") return PRELIM;
+            if (s === "MATRIC") return FINAL;
+            return Object.prototype.hasOwnProperty.call(TEXT, s) ? s : null;
         } catch (e) {
             return null;
         }
@@ -60,7 +72,7 @@
     function marksPage(form) {
         addStyles();
         var stage = getStage();
-        if (!stage) { stage = GRADE12; setStage(stage); }
+        if (!stage) { stage = GRADE11; setStage(stage); }
 
         var fieldset = el("fieldset", "stage-picker");
         fieldset.appendChild(el("legend", null, "Where are you now?"));
@@ -84,8 +96,10 @@
         }
 
         [
-            { value: GRADE12, label: "I'm in Grade 12 now (I'll use my Grade 11 or prelim marks)" },
-            { value: MATRIC, label: "I've finished matric (I'll use my final marks)" }
+            { value: GRADE11, label: "I'm in Grade 11 (I'll use my latest school report marks)" },
+            { value: JUNE, label: "I'm in Grade 12 and have June exam marks" },
+            { value: PRELIM, label: "I'm in Grade 12 and have trial/preliminary exam marks" },
+            { value: FINAL, label: "I've finished matric and have my final results" }
         ].forEach(function (o) {
             var label = document.createElement("label");
             var input = document.createElement("input");
@@ -107,16 +121,29 @@
     }
 
     function resultsPage(main) {
-        if (getStage() !== GRADE12) return;
+        var stage = getStage();
+        if (stage !== GRADE11 && stage !== JUNE && stage !== PRELIM) return;
         if (document.getElementById("provisional-banner")) return;
         addStyles();
         var banner = el("section", "provisional-banner");
         banner.id = "provisional-banner";
         banner.setAttribute("role", "note");
-        banner.appendChild(el("strong", null, "Provisional results"));
-        banner.appendChild(el("span", null,
-            "These matches use Grade 11 or prelim marks, so they may change when your final matric marks are released. " +
-            "Institutions differ on which marks they use for applications, so check each institution's own rules."));
+        var notice = {
+            GRADE_11: {
+                heading: "Grade 11 planning estimates",
+                message: "These estimates use your Grade 11 marks. Your subjects and marks may change before matric, and institutions may set their own application requirements."
+            },
+            MATRIC_JUNE: {
+                heading: "Provisional June exam estimates",
+                message: "These estimates use your June exam marks. Update them after later exams and when your final results are released. Check each institution's application rules."
+            },
+            MATRIC_PRELIM: {
+                heading: "Provisional trial/preliminary estimates",
+                message: "These estimates use your trial/preliminary marks and may change when your final results are released. Check each institution's application rules."
+            }
+        }[stage];
+        banner.appendChild(el("strong", null, notice.heading));
+        banner.appendChild(el("span", null, notice.message));
         var heading = main.querySelector(".page-heading");
         if (heading && heading.nextSibling) main.insertBefore(banner, heading.nextSibling);
         else main.insertBefore(banner, main.firstChild);

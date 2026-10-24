@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,12 @@ public class MatchExceptionHandler {
     public ResponseEntity<Map<String, List<String>>> unreadable(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("errors", List.of("We could not read that request. Please check your marks and try again.")));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, List<String>>> requestStatus(ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode())
+                .body(Map.of("errors", List.of("Authentication is required.")));
     }
 
     @ExceptionHandler(Exception.class)

@@ -9,34 +9,34 @@
 </head>
 <body>
 <nav aria-label="Main navigation">
+    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
     <a href="/index.html">Marks</a>
     <a href="/results.html">Results</a>
     <a href="/funding.html">Funding</a>
-    <a href="/checklist.html" aria-current="page">My checklist</a>
+    <a href="/calendar.html">Reminders</a>
+    <a href="/plan.html">Budget</a>
+    <a href="/checklist.html" aria-current="page">Checklist</a>
+    <a href="/signup.html">Sign up</a>
+    <a href="/login.html">Log in</a>
 </nav>
 <main>
     <header class="page-heading">
-        <p class="eyebrow">Demo account</p>
+        <p class="eyebrow">Your account</p>
         <h1>My application checklist</h1>
-        <p>Tick each step as you finish it. Your progress is saved to the demo account.</p>
+        <p>Tick each step as you finish it. Progress is saved to your account. Use fictional data only; do not enter real personal details or documents.</p>
     </header>
     <p id="summary" class="form-note" aria-live="polite"></p>
     <p id="message" class="error" role="alert" aria-live="polite"></p>
     <div id="list" aria-live="polite"></div>
-    <div class="form-actions">
-        <button type="button" class="secondary" id="logout">Log out</button>
-    </div>
-    <p class="disclaimer">Demo only. Do not upload or enter real documents or personal details.</p>
+    <p class="disclaimer">Use fictional data only. Checklist progress is tied to this fictional username; the account has no email or recovery option.</p>
 </main>
 <script>
     const list = document.getElementById("list");
     const summary = document.getElementById("summary");
     const message = document.getElementById("message");
-    const logout = document.getElementById("logout");
     let csrf = "";
     let progress = {};
     let items = [];
-
     function el(tag, text, className) {
         const e = document.createElement(tag);
         if (className) e.className = className;
@@ -103,7 +103,7 @@
         message.textContent = "";
         list.textContent = "Loading your checklist…";
         try {
-            const res = await fetch("/api/checklist");
+            let res = await fetch("/api/checklist");
             if (res.status === 401) { location.href = "/login.html"; return; }
             if (!res.ok) throw new Error("bad status");
             const data = await res.json();
@@ -114,18 +114,12 @@
         } catch (err) {
             list.textContent = "";
             summary.textContent = "";
-            showError("We could not load your checklist.", load);
+            showError(err && err.message ? err.message : "We could not load your checklist.", load);
         }
     }
 
-    logout.onclick = async () => {
-        try {
-            await fetch("/api/auth/logout", { method: "POST", headers: { "X-CSRF-Token": csrf } });
-        } catch (err) { /* leave the page either way */ }
-        location.href = "/login.html";
-    };
-
     load();
 </script>
+<script src="/js/site.js"></script>
 </body>
 </html>

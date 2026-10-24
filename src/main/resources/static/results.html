@@ -9,10 +9,15 @@
 </head>
 <body>
 <nav aria-label="Main navigation">
+    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
     <a href="/index.html">Marks</a>
     <a href="/results.html" aria-current="page">Results</a>
     <a href="/funding.html">Funding</a>
-    <a href="/checklist.html">My checklist</a>
+    <a href="/calendar.html">Reminders</a>
+    <a href="/plan.html">Budget</a>
+    <a href="/checklist.html">Checklist</a>
+    <a href="/signup.html">Sign up</a>
+    <a href="/login.html">Log in</a>
 </nav>
 <main>
     <header class="page-heading">
@@ -20,6 +25,7 @@
         <h1>Courses to explore</h1>
         <p>These results compare your marks with each course's published minimum requirements.</p>
     </header>
+    <p><a class="button-link" href="/index.html">Back to edit your marks</a></p>
     <section class="label-guide" aria-labelledby="label-guide-heading">
         <h2 id="label-guide-heading">How to read likelihood labels</h2>
         <ul>
@@ -30,8 +36,12 @@
         <p>These labels are guides, not admission promises. Confirm requirements with the institution.</p>
     </section>
     <div id="list" aria-live="polite"></div>
+    <section class="label-guide" aria-label="Next step">
+        <h2>Next step: explore funding</h2>
+        <p>Review bursaries and the documents they ask for. You can return to your course matches at any time.</p>
+        <a class="button-link" href="/funding.html">Explore funding and documents</a>
+    </section>
     <p class="disclaimer" id="disclaimer">Labels are a guide only. Always confirm with the institution before applying.</p>
-    <p><a href="/index.html">Try different marks</a></p>
 </main>
 <script>
     const LABELS = {
@@ -47,7 +57,6 @@
     };
 
     const list = document.getElementById("list");
-
     function el(tag, text, className) {
         const e = document.createElement(tag);
         if (className) e.className = className;
@@ -69,8 +78,12 @@
     if (!data || !Array.isArray(data.results)) {
         showMessage("We have no results to show yet.");
     } else if (data.results.length === 0) {
-        showMessage("No matching or near-miss courses were returned for these marks.");
+        showMessage("No matching or near-miss courses were found. Try adding more subjects from your school report and checking the official requirements.");
     } else {
+        if (sessionStorage.getItem("ukhanyiso-showing-all-courses") === "true") {
+            const notice = el("p", "No likely or possible matches were found for these marks. All available courses are shown below so you can compare requirements and see what to work on.", "form-note");
+            list.appendChild(notice);
+        }
         data.results.forEach(r => {
             const c = el("article", null, "card");
 
@@ -146,5 +159,6 @@
     }
 </script>
     <script src="/js/stage.js" defer></script>
+    <script src="/js/site.js"></script>
 </body>
 </html>

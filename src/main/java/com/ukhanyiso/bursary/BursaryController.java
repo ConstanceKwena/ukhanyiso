@@ -1,5 +1,7 @@
 package com.ukhanyiso.bursary;
 
+import com.ukhanyiso.matching.api.ShowcaseSession;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +17,8 @@ public class BursaryController {
     }
 
     @GetMapping("/bursaries")
-    public BursaryResponse bursaries() {
+    public BursaryResponse bursaries(HttpSession session) {
+        ShowcaseSession.requireUser(session);
         return service.list();
     }
 }
