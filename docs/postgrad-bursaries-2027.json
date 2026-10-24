@@ -1,0 +1,205 @@
+{
+  "note": "Researched 24 Oct 2026 for the funding check. Not loaded by the app and not part of bursaries.json (the bursary tests expect exactly five bursaries, each with a closing date). Criteria use the key names in funding_check_reference.py. Re-check dates before the final submission.",
+  "bursaries": [
+    {
+      "id": "B006",
+      "name": "DSI-NRF Postgraduate Scholarship (2027 funding)",
+      "type": "scholarship",
+      "closingDate": "2026-11-23",
+      "closingTime": null,
+      "whoItsFor": "Honours, master's and doctoral students with a 65% average in their previous degree. Applications go through your university.",
+      "documents": [
+        "See the application and funding guide on your university's postgraduate office page."
+      ],
+      "officialLink": null,
+      "status": "partial",
+      "lastChecked": "2026-10-24",
+      "notes": "Honours (General): NRF closing date 23 Nov 2026, but your university's internal date is earlier (for example UCT 31 Oct, CPUT 16 Nov). First-time master's and doctoral calls closed in mid-2026 (3 July in the UKZN notice, earlier at some universities). Age limits of 28, 30 and 32 are applied when awards are allocated, not as a cut-off when applying. A financial means test decides full or partial cost. No NRF page was opened; details come from several university notices quoting the call.",
+      "criteria": {
+        "levels": [
+          "HONOURS",
+          "MASTERS"
+        ],
+        "minAverage": 65,
+        "closeByLevel": {
+          "HONOURS": [
+            "2026-11-23",
+            null
+          ],
+          "MASTERS": [
+            "2026-07-03",
+            null
+          ]
+        },
+        "needsCheck": [
+          "Apply through your university's postgraduate office. Its internal closing date is earlier than the NRF date.",
+          "Age limits (28 honours, 30 master's, 32 doctoral) are applied when awards are allocated, not when you apply.",
+          "Citizenship or permanent residence, and the financial means test that decides full or partial cost."
+        ]
+      },
+      "sources": [
+        "https://notices.ukzn.ac.za/PrintNotice.aspx/116602",
+        "https://cput.ac.za/study-at-cput/postgraduate/funding-opportunities",
+        "https://uct.ac.za/node/634",
+        "https://www.ufs.ac.za/centreforgraduatesupport/postgraduate-school"
+      ]
+    },
+    {
+      "id": "B007",
+      "name": "UNISA Postgraduate Bursary 2027",
+      "type": "bursary",
+      "closingDate": "2026-11-30",
+      "closingTime": null,
+      "whoItsFor": "Students registered at UNISA for a postgraduate diploma, honours, master's or doctoral degree. New honours applicants are UNISA graduates with a 60% average over their whole undergraduate qualification.",
+      "documents": [
+        "Apply online. Read the bursary guidelines and terms on the UNISA page first."
+      ],
+      "officialLink": "https://www.unisa.ac.za/sites/myunisa/default/Student-Affairs-%26-SRC/Student-funding%3A-bursaries-%26-loans/Postgraduate-Bursaries",
+      "status": "partial",
+      "lastChecked": "2026-10-24",
+      "notes": "Applications for 2027 run from 21 Sep to 30 Nov 2026 (UNISA page). Honours and postgraduate diploma: South African citizens; new applicants must have completed an NQF 7 qualification by 31 Jan 2027; priority goes to higher averages. Master's and doctoral: South African and international students; returning master's students must have registered for the first time no more than three years ago. Research allowance amounts were not confirmed and are left out.",
+      "criteria": {
+        "levels": [
+          "HONOURS",
+          "MASTERS"
+        ],
+        "minAverageByLevel": {
+          "HONOURS": 60
+        },
+        "unisaOnly": true,
+        "needsCheck": [
+          "You must be registered at UNISA. New honours applicants need an NQF 7 qualification completed by 31 January 2027.",
+          "South African citizenship for honours (master's and doctoral include international students)."
+        ]
+      },
+      "sources": [
+        "https://www.unisa.ac.za/sites/myunisa/default/Student-Affairs-%26-SRC/Student-funding%3A-bursaries-%26-loans/Postgraduate-Bursaries"
+      ]
+    },
+    {
+      "id": "B008",
+      "name": "IDC External Bursary Scheme 2027",
+      "type": "bursary",
+      "closingDate": "2026-09-30",
+      "closingTime": null,
+      "whoItsFor": "Unemployed South African citizens aged 26 or younger with financial need, studying full time at a public university or university of technology. Mainly first undergraduate qualifications.",
+      "documents": [
+        "Certified copies of identity and household documents. See the IDC advert for the full list."
+      ],
+      "officialLink": "https://www.idc.co.za/bursaries/",
+      "status": "partial",
+      "lastChecked": "2026-10-24",
+      "notes": "CLOSED: applications ran from 1 June to 30 Sep 2026 (IDC page). Postgraduate funding only for selected honours fields: law, mathematics, statistics, actuarial science and accounting CTA. Does not ordinarily fund a second undergraduate qualification.",
+      "criteria": {
+        "citizenOnly": true,
+        "maxAge": 26,
+        "needsCheck": [
+          "Must be unemployed, with financial need.",
+          "Mainly first undergraduate qualifications. Postgraduate only for selected honours fields (law, mathematics, statistics, actuarial science, accounting CTA)."
+        ]
+      },
+      "sources": [
+        "https://www.idc.co.za/bursaries/",
+        "https://www.setacareers.co.za/idc-external-bursary-scheme-2027/"
+      ]
+    },
+    {
+      "id": "B009",
+      "name": "SANSA Postgraduate Bursary 2027",
+      "type": "bursary",
+      "closingDate": "2026-09-30",
+      "closingTime": null,
+      "whoItsFor": "South African honours, master's and doctoral students in science, engineering and technology fields linked to space, with an average of at least 65% in their last year of study.",
+      "documents": [
+        "Certified ID (certified within three months of applying)",
+        "Official academic record",
+        "Draft proposal for master's (up to 2 pages) or doctoral (up to 4 pages), signed by applicant and supervisor",
+        "Lecturer or supervisor testimonial (master's and doctoral)"
+      ],
+      "officialLink": "https://www.sansa.org.za/bursaries/",
+      "status": "partial",
+      "lastChecked": "2026-10-24",
+      "notes": "CLOSED: applications closed 30 Sep 2026. Funding is capped at R150,000 (honours), R160,000 (master's) and R170,000 (doctoral) per year. The 65% rule is on the SANSA page; the closing date and citizenship rule come from a university announcement and other sites.",
+      "criteria": {
+        "citizenOnly": true,
+        "levels": [
+          "HONOURS",
+          "MASTERS"
+        ],
+        "minAverage": 65,
+        "fields": [
+          "SCIENCE",
+          "ENGINEERING",
+          "IT"
+        ],
+        "needsCheck": [
+          "Study must fit SANSA's space science, earth observation or space engineering areas."
+        ]
+      },
+      "sources": [
+        "https://www.sansa.org.za/bursaries/",
+        "https://www.uwc.ac.za/news-and-announcements/announcements/sansa-2027-postgraduate-bursary-opportunities"
+      ]
+    },
+    {
+      "id": "B010",
+      "name": "Canon Collins RMTF Scholarship 2027",
+      "type": "scholarship",
+      "closingDate": "2026-08-14",
+      "closingTime": "18:00",
+      "whoItsFor": "Master's and PhD students at South African universities who are citizens of an eligible Southern African country, in justice, education policy or humanities fields.",
+      "documents": [
+        "Two recent reference letters (invited candidates)",
+        "Writing sample (master's)",
+        "Draft research proposal and supervisor letter (PhD)"
+      ],
+      "officialLink": "https://canoncollins.org/scholarships/canon-collins-rmtf-scholarships-for-postgraduate-study/",
+      "status": "partial",
+      "lastChecked": "2026-10-24",
+      "notes": "CLOSED: deadline was 14 Aug 2026 (4:00 pm GMT, which is 18:00 South African time; some sites wrongly say 16:00 SAST). Awards are R20,000 to R100,000, not full cost. Master's funding up to two years, PhD up to three.",
+      "criteria": {
+        "levels": [
+          "MASTERS"
+        ],
+        "fields": [
+          "LAW",
+          "EDUCATION",
+          "HUMANITIES"
+        ],
+        "needsCheck": [
+          "Citizen of an eligible Southern African country, living there.",
+          "At least 2 years of social justice involvement and a good honours degree."
+        ]
+      },
+      "sources": [
+        "https://canoncollins.org/scholarships/canon-collins-rmtf-scholarships-for-postgraduate-study/"
+      ]
+    },
+    {
+      "id": "B011",
+      "name": "ISFAP postgraduate funding (honours via NRF)",
+      "type": "bursary",
+      "closingDate": "2026-08-24",
+      "closingTime": null,
+      "whoItsFor": "Honours students whose NRF applications need an ISFAP financial assessment.",
+      "documents": [
+        "ISFAP application consent form (see your university's postgraduate office)."
+      ],
+      "officialLink": null,
+      "status": "unverified",
+      "lastChecked": "2026-10-24",
+      "notes": "CLOSED for 2027: honours applicants needing ISFAP assessment had to apply by 24 Aug 2026 (UCT and NRF notices). No ISFAP page was opened. Check isfap.org.za for later calls.",
+      "criteria": {
+        "levels": [
+          "HONOURS"
+        ],
+        "needsCheck": [
+          "Honours applicants needing ISFAP assessment had to apply by 24 August 2026. Check isfap.org.za for later calls."
+        ]
+      },
+      "sources": [
+        "https://uct.ac.za/node/634"
+      ]
+    }
+  ]
+}
