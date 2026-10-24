@@ -80,5 +80,95 @@
     "status": "unverified",
     "notes": "The date shown is for new applicants; returning bursars may have a different deadline. Confirm before applying.",
     "lastChecked": null
+  },
+  {
+    "id": "B006",
+    "name": "DSTI-NRF Postgraduate Scholarships",
+    "type": "Postgraduate funding (national)",
+    "closingDate": null,
+    "closingTime": null,
+    "whoItsFor": "Postgraduate only (Honours, Master's, PhD). South African citizens and permanent residents with at least 65% in their previous degree. Age limits apply: 28 for Honours, 30 for Master's, 32 for PhD.",
+    "documents": [
+      "Documents listed on the official application page"
+    ],
+    "officialLink": "https://nrf.ac.za",
+    "status": "unverified",
+    "notes": "Reported: full cost of study for financially needy students (household income up to R350,000 a year) or students with disabilities, and partial cost for other qualifying candidates. Applications go through the NRF. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B007",
+    "name": "UNISA Postgraduate Bursaries",
+    "type": "Postgraduate funding (university)",
+    "closingDate": null,
+    "closingTime": null,
+    "whoItsFor": "Postgraduate only (Postgraduate Diploma, Honours, Master's, Doctoral). Mainly South African citizens registered at UNISA. Students moving from an undergraduate degree into Honours need a 60% average.",
+    "documents": [
+      "Documents listed on the official application page"
+    ],
+    "officialLink": "https://unisa.ac.za",
+    "status": "unverified",
+    "notes": "Reported: tuition fees for Postgraduate Diploma and Honours students; Master's and doctoral students may also get research allowances. The source says \"temporarily registered\" students; confirm with UNISA what that means. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B008",
+    "name": "IDC External Bursary Scheme",
+    "type": "Postgraduate funding (development finance)",
+    "closingDate": null,
+    "closingTime": null,
+    "whoItsFor": "Postgraduate only (Honours and postgraduate CTA). Unemployed South African citizens with financial need, studying Law, Mathematics, Statistics, Actuarial Science or Accounting.",
+    "documents": [
+      "Documents listed on the official application page"
+    ],
+    "officialLink": "https://idc.co.za",
+    "status": "unverified",
+    "notes": "Reported: tuition, accommodation, meals, transport and a once-off laptop allowance. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B009",
+    "name": "SANSA Postgraduate Bursary",
+    "type": "Postgraduate funding (science)",
+    "closingDate": null,
+    "closingTime": null,
+    "whoItsFor": "Postgraduate only (Honours, Master's, Doctoral). South African citizens studying relevant science and engineering qualifications, with an average of at least 65%.",
+    "documents": [
+      "Documents listed on the official application page"
+    ],
+    "officialLink": "https://sansa.org.za",
+    "status": "unverified",
+    "notes": "Reported: fixed yearly funding limits that differ by level (Honours, Master's, Doctoral). Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B010",
+    "name": "Canon Collins RMTF Scholarships",
+    "type": "Postgraduate funding (trust)",
+    "closingDate": null,
+    "closingTime": null,
+    "whoItsFor": "Postgraduate only (Master's and PhD). Nationals of eligible Southern African countries studying in South Africa, in justice (climate justice, law, economics, politics), education policy or humanities.",
+    "documents": [
+      "Documents listed on the official application page"
+    ],
+    "officialLink": "https://canoncollins.org",
+    "status": "unverified",
+    "notes": "Reported: support for up to two years, with the option to reapply for a third year depending on performance. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "lastChecked": null
+  },
+  {
+    "id": "B011",
+    "name": "ISFAP Postgraduate Funding",
+    "type": "Fund (missing middle, postgraduate)",
+    "closingDate": null,
+    "closingTime": null,
+    "whoItsFor": "Postgraduate only (first postgraduate degree). South African citizens accepted at an ISFAP partner university who meet the academic and financial requirements set by the donors.",
+    "documents": [
+      "Documents listed on the official application page"
+    ],
+    "officialLink": "https://isfap.org.za",
+    "status": "unverified",
+    "notes": "Reported: a full package covering tuition, accommodation, a monthly living allowance and student support. This is separate from the undergraduate ISFAP bursary above. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "lastChecked": null
   }
 ]
