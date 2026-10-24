@@ -19,7 +19,7 @@ class BursaryApiTest {
     @Test
     void getReturnsTheListAndADisclaimer() throws Exception {
         mvc.perform(get("/api/bursaries")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.bursaries.length()").value(5))
+                .andExpect(jsonPath("$.bursaries.length()").value(11))
                 .andExpect(jsonPath("$.bursaries[0].documents").isArray())
                 .andExpect(jsonPath("$.disclaimer").isNotEmpty());
     }
