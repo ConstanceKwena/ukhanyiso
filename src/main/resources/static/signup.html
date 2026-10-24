@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: sign up</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a href="/start.html">Start</a>
+    <a href="/plan.html">Budget</a>
+    <a href="/checklist.html">My checklist</a>
+    <a href="/signup.html" aria-current="page">Sign up</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Save your progress</p>
+        <h1>Create your account</h1>
+        <p>Pick your language first. We will use it across the app.</p>
+    </header>
+    <form id="signup" novalidate>
+        <div class="field"><label for="language">Your language</label>
+            <select id="language">
+                <option value="en">English</option>
+                <option value="zu">isiZulu</option>
+                <option value="xh">isiXhosa</option>
+                <option value="st">Sesotho</option>
+                <option value="af">Afrikaans</option>
+            </select></div>
+        <div class="field"><label for="email">Email</label>
+            <input id="email" type="email" autocomplete="email" maxlength="100"></div>
+        <div class="field"><label for="password">Password (at least 10 characters)</label>
+            <input id="password" type="password" autocomplete="new-password" minlength="10" maxlength="200"></div>
+        <div class="field"><label><input id="consent" type="checkbox"> I agree that Ukhanyiso may store my email, language and the plans I save, to run my account. I can ask for my account to be deleted.</label></div>
+        <div class="form-actions"><button type="submit" id="go">Create account</button></div>
+        <p id="msg" class="error" role="alert"></p>
+        <p>Already have an account? <a href="/checklist.html">Log in</a></p>
+    </form>
+</main>
+<script src="/js/site.js"></script>
+<script>
+    document.getElementById("language").value = Site.lang();
+    document.getElementById("signup").onsubmit = async e => {
+        e.preventDefault();
+        const msg = document.getElementById("msg");
+        const body = {
+            email: document.getElementById("email").value.trim(),
+            password: document.getElementById("password").value,
+            language: document.getElementById("language").value,
+            consent: document.getElementById("consent").checked
+        };
+        if (!body.email || body.password.length < 10 || !body.consent) {
+            msg.textContent = "Please enter your email, a password of at least 10 characters, and tick the box to agree.";
+            return;
+        }
+        const btn = document.getElementById("go");
+        btn.disabled = true;
+        try {
+            const res = await fetch("/api/auth/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+            if (res.ok) {
+                try { localStorage.setItem("ukhanyiso-lang", body.language); } catch (err) { }
+                location.href = "/checklist.html";
+                return;
+            }
+            const j = await res.json().catch(() => null);
+            msg.textContent = res.status === 429 ? "Too many tries. Please wait a minute." : ((j && j.message) || "We could not create that account. Please check your details.");
+        } catch (err) {
+            msg.textContent = "We could not reach the server. Please try again.";
+        } finally {
+            btn.disabled = false;
+        }
+    };
+</script>
+</body>
+</html>

@@ -71,15 +71,35 @@ CREATE TABLE match_config (
 );
 
 CREATE TABLE app_users (
-    user_id       VARCHAR(100) PRIMARY KEY,
-    password_hash VARCHAR(500) NOT NULL,
-    display_name  VARCHAR(100) NOT NULL
+    user_id            VARCHAR(100) PRIMARY KEY CHECK (LENGTH(user_id) BETWEEN 5 AND 100),
+    password_hash      VARCHAR(500) NOT NULL,
+    display_name       VARCHAR(100) NOT NULL,
+    preferred_language VARCHAR(5)   NOT NULL DEFAULT 'en' CHECK (preferred_language IN ('en', 'zu', 'xh', 'st', 'af')),
+    consent_at         TIMESTAMP,
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE checklist_progress (
-    user_id      VARCHAR(100) NOT NULL REFERENCES app_users(user_id),
+    user_id      VARCHAR(100) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
     item_id      VARCHAR(80) NOT NULL,
     completed    INTEGER NOT NULL DEFAULT 0,
     updated_at  TIMESTAMP NOT NULL,
     PRIMARY KEY (user_id, item_id)
+);
+
+CREATE TABLE financial_plans (
+    user_id         VARCHAR(100) PRIMARY KEY REFERENCES app_users(user_id) ON DELETE CASCADE,
+    monthly_funding INTEGER NOT NULL CHECK (monthly_funding BETWEEN 0 AND 1000000),
+    months_funded   INTEGER NOT NULL CHECK (months_funded BETWEEN 1 AND 12),
+    required_avg    INTEGER NOT NULL CHECK (required_avg BETWEEN 0 AND 100),
+    current_avg     INTEGER NOT NULL CHECK (current_avg BETWEEN 0 AND 100),
+    bursary_worth   INTEGER NOT NULL CHECK (bursary_worth BETWEEN 0 AND 1000000),
+    startup_costs   INTEGER NOT NULL CHECK (startup_costs BETWEEN 0 AND 1000000),
+    weeks_to_payout INTEGER NOT NULL CHECK (weeks_to_payout BETWEEN 0 AND 52),
+    cost_home       INTEGER NOT NULL CHECK (cost_home BETWEEN 0 AND 1000000),
+    cost_food       INTEGER NOT NULL CHECK (cost_food BETWEEN 0 AND 1000000),
+    cost_travel     INTEGER NOT NULL CHECK (cost_travel BETWEEN 0 AND 1000000),
+    cost_data       INTEGER NOT NULL CHECK (cost_data BETWEEN 0 AND 1000000),
+    cost_other      INTEGER NOT NULL CHECK (cost_other BETWEEN 0 AND 1000000),
+    updated_at      TIMESTAMP NOT NULL
 );

@@ -48,9 +48,10 @@ public final class MatchRateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        int limit = "POST".equalsIgnoreCase(method)
-                && "/api/match".equals(path)
+        int limit = "POST".equalsIgnoreCase(method) && "/api/match".equals(path)
                 ? MATCH_MAX_REQUESTS
+                : "POST".equalsIgnoreCase(method) && "/api/auth/signup".equals(path)
+                ? 5
                 : MAX_REQUESTS;
 
         String key = request.getRemoteAddr() + "|" + method + "|" + path;
