@@ -80,3 +80,48 @@ Plans, rules, roles and the submission checklist are in the [wiki](https://githu
 ## Data sources
 
 Course requirements and closing dates come from official institution pages. Each entry in the source sheet records the APS, subjects, closing date, official link and the date it was checked. Always confirm with the institution before applying.
+
+
+## Security checklist
+
+**Checked:** 23 October 2026  
+**Owner:** Kwena
+
+### GitHub security settings
+
+- Secret scanning: ON
+- Push protection: ON
+- Dependency graph: ON
+- Dependabot alerts: ON
+- Dependabot security updates: ON
+- Evidence: GitHub security settings screenshots
+
+### Alert review
+
+- Secret-scanning alerts: 0 open, 0 closed
+- Checked: 23 October 2026
+- Evidence: GitHub Secret scanning alerts page screenshot
+- Dependabot vulnerability alerts: NOT CHECKED YET
+
+### Security findings
+
+- F-01 rate limiting: RETEST NOT DONE YET
+- F-02: WAITING FOR THE ORIGINAL FINDING DETAILS
+- Do not mark a finding as fixed until it has been retested.
+
+### SSDLC notes
+
+We check security during development by reviewing changes,
+validating user input, protecting secrets
+and testing important security controls. 
+We record what we checked, when we checked it, and the evidence. 
+Any issue that has not been tested or fixed stays marked as open or not tested.
+
+- Dependabot alerts: 0 open, 0 closed
+- Checked: 24 October 2026
+- Evidence: GitHub Dependabot alerts page screenshot
+- F-01 hosted retest: NOT PASS — first device returned 200 for all 11 requests;
+- request 11 was expected to return 429. Second device returned 200. 
+- Further investigation needed.
+- Local rate-limit test: PASS — requests 1–10 returned 200; request 11 returned 429.
+- Hosted rate-limit test: NOT PASS — all 11 requests returned 200. F-01 remains open for investigation.
