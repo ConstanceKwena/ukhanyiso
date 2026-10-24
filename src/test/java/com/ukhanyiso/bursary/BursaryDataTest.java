@@ -30,10 +30,16 @@ class BursaryDataTest {
         all.forEach(b -> { if (b.closingDate() == null) assertThat(b.status()).as(b.id() + " status").isNotEqualTo("verified"); });
     }
 
-    @Test void postgraduateBursariesSayPostgraduateOnlyAndAreNotYetVerified() {
-        all.stream().filter(b -> b.id().compareTo("B006") >= 0).forEach(b -> {
-            assertThat(b.whoItsFor()).as(b.id() + " who it's for").startsWith("Postgraduate only");
-            assertThat(b.status()).as(b.id() + " status").isEqualTo("unverified");
+    @Test void postgraduateBursariesSayPostgraduateOnly() {
+        all.stream().filter(b -> b.id().compareTo("B006") >= 0).forEach(b ->
+                assertThat(b.whoItsFor()).as(b.id() + " who it's for").startsWith("Postgraduate only"));
+    }
+
+    @Test void aVerifiedBursaryHasAClosingDateALastCheckedDateAndAnOfficialLink() {
+        all.stream().filter(b -> "verified".equals(b.status())).forEach(b -> {
+            assertThat(b.closingDate()).as(b.id() + " closing date").isNotNull();
+            assertThat(b.lastChecked()).as(b.id() + " last checked").isNotNull();
+            assertThat(b.officialLink()).as(b.id() + " link").isNotBlank();
         });
     }
 

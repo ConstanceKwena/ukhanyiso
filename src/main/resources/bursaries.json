@@ -1,3 +1,4 @@
+
 [
   {
     "id": "B001",
@@ -14,7 +15,7 @@
     ],
     "officialLink": null,
     "status": "partial",
-    "notes": "Closes 12:00 midday on Monday 26 Oct 2026; several bursary listing sites agree on this date. Applications are online and the bursary is administered by Excel@Uni. We have not found an official Astron Energy page, so no link is shown. Listed fields differ between sites; check the application portal before applying.",
+    "notes": "Closes 12:00 midday on Monday 26 Oct 2026; several bursary listing sites agree on this date. Applications are online and the bursary is administered by Excel@Uni. We have not found an official Astron Energy page, so no link is shown. Listed fields differ between sites; check the application portal before applying. One 2027 listing names only data analytics, chemical engineering and electrical engineering as fields, so the field list may be narrower this year: check the portal.",
     "lastChecked": "2026-10-23"
   },
   {
@@ -30,9 +31,9 @@
       "Orphan and vulnerable child form where applicable"
     ],
     "officialLink": "https://www.nsfas.org.za",
-    "status": "partial",
-    "notes": "The 2027 closing date is 31 Oct 2026, as reported after the Minister confirmed it on 22 Sep and NSFAS said there will be no extension. An earlier announcement gave 18 Nov, so confirm on the myNSFAS portal. TVET college admissions for 2027 closed on 30 Sep 2026.",
-    "lastChecked": "2026-10-23"
+    "status": "verified",
+    "notes": "Applications close on 31 October 2026 and NSFAS says there will be no extension (government and NSFAS statements, September to October 2026). The 18 November date mentioned at the launch event was replaced by 31 October. Apply through the myNSFAS portal. Free.",
+    "lastChecked": "2026-10-24"
   },
   {
     "id": "B003",
@@ -78,7 +79,7 @@
     ],
     "officialLink": "https://www.funzalushaka.doe.gov.za",
     "status": "unverified",
-    "notes": "The date shown is for new applicants; returning bursars may have a different deadline. Confirm before applying.",
+    "notes": "The date shown is for new applicants; returning bursars may have a different deadline. Confirm before applying. The Department of Basic Education page still showed 2026 dates when checked on 24 October 2026, so the 2027 dates come from listings; confirm on eservices.gov.za.",
     "lastChecked": null
   },
   {
@@ -92,39 +93,39 @@
       "Documents listed on the official application page"
     ],
     "officialLink": "https://nrf.ac.za",
-    "status": "unverified",
-    "notes": "Reported: full cost of study for financially needy students (household income up to R350,000 a year) or students with disabilities, and partial cost for other qualifying candidates. Applications go through the NRF. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
-    "lastChecked": null
+    "status": "partial",
+    "notes": "Closing dates differ by level. UNISA's research office lists the NRF call dates as: first-time Master's and Doctoral closed 3 July 2026, and Master's and Doctoral extension support closed 14 August 2026. A November 2026 date for Honours was reported but is not confirmed. Reported: full cost of study for financially needy students (household income up to R350,000 a year) or students with disabilities, and partial cost for other qualifying candidates. Confirm the details on the funder's own page before applying.",
+    "lastChecked": "2026-10-24"
   },
   {
     "id": "B007",
     "name": "UNISA Postgraduate Bursaries",
     "type": "Postgraduate funding (university)",
-    "closingDate": null,
+    "closingDate": "2026-11-30",
     "closingTime": null,
     "whoItsFor": "Postgraduate only (Postgraduate Diploma, Honours, Master's, Doctoral). Mainly South African citizens registered at UNISA. Students moving from an undergraduate degree into Honours need a 60% average.",
     "documents": [
       "Documents listed on the official application page"
     ],
-    "officialLink": "https://unisa.ac.za",
-    "status": "unverified",
-    "notes": "Reported: tuition fees for Postgraduate Diploma and Honours students; Master's and doctoral students may also get research allowances. The source says \"temporarily registered\" students; confirm with UNISA what that means. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
-    "lastChecked": null
+    "officialLink": "https://www.unisa.ac.za/sites/myunisa/default/Student-Affairs-%26-SRC/Student-funding%3A-bursaries-%26-loans/Postgraduate-Bursaries",
+    "status": "partial",
+    "notes": "UNISA's page says the 2027 postgraduate bursary application period runs from 21 September to 30 November 2026. The funding is for UNISA students, and Master's and doctoral funding has research-stage requirements, so read the UNISA guidelines. Reported: tuition fees for Postgraduate Diploma and Honours students; Master's and doctoral students may also get research allowances. Confirm the details on the funder's own page before applying.",
+    "lastChecked": "2026-10-24"
   },
   {
     "id": "B008",
     "name": "IDC External Bursary Scheme",
     "type": "Postgraduate funding (development finance)",
-    "closingDate": null,
+    "closingDate": "2026-09-30",
     "closingTime": null,
     "whoItsFor": "Postgraduate only (Honours and postgraduate CTA). Unemployed South African citizens with financial need, studying Law, Mathematics, Statistics, Actuarial Science or Accounting.",
     "documents": [
       "Documents listed on the official application page"
     ],
-    "officialLink": "https://idc.co.za",
-    "status": "unverified",
-    "notes": "Reported: tuition, accommodation, meals, transport and a once-off laptop allowance. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
-    "lastChecked": null
+    "officialLink": "https://www.idc.co.za/bursaries/",
+    "status": "partial",
+    "notes": "Applications for 2027 closed on 30 September 2026 (IDC advert shared by NWU and several listings). Do not apply unless the IDC announces a reopening. Reported limits: household income up to R350,000 a year and age 26 or younger. The scheme mainly funds a first qualification. Reported: tuition, accommodation, meals, transport and a once-off laptop allowance. Confirm the details on the funder's own page before applying.",
+    "lastChecked": "2026-10-24"
   },
   {
     "id": "B009",
@@ -138,23 +139,23 @@
     ],
     "officialLink": "https://sansa.org.za",
     "status": "unverified",
-    "notes": "Reported: fixed yearly funding limits that differ by level (Honours, Master's, Doctoral). Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "notes": "Reported: fixed yearly funding limits that differ by level (Honours, Master's, Doctoral). Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying. SANSA's usual cycle is 1 to 31 October for the next year of study, and 31 October 2026 is the expected 2027 closing date, but it is not confirmed.",
     "lastChecked": null
   },
   {
     "id": "B010",
     "name": "Canon Collins RMTF Scholarships",
     "type": "Postgraduate funding (trust)",
-    "closingDate": null,
+    "closingDate": "2026-08-21",
     "closingTime": null,
     "whoItsFor": "Postgraduate only (Master's and PhD). Nationals of eligible Southern African countries studying in South Africa, in justice (climate justice, law, economics, politics), education policy or humanities.",
     "documents": [
       "Documents listed on the official application page"
     ],
-    "officialLink": "https://canoncollins.org",
-    "status": "unverified",
-    "notes": "Reported: support for up to two years, with the option to reapply for a third year depending on performance. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
-    "lastChecked": null
+    "officialLink": "https://canoncollins.org/scholarships/canon-collins-rmtf-scholarships-for-postgraduate-study/",
+    "status": "conflicting",
+    "notes": "Stage 1 for 2027 has closed. The Canon Collins page text gives 14 August 2026 at 16:00, and some listings report an extension to 21 August 2026 at 16:00 SAST. Stage 2 is by invitation only. Reported: support for up to two years, with the option to reapply for a third year depending on performance. Watch for the next call. Confirm the details on the funder's own page before applying.",
+    "lastChecked": "2026-10-24"
   },
   {
     "id": "B011",
@@ -168,7 +169,7 @@
     ],
     "officialLink": "https://isfap.org.za",
     "status": "unverified",
-    "notes": "Reported: a full package covering tuition, accommodation, a monthly living allowance and student support. This is separate from the undergraduate ISFAP bursary above. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying.",
+    "notes": "Reported: a full package covering tuition, accommodation, a monthly living allowance and student support. This is separate from the undergraduate ISFAP bursary above. Details come from a summary and have not been checked against the funder's own page yet; confirm the closing date and rules before applying. A listing reports 31 October 2026 for selected programmes, but ISFAP funding is programme and university specific, so check your own programme on the portal.",
     "lastChecked": null
   }
 ]
