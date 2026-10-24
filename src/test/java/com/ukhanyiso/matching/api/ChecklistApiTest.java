@@ -35,14 +35,34 @@ class ChecklistApiTest {
         mvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login.html"));
+        mvc.perform(get("/study.html"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login.html"));
         MockHttpSession authenticated = new MockHttpSession();
         authenticated.setAttribute(ShowcaseSession.USER_ATTRIBUTE, "test-learner");
         mvc.perform(get("/").session(authenticated))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/index.html"));
         mvc.perform(get("/index.html")).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/study.html").session(authenticated))
+                .andExpect(status().isOk());
         mvc.perform(get("/login.html")).andExpect(status().isOk());
         mvc.perform(get("/signup.html")).andExpect(status().isOk());
+    }
+
+    @Test
+    void studyPlanIsUnavailableAfterLogout() throws Exception {
+        MockHttpSession authenticated = new MockHttpSession();
+        authenticated.setAttribute(ShowcaseSession.USER_ATTRIBUTE, "test-learner");
+        authenticated.setAttribute(ShowcaseSession.CSRF_ATTRIBUTE, "test-csrf-token");
+
+        mvc.perform(post("/api/auth/logout").session(authenticated)
+                        .header("X-CSRF-Token", "test-csrf-token"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/study.html"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login.html"));
     }
 
     @Test

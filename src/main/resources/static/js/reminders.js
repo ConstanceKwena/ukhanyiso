@@ -39,13 +39,6 @@
         }).format(date) : value;
     }
 
-    function addDays(value, days) {
-        const date = parseDate(value);
-        if (!date) return value;
-        date.setDate(date.getDate() + days);
-        return localDate(date);
-    }
-
     function loadReminders() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -226,48 +219,21 @@
         }
     }
 
-    function escapeIcs(value) {
-        return String(value || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n")
-            .replace(/,/g, "\\,").replace(/;/g, "\\;");
-    }
-
     function exportCalendar() {
         if (!reminders.length) {
             status.textContent = "Add at least one reminder before exporting your calendar.";
             return;
         }
-        const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ukhanyiso//Application reminders//EN", "CALSCALE:GREGORIAN"];
-        reminders.forEach(item => {
-            const date = item.date.replace(/-/g, "");
-            lines.push(
-                "BEGIN:VEVENT",
-                "UID:" + escapeIcs(item.id) + "@ukhanyiso.local",
-                "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""),
-                "DTSTART;VALUE=DATE:" + date,
-                "DTEND;VALUE=DATE:" + addDays(item.date, 1).replace(/-/g, ""),
-                "SUMMARY:" + escapeIcs(item.title),
-                "DESCRIPTION:" + escapeIcs("Ukhanyiso reminder. Confirm deadlines with the official organisation."),
-                "BEGIN:VALARM",
-                "TRIGGER:-P1D",
-                "ACTION:DISPLAY",
-                "DESCRIPTION:" + escapeIcs(item.title),
-                "END:VALARM",
-                "END:VEVENT"
-            );
-            if (item.sourceUrl && item.sourceUrl.startsWith("https://")) {
-                lines.splice(lines.length - 1, 0, "URL:" + item.sourceUrl.replace(/[\r\n]/g, ""));
-            }
-        });
-        lines.push("END:VCALENDAR", "");
-        const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "ukhanyiso-reminders.ics";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+        const events = reminders.map(item => ({
+            id: item.id,
+            title: item.title,
+            date: item.date,
+            allDay: true,
+            description: "Ukhanyiso reminder. Confirm deadlines with the official organisation.",
+            sourceUrl: item.sourceUrl,
+            alarm: "-P1D"
+        }));
+        window.UkhanyisoCalendarExport.download(events, "ukhanyiso-reminders.ics", "Application reminders");
         status.textContent = "Calendar file downloaded. Import it into your calendar app to receive notifications.";
     }
 

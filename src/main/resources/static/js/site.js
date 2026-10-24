@@ -12,6 +12,7 @@
         "Funding": ["Uxhaso lwezimali", "Inkxaso-mali", "Tshehetso ya ditjhelete", "Befondsing"],
         "Reminders": ["Izikhumbuzi", "Izikhumbuzo", "Dikgopotso", "Herinneringe"],
         "Budget": ["Isabelomali", "Uhlahlo-lwabiwo mali", "Tekanyetso ya ditjhelete", "Begroting"],
+        "Study Plan": ["Uhlelo lokufunda", "Isicwangciso sokufunda", "Moralo wa ho ithuta", "Studieplan"],
         "Checklist": ["Uhlu lokuhlola", "Uluhlu lokukhangela", "Lenane la tlhahlobo", "Kontrolelys"],
         "Sign up": ["Bhalisa", "Bhalisa", "Ingolise", "Registreer"],
         "Log in": ["Ngena", "Ngena", "Kena", "Meld aan"],
@@ -251,6 +252,14 @@
                 account.href = "/checklist.html";
                 account.textContent = t("Account") + ": " + user.username;
                 nav.appendChild(account);
+
+                const studyPlan = document.createElement("a");
+                studyPlan.href = "/study.html";
+                studyPlan.textContent = t("Study Plan");
+                if (location.pathname === "/study.html") {
+                    studyPlan.setAttribute("aria-current", "page");
+                }
+                nav.appendChild(studyPlan);
 
                 const logout = document.createElement("button");
                 logout.type = "button";
