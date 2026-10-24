@@ -105,6 +105,19 @@
                 c.appendChild(el("h3", "Next steps"));
                 r.suggestions.forEach(s => c.appendChild(el("p", s)));
             }
+            if (r.fit === "NEAR_MISS" && r.deadline !== "CLOSED") {
+                c.appendChild(el("h3", "Path to yes"));
+                if (Array.isArray(r.pathToYes) && r.pathToYes.length > 0) {
+                    r.pathToYes.forEach((opt, n) => {
+                        const parts = (opt.changes || []).map(ch =>
+                            `${ch.subject} from ${ch.fromPercent}% to ${ch.toPercent}% (+${ch.toPercent - ch.fromPercent})`);
+                        c.appendChild(el("p", `Option ${n + 1}: Raise ${parts.join(" and ")} and you would meet the minimum for this course.`));
+                    });
+                } else {
+                    c.appendChild(el("p", "This course needs a large improvement across several subjects. Talk to your teacher about whether that is realistic."));
+                }
+                c.appendChild(el("p", "Final matric marks only change through supplementary exams or remarking. If you are still writing, this shows where to focus. Meeting the minimum does not guarantee admission.", "disclaimer"));
+            }
             if (Array.isArray(r.reasons) && r.reasons.length > 0) {
                 c.appendChild(el("h3", "Why it may not fit"));
                 r.reasons.forEach(s => c.appendChild(el("p", s)));

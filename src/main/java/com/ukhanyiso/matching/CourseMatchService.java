@@ -35,6 +35,9 @@ public class CourseMatchService {
             Institution institution = catalog.institutions().get(course.institutionId());
             if (institution == null) continue;   // cannot happen with the foreign key; skip rather than guess
             CourseResult r = Matcher.evaluate(marks, course, institution, catalog.config(), catalog.subjectNames(), now);
+            if (r.fit() == FitStatus.NEAR_MISS) {
+                r = r.withPathToYes(PathToYes.find(marks, course, institution, catalog.config(), catalog.subjectNames(), now, r));
+            }
             if (includeAll || r.fit() == FitStatus.MATCH || r.fit() == FitStatus.NEAR_MISS) results.add(r);
         }
         return ResultRanker.rank(results);
