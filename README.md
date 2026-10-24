@@ -72,10 +72,11 @@ To deploy this branch, add the Space repository as a Git remote and push this br
 
 ```bash
 git remote add huggingface https://huggingface.co/spaces/<your-account>/<your-space>
-git push huggingface HEAD:main
+git fetch huggingface main
+git push --force-with-lease=refs/heads/main:$(git rev-parse refs/remotes/huggingface/main) huggingface HEAD:main
 ```
 
-Replace `<your-account>` and `<your-space>` with the values from the Space URL. Hugging Face may ask you to sign in or authenticate Git when pushing. Do not put an access token in the remote URL or commit it to this repository.
+Replace `<your-account>` and `<your-space>` with the values from the Space URL. If the `huggingface` remote already exists, use `git remote set-url huggingface https://huggingface.co/spaces/<your-account>/<your-space>` instead of `git remote add`. Fetch first, then push with the lease so the generated Static Space starter files are replaced only if the Space has not changed since the fetch. Hugging Face may ask you to sign in or authenticate Git when pushing; enter your access token only at the private Git credential prompt. Do not put an access token in the remote URL or commit it to this repository.
 
 The public app URL will be `https://<your-account>-<your-space>.hf.space`. Wait for the Space build to finish, then open that URL and test sign-up and the learner journey using fictional details only. On the free tier the Space may sleep while idle; its in-memory H2 database is cleared whenever the app restarts, so accounts and checklist progress do not persist through restarts.
 
