@@ -68,11 +68,12 @@ CREATE TABLE IF NOT EXISTS match_config (
 );
 
 CREATE TABLE IF NOT EXISTS app_users (
-    user_id       VARCHAR(24) PRIMARY KEY CHECK (LENGTH(user_id) BETWEEN 5 AND 24),
-    display_name  VARCHAR(24) NOT NULL,
+    user_id       VARCHAR(50) PRIMARY KEY,
+    display_name  VARCHAR(50) NOT NULL,
     password_salt VARCHAR(64) NOT NULL,
     password_hash VARCHAR(64) NOT NULL,
-    created_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT app_users_username_length_check CHECK (LENGTH(user_id) BETWEEN 3 AND 50)
 );
 
 CREATE TABLE IF NOT EXISTS checklist_progress (

@@ -7,10 +7,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -53,6 +51,8 @@ class ChecklistApiTest {
                 .andExpect(redirectedUrl("/index.html"));
         mvc.perform(get("/index.html")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/study.html").session(authenticated))
+                .andExpect(status().isOk());
+        mvc.perform(get("/start.html").session(authenticated))
                 .andExpect(status().isOk());
         mvc.perform(get("/login.html")).andExpect(status().isOk());
         mvc.perform(get("/signup.html")).andExpect(status().isOk());
@@ -107,10 +107,28 @@ class ChecklistApiTest {
             @TempDir Path tempDir) throws Exception {
         String url = "jdbc:h2:file:" + tempDir.resolve("persistent-auth");
         JdbcDataSource firstDataSource = dataSource(url);
-        new ResourceDatabasePopulator(new ClassPathResource("schema.sql"))
-                .execute(firstDataSource);
+        JdbcTemplate firstJdbc = new JdbcTemplate(firstDataSource);
+        firstJdbc.execute("""
+                CREATE TABLE app_users (
+                    user_id VARCHAR(24) PRIMARY KEY
+                        CHECK (LENGTH(user_id) BETWEEN 5 AND 24),
+                    display_name VARCHAR(24) NOT NULL,
+                    password_salt VARCHAR(64) NOT NULL,
+                    password_hash VARCHAR(64) NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+                """);
+        firstJdbc.execute("""
+                CREATE TABLE checklist_progress (
+                    user_id VARCHAR(100) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+                    item_id VARCHAR(80) NOT NULL,
+                    completed INTEGER NOT NULL DEFAULT 0,
+                    updated_at TIMESTAMP NOT NULL,
+                    PRIMARY KEY (user_id, item_id)
+                )
+                """);
         ChecklistRepository firstRepository =
-                new ChecklistRepository(new JdbcTemplate(firstDataSource));
+                new ChecklistRepository(firstJdbc);
         ShowcaseAuthController firstController =
                 new ShowcaseAuthController(firstRepository);
         String username = nextUsername();
@@ -120,13 +138,15 @@ class ChecklistApiTest {
         String signupCsrf = firstController.csrf(signupRequest).csrfToken();
         firstController.signup(new ShowcaseAuthController.CredentialsRequest(username, password),
                 signupCsrf, signupRequest);
+        firstRepository.saveProgress(username, "school-results", true);
         try (var connection = firstDataSource.getConnection();
              var statement = connection.createStatement()) {
             statement.execute("SHUTDOWN");
         }
-
+        JdbcDataSource restartedDataSource = dataSource(url);
+        new UsernameSchemaMigration(new JdbcTemplate(restartedDataSource)).migrate();
         ChecklistRepository restartedRepository =
-                new ChecklistRepository(new JdbcTemplate(dataSource(url)));
+                new ChecklistRepository(new JdbcTemplate(restartedDataSource));
         ShowcaseAuthController restartedController =
                 new ShowcaseAuthController(restartedRepository);
         MockHttpServletRequest loginRequest = new MockHttpServletRequest();
@@ -136,6 +156,36 @@ class ChecklistApiTest {
                 loginCsrf, loginRequest);
 
         assertEquals(username, loggedIn.username());
+        assertTrue(restartedRepository.progress(username).get("school-results"));
+    }
+
+    @Test
+    void usernamesMayContainThreeThroughFiftyCharacters() throws Exception {
+        String password = "unique-fictional-password";
+        String shortUsername = "a_1";
+        String longUsername = "u".repeat(50);
+
+        signup(shortUsername, password);
+        signup(longUsername, password);
+
+        for (String username : new String[]{shortUsername, longUsername}) {
+            AuthSession attempt = csrfSession();
+            mvc.perform(post("/api/auth/login").session(attempt.session())
+                            .with(nextClient())
+                            .header("X-CSRF-Token", attempt.csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(credentials(username, password)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.username").value(username));
+        }
+
+        AuthSession tooLong = csrfSession();
+        mvc.perform(post("/api/auth/signup").session(tooLong.session())
+                        .with(nextClient())
+                        .header("X-CSRF-Token", tooLong.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(credentials("u".repeat(51), password)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -157,6 +207,44 @@ class ChecklistApiTest {
                 .andExpect(jsonPath("$.progress.school-results").doesNotExist());
         assertTrue(repository.progress(firstUsername).get("school-results"));
         assertTrue(repository.progress(secondUsername).isEmpty());
+    }
+
+    @Test
+    void learnerJourneyMatchesMarksShowsFundingAndSavesChecklistProgress() throws Exception {
+        AuthSession account = signup(nextUsername(), "fictional-password-match");
+        String marks = """
+                {"marks":[
+                  {"subject":"English Home Language","mark":72},
+                  {"subject":"Mathematics","mark":74},
+                  {"subject":"Physical Sciences","mark":68},
+                  {"subject":"Life Sciences","mark":66},
+                  {"subject":"Accounting","mark":70},
+                  {"subject":"Geography","mark":64},
+                  {"subject":"Life Orientation","mark":80}]}""";
+
+        mvc.perform(post("/api/match").session(account.session())
+                        .with(nextClient())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(marks))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.results").isArray())
+                .andExpect(jsonPath("$.results[0].course").isNotEmpty())
+                .andExpect(jsonPath("$.results[0].officialLink").isNotEmpty())
+                .andExpect(jsonPath("$.results[0].sourceChecked").isNotEmpty())
+                .andExpect(jsonPath("$.disclaimer").isNotEmpty());
+
+        mvc.perform(get("/api/bursaries").session(account.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.bursaries[1].status").value("verified"))
+                .andExpect(jsonPath("$.bursaries[1].documents").isArray())
+                .andExpect(jsonPath("$.bursaries[1].officialLink").value("https://www.nsfas.org.za"));
+
+        mvc.perform(put("/api/checklist").session(account.session())
+                        .header("X-CSRF-Token", account.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"itemId\":\"school-results\",\"completed\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progress.school-results").value(true));
     }
 
     @Test
@@ -257,7 +345,7 @@ class ChecklistApiTest {
                         .with(nextClient())
                         .header("X-CSRF-Token", attempt.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(credentials("bad", "tiny")))
+                        .content(credentials("x", "tiny")))
                 .andExpect(status().isBadRequest());
     }
 

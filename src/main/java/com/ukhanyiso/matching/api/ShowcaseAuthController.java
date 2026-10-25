@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/api/auth")
 public class ShowcaseAuthController {
-    private static final Pattern USERNAME = Pattern.compile("[a-zA-Z0-9_-]{5,24}");
+    private static final Pattern USERNAME = Pattern.compile("[a-zA-Z0-9_-]{3,50}");
     private static final int MIN_PASSWORD_LENGTH = 12;
     private static final int MAX_PASSWORD_LENGTH = 128;
     private static final PasswordHasher.Credentials DUMMY_CREDENTIALS =
@@ -42,7 +42,7 @@ public class ShowcaseAuthController {
                 || !validPassword(body.password())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Use a fictional username and a fictional password of 12 to 128 characters.");
+                    "Use a valid username and a password of 12 to 128 characters.");
         }
 
         String username = normalizeUsername(body.username());
@@ -57,7 +57,7 @@ public class ShowcaseAuthController {
             repository.createAccount(username, credentials.salt(), credentials.hash());
         } catch (DuplicateKeyException exception) {
             throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "That fictional username is already in use.");
+                    HttpStatus.CONFLICT, "That username is already in use.");
         }
 
         return startSession(username, request);
