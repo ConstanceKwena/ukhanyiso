@@ -23,7 +23,7 @@
     <header class="page-heading">
         <p class="eyebrow">Your account</p>
         <h1>Profile</h1>
-        <p>Your account uses your username. The details below are optional — fill in only what you want to share. Ukhanyiso never asks for an ID or exam number.</p>
+        <p>Your account uses your email address. Please complete all of the details below to continue. Ukhanyiso never asks for an ID or exam number.</p>
     </header>
 
     <section class="calendar-panel" aria-labelledby="account-heading">
@@ -32,25 +32,25 @@
     </section>
 
     <section class="calendar-panel" aria-labelledby="profile-heading">
-        <h2 id="profile-heading">About you (optional)</h2>
-        <p class="form-note">These details are optional and are used to personalise your reminders and checklist. Only fill in what you are comfortable sharing. They stay in your account on this app's database and are never sold or shared.</p>
+        <h2 id="profile-heading">About you</h2>
+        <p class="form-note">All four details are required. They are used to personalise your reminders and checklist. They stay in your account on this app's database and are never sold or shared.</p>
         <form id="profile-form" novalidate>
             <div class="field">
                 <label for="first-name">First name</label>
-                <input id="first-name" name="firstName" type="text" maxlength="80" autocomplete="given-name">
+                <input id="first-name" name="firstName" type="text" maxlength="80" autocomplete="given-name" required>
             </div>
             <div class="field">
                 <label for="surname">Surname</label>
-                <input id="surname" name="surname" type="text" maxlength="80" autocomplete="family-name">
+                <input id="surname" name="surname" type="text" maxlength="80" autocomplete="family-name" required>
             </div>
             <div class="field">
                 <label for="contact-email">Email for reminders</label>
-                <input id="contact-email" name="contactEmail" type="email" maxlength="200" autocomplete="email">
+                <input id="contact-email" name="contactEmail" type="email" maxlength="200" autocomplete="email" required>
                 <p class="form-note">Used only if you ask for reminder emails. Ukhanyiso does not send marketing mail.</p>
             </div>
             <div class="field">
-                <label for="whatsapp">WhatsApp number (optional)</label>
-                <input id="whatsapp" name="whatsapp" type="tel" maxlength="30" placeholder="+27 82 000 0000">
+                <label for="whatsapp">WhatsApp number</label>
+                <input id="whatsapp" name="whatsapp" type="tel" maxlength="30" placeholder="+27 82 000 0000" required>
                 <p class="form-note">Digits only, a leading + is fine. Reminders are not sent to WhatsApp yet; this saves your preference for when it is built.</p>
             </div>
             <div class="form-actions">
@@ -106,22 +106,33 @@
             if (!response.ok) throw new Error("Account information could not be loaded.");
             const account = await response.json();
             accountStatus.textContent = "Signed in as " + account.username + ".";
+            accountStatus.dataset.email = account.username;
         } catch (error) {
             accountStatus.textContent = "Could not load your account. Refresh the page and try again.";
             accountStatus.className = "error";
         }
 
-        // Load and save the optional profile details.
+        // Load and save the required profile details.
         const profileForm = document.getElementById("profile-form");
         const profileStatus = document.getElementById("profile-status");
+        let profileWasComplete = false;
         try {
             const response = await fetch("/api/auth/profile", { credentials: "same-origin" });
             if (response.ok) {
                 const profile = await response.json();
                 document.getElementById("first-name").value = profile.firstName || "";
                 document.getElementById("surname").value = profile.surname || "";
-                document.getElementById("contact-email").value = profile.contactEmail || "";
+                document.getElementById("contact-email").value = profile.contactEmail || accountStatus.dataset.email || "";
                 document.getElementById("whatsapp").value = profile.whatsapp || "";
+                profileWasComplete = Boolean(profile.firstName && profile.surname
+                    && profile.contactEmail && profile.whatsapp);
+                const fullName = [profile.firstName, profile.surname].filter(Boolean).join(" ");
+                if (fullName && accountStatus.dataset.email) {
+                    accountStatus.textContent = "Signed in as " + fullName + " (" + accountStatus.dataset.email + ").";
+                }
+                if (!profileWasComplete) {
+                    profileStatus.textContent = "Please complete all four details to continue.";
+                }
             }
         } catch (error) {
             // Profile stays empty; saving still works.
@@ -148,8 +159,12 @@
                 if (response.ok) {
                     profileStatus.textContent = "Profile saved.";
                     profileStatus.className = "form-note";
+                    if (!profileWasComplete) {
+                        location.assign("/");
+                        return;
+                    }
                 } else if (response.status === 400) {
-                    profileStatus.textContent = "Check the fields: names take letters, spaces, hyphens and apostrophes; the number takes digits only.";
+                    profileStatus.textContent = "Fill in all four fields. Names take letters, spaces, hyphens and apostrophes; the number takes digits only.";
                     profileStatus.className = "error";
                 } else {
                     profileStatus.textContent = "We could not save your profile. Please try again.";

@@ -404,6 +404,19 @@
                     return;
                 }
 
+                // Everyone must complete their profile before using the rest of the site.
+                if (location.pathname !== "/account.html") {
+                    fetch("/api/auth/profile", { credentials: "same-origin" })
+                        .then(response => (response.ok ? response.json() : null))
+                        .then(profile => {
+                            if (profile && !(profile.firstName && profile.surname
+                                    && profile.contactEmail && profile.whatsapp)) {
+                                location.assign("/account.html");
+                            }
+                        })
+                        .catch(() => { });
+                }
+
                 if (profileLink) {
                     profileLink.textContent = t("Profile");
                     profileLink.title = "Signed in as " + user.username;

@@ -17,14 +17,13 @@
     <header class="page-heading">
         <p class="eyebrow">Ukhanyiso account</p>
         <h1>Log in</h1>
-        <p>Enter the username and unique password you chose when you signed up. Do not enter an ID or exam number.</p>
+        <p>Enter the email and password you used when you signed up. Do not enter an ID or exam number.</p>
     </header>
     <form id="auth-form" data-mode="login" novalidate>
         <div class="field">
-            <label for="username">Username</label>
-            <input id="username" name="username" type="text" minlength="3" maxlength="50"
-                   pattern="[A-Za-z0-9_\-]{3,50}" autocomplete="username" autocapitalize="none"
-                   spellcheck="false" required>
+            <label for="username">Email</label>
+            <input id="username" name="username" type="email" maxlength="100"
+                   autocomplete="username" autocapitalize="none" spellcheck="false" required>
         </div>
         <div class="field">
             <label for="password">Password</label>
