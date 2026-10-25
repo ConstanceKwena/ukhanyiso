@@ -1,4 +1,13 @@
 -- Seed data (iteration 0, fixed in iteration 2 for H2). Spring runs this after schema.sql.
+-- Idempotent: the named in-memory test DB survives between Spring test contexts (DB_CLOSE_DELAY=-1),
+-- so clear only the tables seeded here (child-first) before re-inserting. app_users and
+-- checklist_progress are never seeded, so anything tests create there is left alone.
+DELETE FROM course_requirements;
+DELETE FROM courses;
+DELETE FROM institutions;
+DELETE FROM subjects;
+DELETE FROM sources;
+DELETE FROM match_config;
 INSERT INTO sources VALUES ('S001','UJ',NULL,'closing_date','2026-10-31','https://www.uj.ac.za/university-courses/bcom-in-accounting/','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S002','UJ',NULL,'aps_method','APS method: guide sites say best six subjects excluding Life Orientation. Find t','https://www.uj.ac.za','none','2026-10-16','nana','unverified');
 INSERT INTO sources VALUES ('S003','UP',NULL,'closing_date','2026-06-30','https://www.up.ac.za/programmes/undergraduate/bachelor-of-laws-llb/2027','official','2026-10-16','nana','verified');

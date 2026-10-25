@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -149,12 +148,11 @@
 
     function readNumber(id, required) {
         const input = document.getElementById(id);
+        const raw = input.value.trim();
 
-        if (input.value.trim() === "") {
+        if (raw === "") {
             if (required) {
-                throw new Error(
-                    "Enter your monthly funding and the number of funded months."
-                );
+                throw new Error("Enter your monthly funding and the number of funded months.");
             }
             return 0;
         }
@@ -162,13 +160,12 @@
         const value = input.valueAsNumber;
 
         if (
+            Number.isNaN(value) ||
             !Number.isInteger(value) ||
             value < Number(input.min) ||
             (input.max && value > Number(input.max))
         ) {
-            throw new Error(
-                "Please enter valid whole numbers within the limits shown."
-            );
+            throw new Error("Please enter valid whole numbers within the limits shown.");
         }
 
         return value;
@@ -179,7 +176,7 @@
             style: "currency",
             currency: "ZAR",
             maximumFractionDigits: 0
-        }).format(value);
+        }).format(Math.round(value));
     }
 
     planForm.onsubmit = event => {
@@ -212,8 +209,7 @@
         }
 
         if (values.months < 1 || values.months > 12) {
-            saveMessage.textContent =
-                "Enter a funded period between 1 and 12 months.";
+            saveMessage.textContent = "Enter a funded period between 1 and 12 months.";
             return;
         }
 
@@ -229,57 +225,41 @@
         const totalCosts = costs * values.months;
 
         const lines = [
-            "Your monthly funding is " + formatRand(values.funding) + ".",
-            "Your total estimated funding over " + values.months +
-                " months is " + formatRand(totalFunding) + ".",
-            "Your monthly living costs are " + formatRand(costs) + ".",
-            "Your estimated living costs over " + values.months +
-                " months are " + formatRand(totalCosts) + "."
+            `Your monthly funding is ${formatRand(values.funding)}.`,
+            `Your total estimated funding over ${values.months} months is ${formatRand(totalFunding)}.`,
+            `Your monthly living costs are ${formatRand(costs)}.`,
+            `Your estimated living costs over ${values.months} months are ${formatRand(totalCosts)}.`
         ];
 
         if (monthlyBalance >= 0) {
             lines.push(
-                "You have " + formatRand(monthlyBalance) +
-                " left each month, or " +
-                formatRand(monthlyBalance * values.months) +
-                " over " + values.months + " months."
+                `You have ${formatRand(monthlyBalance)} left each month, or ${formatRand(monthlyBalance * values.months)} over ${values.months} months.`
             );
         } else {
             lines.push(
-                "You are short by " + formatRand(-monthlyBalance) +
-                " each month, or " +
-                formatRand(-monthlyBalance * values.months) +
-                " over " + values.months +
-                " months. Consider reviewing your costs and speaking " +
-                "to your financial aid office about available support."
+                `You are short by ${formatRand(-monthlyBalance)} each month, or ${formatRand(-monthlyBalance * values.months)} over ${values.months} months. Consider reviewing your costs and speaking to your financial aid office about available support.`
             );
         }
 
         if (values.required > 0 || values.current > 0) {
             if (values.required === 0 && values.current > 0) {
                 lines.push(
-                    "You entered your current average but no renewal " +
-                    "minimum. Confirm the minimum with your funder."
+                    "You entered your current average but no renewal minimum. Confirm the minimum with your funder."
                 );
             } else if (values.required > 0 && values.current === 0) {
                 lines.push(
-                    "You entered the renewal minimum but not your current " +
-                    "average. Add your average to check the difference."
+                    "You entered the renewal minimum but not your current average. Add your average to check the difference."
                 );
             } else {
                 const gap = values.current - values.required;
 
                 if (gap >= 0) {
                     lines.push(
-                        "Your current average is " + gap +
-                        " percentage points above the renewal minimum."
+                        `Your current average is ${gap} percentage points above the renewal minimum.`
                     );
                 } else {
                     lines.push(
-                        "Your current average is " + (-gap) +
-                        " percentage points below the renewal minimum. " +
-                        "Consider asking your tutor or student support " +
-                        "office for help."
+                        `Your current average is ${-gap} percentage points below the renewal minimum. Consider asking your tutor or student support office for help.`
                     );
                 }
             }
@@ -287,26 +267,27 @@
 
         if (values.worth > 0) {
             lines.push(
-                "Your bursary is worth " + formatRand(values.worth) +
-                " for the year. Confirm the renewal requirements with " +
-                "your funding provider."
+                `Your bursary is worth ${formatRand(values.worth)} for the year. Confirm the renewal requirements with your funding provider.`
             );
         }
 
         if (values.startup > 0 || values.weeks > 0) {
-            const weeksOfLivingCosts = costs * (values.weeks / 4.33);
-            const amountNeeded = Math.ceil(
-                values.startup + weeksOfLivingCosts
-            );
+            const weeksOfLivingCosts = values.weeks > 0 ? (costs * (values.weeks / 4.33)) : 0;
+            const amountNeeded = Math.ceil(values.startup + weeksOfLivingCosts);
 
-            lines.push(
-                "Before your first payout, you may need approximately " +
-                formatRand(amountNeeded) + ": " +
-                formatRand(values.startup) + " for start-up costs and " +
-                formatRand(weeksOfLivingCosts) +
-                " for estimated living costs over " + values.weeks +
-                " weeks."
-            );
+            if (values.weeks > 0 && values.startup > 0) {
+                lines.push(
+                    `Before your first payout, you may need approximately ${formatRand(amountNeeded)}: ${formatRand(values.startup)} for start-up costs and ${formatRand(weeksOfLivingCosts)} for estimated living costs over ${values.weeks} weeks.`
+                );
+            } else if (values.weeks > 0) {
+                lines.push(
+                    `Before your first payout, you may need approximately ${formatRand(amountNeeded)} for estimated living costs over ${values.weeks} weeks.`
+                );
+            } else {
+                lines.push(
+                    `Before your first payout, you may need approximately ${formatRand(amountNeeded)} for start-up costs.`
+                );
+            }
         }
 
         const card = document.createElement("article");
@@ -332,4 +313,3 @@
 
 </body>
 </html>
-```
