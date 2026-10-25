@@ -356,12 +356,21 @@
 
     // Mobile menu toggle.
     if (menuToggle && menu) {
-        menuToggle.setAttribute("aria-expanded", String(!menu.hidden));
-        menuToggle.addEventListener("click", () => {
-            menu.hidden = !menu.hidden;
-            const isOpen = !menu.hidden;
+        const setMenuOpen = isOpen => {
+            menu.hidden = !isOpen;
             menuToggle.setAttribute("aria-expanded", String(isOpen));
-            menuToggle.textContent = isOpen ? "✕ Close menu" : "☰ Menu";
+            menuToggle.textContent = isOpen ? "← Back" : "☰ Menu";
+        };
+
+        setMenuOpen(!menu.hidden);
+        menuToggle.addEventListener("click", () => {
+            setMenuOpen(menu.hidden);
+        });
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape" && !menu.hidden) {
+                setMenuOpen(false);
+                menuToggle.focus();
+            }
         });
     }
 

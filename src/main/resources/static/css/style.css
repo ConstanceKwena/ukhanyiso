@@ -34,6 +34,17 @@ nav {
     display: none !important;
 }
 
+#main-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 0 14px;
+}
+
+#main-menu a {
+    border: 1px solid var(--border);
+    background: #fff;
+}
+
 nav a {
     min-height: 44px;
     display: flex;
@@ -83,6 +94,10 @@ nav a {
 nav a[aria-current="page"] {
     color: #fff;
     background: var(--green);
+}
+
+#main-menu a[aria-current="page"] {
+    border-color: var(--green);
 }
 
 .nav-logout {
@@ -685,9 +700,9 @@ input:focus-visible {
         padding-top: 12px;
     }
 
-    nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 4px;
+    #main-menu {
+        grid-template-columns: 1fr;
+        gap: 6px;
     }
 
     nav a {
