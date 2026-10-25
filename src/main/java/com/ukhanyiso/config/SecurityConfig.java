@@ -1,5 +1,6 @@
 package com.ukhanyiso.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,10 +41,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Bean to ensure security headers are added globally to static resources & HTML files as well
+    // Explicitly register as a servlet filter covering all URL patterns (/*)
     @Bean
-    public OncePerRequestFilter securityHeadersFilter() {
-        return new OncePerRequestFilter() {
+    public FilterRegistrationBean<OncePerRequestFilter> securityHeadersFilterRegistration() {
+        FilterRegistrationBean<OncePerRequestFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new OncePerRequestFilter() {
             @Override
             protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
                     throws ServletException, IOException {
@@ -54,6 +56,9 @@ public class SecurityConfig {
                 response.setHeader("Content-Security-Policy", "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:;");
                 filterChain.doFilter(request, response);
             }
-        };
+        });
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Integer.MIN_VALUE); // Run first in the filter chain
+        return registration;
     }
 }
