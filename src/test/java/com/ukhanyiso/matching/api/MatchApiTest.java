@@ -79,7 +79,7 @@ class MatchApiTest {
         mvc.perform(post("/api/match").with(from("192.0.2.251")).param("includeAll", "true")
                         .session(authenticatedSession())
                         .contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.results.length()").value(12));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.results.length()").value(17));
     }
 
     @Test
@@ -93,7 +93,7 @@ class MatchApiTest {
     @Test
     void sqlInjectionTextLeavesTheDatabaseIntact() throws Exception {
         send("{\"marks\":[{\"subject\":\"'; DROP TABLE courses; --\",\"mark\":70}]}").andExpect(status().isBadRequest());
-        assertEquals(12, repository.load().courses().size());
+        assertEquals(17, repository.load().courses().size());
     }
 
     @Test

@@ -83,6 +83,24 @@
             if (response.ok) {
                 ["ukhanyiso-marks", "ukhanyiso-results", "ukhanyiso-showing-all-courses",
                     "ukhanyiso-stage", "ukhanyiso-showcase"].forEach(key => sessionStorage.removeItem(key));
+                if (mode === "signup") {
+                    const recoveryEmail = document.getElementById("recovery-email");
+                    if (recoveryEmail && recoveryEmail.value) {
+                        try {
+                            await fetch("/api/auth/recovery-email", {
+                                method: "PUT",
+                                credentials: "same-origin",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-Token": (await response.json()).csrfToken
+                                },
+                                body: JSON.stringify({ email: recoveryEmail.value })
+                            });
+                        } catch (ignored) {
+                            // Recovery email is optional; the account itself was created.
+                        }
+                    }
+                }
                 location.assign("/");
                 return;
             }

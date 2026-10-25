@@ -1,5 +1,8 @@
 -- Ukhanyiso data model, compatible with H2 and PostgreSQL.
 -- Rule: every fact a learner can see (APS, subject, date) points to a row in `sources`.
+-- PostgreSQL note: H2-specific types used here (IDENTITY, INTEGER booleans) work on both
+-- engines; if you use PostgreSQL, run this schema once with spring.sql.init.mode=always
+-- and set it to never afterwards to keep the catalogue refresh from re-running.
 
 CREATE TABLE IF NOT EXISTS sources (
     source_id        VARCHAR(20)   PRIMARY KEY,
@@ -17,8 +20,8 @@ CREATE TABLE IF NOT EXISTS sources (
 CREATE TABLE IF NOT EXISTS institutions (
     institution_id       VARCHAR(20)  PRIMARY KEY,     -- 'UJ', 'UP', 'TUT'
     name                 VARCHAR(255) NOT NULL,
-    inst_type            VARCHAR(40)  NOT NULL,        -- 'university' | 'university_of_technology'
-    aps_method           VARCHAR(30)  NOT NULL,        -- 'BEST6_EXCL_LO' | 'ALL_EXCL_LO' | 'CUSTOM'
+    inst_type            VARCHAR(40)  NOT NULL,        -- 'university' | 'university_of_technology' | 'tvet_college'
+    aps_method           VARCHAR(30)  NOT NULL,        -- 'BEST6_EXCL_LO' | 'ALL_EXCL_LO' | 'NO_APS' | 'CUSTOM'
     aps_method_verified  INTEGER      NOT NULL DEFAULT 0,
     aps_method_note      VARCHAR(500),
     apply_url            VARCHAR(500) NOT NULL,
@@ -72,8 +75,22 @@ CREATE TABLE IF NOT EXISTS app_users (
     display_name  VARCHAR(50) NOT NULL,
     password_salt VARCHAR(64) NOT NULL,
     password_hash VARCHAR(64) NOT NULL,
+    recovery_hash VARCHAR(64),                -- salted hash of the recovery email, never the email itself
+    recovery_salt VARCHAR(64),                -- per-user salt for recovery_hash
+    first_name    VARCHAR(80),                -- optional profile details, learner-supplied
+    surname       VARCHAR(80),
+    contact_email VARCHAR(200),               -- optional, used for reminders only
+    whatsapp      VARCHAR(30),                -- optional, digits/spaces/+ only
     created_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT app_users_username_length_check CHECK (LENGTH(user_id) BETWEEN 3 AND 50)
+);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+    token_hash  VARCHAR(64) PRIMARY KEY,      -- SHA-256 of the one-time token; the token itself is never stored
+    user_id     VARCHAR(50) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+    expires_at  TIMESTAMP   NOT NULL,
+    used_at     TIMESTAMP,
+    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS checklist_progress (

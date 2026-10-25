@@ -48,6 +48,22 @@ public class UsernameSchemaMigration implements ApplicationRunner {
         }
         jdbc.execute("ALTER TABLE app_users ADD CONSTRAINT " + LENGTH_CONSTRAINT
                 + " CHECK (LENGTH(user_id) BETWEEN 3 AND 50)");
+
+        // Password recovery and optional profile details, added after the first release.
+        // ADD COLUMN IF NOT EXISTS works on H2 and PostgreSQL.
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS recovery_hash VARCHAR(64)");
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS recovery_salt VARCHAR(64)");
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS first_name VARCHAR(80)");
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS surname VARCHAR(80)");
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS contact_email VARCHAR(200)");
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30)");
+        jdbc.execute("CREATE TABLE IF NOT EXISTS password_resets (\n"
+                + "    token_hash  VARCHAR(64) PRIMARY KEY,\n"
+                + "    user_id     VARCHAR(50) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,\n"
+                + "    expires_at  TIMESTAMP   NOT NULL,\n"
+                + "    used_at     TIMESTAMP,\n"
+                + "    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
+                + ")");
     }
 
     private List<CheckConstraint> h2Checks() {

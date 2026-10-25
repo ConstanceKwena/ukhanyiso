@@ -38,11 +38,17 @@
             <input id="confirm-password" name="confirmPassword" type="password" minlength="12"
                    maxlength="128" autocomplete="new-password" required>
         </div>
+        <div class="field">
+            <label for="recovery-email">Recovery email (optional)</label>
+            <input id="recovery-email" name="recoveryEmail" type="email" maxlength="200"
+                   autocomplete="email">
+            <p class="form-note">Only needed if you want password recovery. It is stored as a secure hash, never in plain text, and is not used for anything else.</p>
+        </div>
         <div class="form-actions">
             <button type="submit" id="submit">Create account</button>
         </div>
         <p id="message" class="error" role="alert" aria-live="polite"></p>
-        <p class="form-note">Password recovery is not available yet. No email or phone number is collected. Locally, your username and checklist progress are saved in a database file on this computer; hosted accounts persist only when the app is configured with a persistent database. Do not enter an ID or exam number.</p>
+        <p class="form-note">No email or phone number is required to sign up. Locally, your username and checklist progress are saved in a database file on this computer; hosted accounts persist only when the app is configured with a persistent database. Do not enter an ID or exam number.</p>
     </form>
 </main>
 <script src="/js/site.js"></script>
