@@ -10,7 +10,7 @@
 <body>
 <nav aria-label="Main navigation">
     <a class="nav-brand" href="/index.html">Ukhanyiso</a>
-    <a href="/index.html">Marks</a>
+    <a href="/start.html">Marks</a>
     <a href="/results.html" aria-current="page">Results</a>
     <a href="/funding.html">Funding</a>
     <a href="/calendar.html">Reminders</a>
@@ -25,7 +25,7 @@
         <h1>Courses to explore</h1>
         <p>These results compare your marks with each course's published minimum requirements.</p>
     </header>
-    <p><a class="button-link" href="/index.html">Back to edit your marks</a></p>
+    <p><a class="button-link" href="/start.html">Back to edit your marks</a></p>
     <section class="label-guide" aria-labelledby="label-guide-heading">
         <h2 id="label-guide-heading">How to read likelihood labels</h2>
         <ul>
@@ -67,7 +67,7 @@
     function showMessage(text) {
         const p = el("p", text + " ");
         const a = el("a", "Enter your marks");
-        a.href = "/index.html";
+        a.href = "/start.html";
         p.appendChild(a);
         list.appendChild(p);
     }

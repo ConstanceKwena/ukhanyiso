@@ -15,26 +15,26 @@
 </nav>
 <main>
     <header class="page-heading">
-        <p class="eyebrow">Create a fictional account</p>
-        <h1>Sign up</h1>
-        <p>Use a fictional username and a made-up password only. Do not use your real name, email, phone number, ID number, or a password you use elsewhere.</p>
+        <p class="eyebrow">Create your Ukhanyiso account</p>
+        <h1>Create your Ukhanyiso account</h1>
+        <p>Choose a unique password and do not reuse a password from another account. Do not enter an ID or exam number.</p>
     </header>
     <form id="auth-form" data-mode="signup" novalidate>
         <div class="field">
-            <label for="username">Fictional username</label>
-            <input id="username" name="username" type="text" minlength="5" maxlength="24"
-                   pattern="[A-Za-z0-9_\-]{5,24}" autocomplete="username" autocapitalize="none"
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" minlength="3" maxlength="50"
+                   pattern="[A-Za-z0-9_\-]{3,50}" autocomplete="username" autocapitalize="none"
                    spellcheck="false" required>
-            <p class="form-note">Use 5–24 letters, numbers, hyphens, or underscores. Do not use personal details.</p>
+            <p class="form-note">Choose a username with 3–50 letters, numbers, underscores, or hyphens. Do not include an ID or exam number.</p>
         </div>
         <div class="field">
-            <label for="password">Made-up password</label>
+            <label for="password">Password</label>
             <input id="password" name="password" type="password" minlength="12" maxlength="128"
                    autocomplete="new-password" required>
-            <p class="form-note">Use at least 12 characters. Never reuse a real password.</p>
+            <p id="password-help" class="form-note">Use 12–128 characters. A unique passphrase is okay; no special symbol is required. Do not reuse another account’s password.</p>
         </div>
         <div class="field">
-            <label for="confirm-password">Confirm made-up password</label>
+            <label for="confirm-password">Confirm password</label>
             <input id="confirm-password" name="confirmPassword" type="password" minlength="12"
                    maxlength="128" autocomplete="new-password" required>
         </div>
@@ -42,7 +42,7 @@
             <button type="submit" id="submit">Create account</button>
         </div>
         <p id="message" class="error" role="alert" aria-live="polite"></p>
-        <p class="form-note">This account is only for this app. No email or account recovery is collected. Accounts and checklist progress may be erased when the app restarts.</p>
+        <p class="form-note">Password recovery is not available yet. No email or phone number is collected. Locally, your username and checklist progress are saved in a database file on this computer; hosted accounts persist only when the app is configured with a persistent database. Do not enter an ID or exam number.</p>
     </form>
 </main>
 <script src="/js/site.js"></script>

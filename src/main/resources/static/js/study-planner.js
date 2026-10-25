@@ -54,9 +54,12 @@
     function saveState() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(model));
+            status.textContent = "Study plan changes saved in this browser.";
+            status.className = "form-note";
             return true;
         } catch (error) {
             status.textContent = "This browser could not save your study plan. Check its storage settings.";
+            status.className = "error";
             return false;
         }
     }
@@ -179,7 +182,11 @@
             confidence.addEventListener("change", () => {
                 subject.confidence = confidence.value;
                 updateSessionSubject(subject);
-                saveState();
+                const saved = saveState();
+                status.textContent = saved
+                    ? "Confidence updated in this browser."
+                    : "Confidence changed for this visit, but this browser could not save it.";
+                status.className = saved ? "form-note" : "error";
             });
             const topic = field("Difficult topic (optional)", "subject-topic-" + index,
                 "text", subject.topic || "");
@@ -187,7 +194,11 @@
             topic.input.addEventListener("change", () => {
                 subject.topic = topic.input.value.trim();
                 updateSessionSubject(subject);
-                saveState();
+                const saved = saveState();
+                status.textContent = saved
+                    ? "Study topic saved in this browser."
+                    : "Topic changed for this visit, but this browser could not save it.";
+                status.className = saved ? "form-note" : "error";
             });
             const remove = node("button", "Remove subject", "secondary");
             remove.type = "button";
@@ -200,6 +211,7 @@
                 status.textContent = saved
                     ? "Subject removed. Generate the timetable again to rebalance your study time."
                     : "The subject was removed for this visit, but this browser could not save the change.";
+                status.className = saved ? "form-note" : "error";
             });
             card.append(heading, confidenceLabel, confidence, topic.wrapper, remove);
             subjectList.appendChild(card);
@@ -260,7 +272,16 @@
             completion.addEventListener("change", () => {
                 Core.markComplete(model, session.id, completion.checked);
                 card.classList.toggle("is-complete", completion.checked);
-                saveState();
+                if (saveState()) {
+                    status.textContent = completion.checked
+                        ? "Session marked complete and saved in this browser."
+                        : "Session marked incomplete and saved in this browser.";
+                    status.className = "form-note";
+                } else {
+                    completion.checked = !completion.checked;
+                    Core.markComplete(model, session.id, completion.checked);
+                    card.classList.toggle("is-complete", completion.checked);
+                }
             });
             const confidence = confidenceSelect(
                 model.subjects.find(subject => subject.id === session.subjectId) || {
@@ -274,9 +295,11 @@
                     Core.updateConfidence(model, subject.id, confidence.value);
                     renderTimetable();
                     renderSubjects();
-                    status.textContent = saveState()
+                    const saved = saveState();
+                    status.textContent = saved
                         ? "Confidence saved. Generate the timetable again to rebalance sessions."
                         : "Confidence changed for this visit, but this browser could not save the change.";
+                    status.className = saved ? "form-note" : "error";
                 }
             });
             card.append(completionLabel, completion, confidenceLabel, confidence);
@@ -335,6 +358,8 @@
         status.textContent = saveState()
             ? "Weekly timetable generated and saved only in this browser."
             : "Weekly timetable generated for this visit, but this browser could not save it.";
+        if (status.textContent.includes("could not save")) status.className = "error";
+        else status.className = "form-note";
         exportStatus.textContent = "";
         renderTimetable();
     }
@@ -422,12 +447,14 @@
         status.textContent = saveState()
             ? "Subject added. Generate the timetable to include it."
             : status.textContent;
+        if (status.textContent.startsWith("Subject added")) status.className = "form-note";
         renderSubjects();
         renderResources();
         nameInput.focus();
     });
     document.getElementById("generate-timetable").addEventListener("click", () => {
         status.textContent = "";
+        status.className = "form-note";
         const config = {
             grade: document.getElementById("grade").value,
             subjects: model.subjects,
@@ -449,6 +476,7 @@
             generate(config);
         } catch (error) {
             status.textContent = error.message;
+            status.className = "error";
         }
     });
     document.getElementById("export-study-calendar").addEventListener("click", () => {

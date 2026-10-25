@@ -15,19 +15,19 @@
 </nav>
 <main>
     <header class="page-heading">
-        <p class="eyebrow">Fictional account</p>
+        <p class="eyebrow">Ukhanyiso account</p>
         <h1>Log in</h1>
-        <p>Enter the fictional username and made-up password you created for this app. Do not enter real or reused credentials.</p>
+        <p>Enter the username and unique password you chose when you signed up. Do not enter an ID or exam number.</p>
     </header>
     <form id="auth-form" data-mode="login" novalidate>
         <div class="field">
-            <label for="username">Fictional username</label>
-            <input id="username" name="username" type="text" minlength="5" maxlength="24"
-                   pattern="[A-Za-z0-9_\-]{5,24}" autocomplete="username" autocapitalize="none"
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" minlength="3" maxlength="50"
+                   pattern="[A-Za-z0-9_\-]{3,50}" autocomplete="username" autocapitalize="none"
                    spellcheck="false" required>
         </div>
         <div class="field">
-            <label for="password">Made-up password</label>
+            <label for="password">Password</label>
             <input id="password" name="password" type="password" minlength="12" maxlength="128"
                    autocomplete="current-password" required>
         </div>
@@ -35,7 +35,7 @@
             <button type="submit" id="submit">Log in</button>
         </div>
         <p id="message" class="error" role="alert" aria-live="polite"></p>
-        <p class="form-note">No email, phone number, real name, or ID number is used. This account has no password recovery.</p>
+        <p class="form-note">Password recovery is not available yet. Do not enter an ID or exam number.</p>
     </form>
 </main>
 <script src="/js/site.js"></script>

@@ -3,6 +3,7 @@ target/
 .m2repo/
 *.class
 *.jar
+/data/
 
 # Environment variables and secrets
 .env

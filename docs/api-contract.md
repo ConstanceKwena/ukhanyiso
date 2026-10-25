@@ -76,7 +76,7 @@ Results are already ranked (rules doc section 7). Show them in the order receive
 1. `index.html` sends `rows` as `{ marks: rows }` with `fetch("/api/match", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ marks: rows }) })`, keeps the client checks, and displays API validation errors.
 2. The canonical labels are `LIKELY`, `POSSIBLE`, and `UNLIKELY`, as defined in `matching-rules.md` and returned by the API. The page displays them as "Likely", "Possible", and "Unlikely". Confirm the wording with Nana before treating the rules as team-approved.
 3. Use `textContent` (as `results.html` already does) for every string from the API.
-4. Rate limiting applies to `POST /api/match` by the servlet's remote client address. The first 10 requests are allowed; further requests receive HTTP 429 until 60 seconds after the first request. The counter is in-memory and per application instance. Do not trust caller-supplied forwarded-IP headers as identity. Behind a reverse proxy, configure trusted proxy address handling; for multiple app instances, use a shared rate limiter.
+4. Rate limiting applies to `POST /api/match` by the servlet's remote client address. The first 10 requests are allowed; further requests receive HTTP 429 until 60 seconds after the first request. The counter is in-memory and per application instance. Behind Render, `server.forward-headers-strategy=native` lets Tomcat resolve the client address from the proxy's `X-Forwarded-For` header. Only use this behind a trusted proxy that overwrites or safely appends that header; do not expose the app server directly to untrusted clients. For multiple app instances, use a shared rate limiter.
 
 ## `pathToYes` on each course result (POST /api/match)
 
@@ -92,4 +92,3 @@ Life Orientation is never suggested. Rules and test cases: `docs/path-to-yes.md`
 ```
 The front end shows subject names as text only (never `innerHTML`). When a near-miss is open and `pathToYes` is empty,
 show the "large improvement" wording from the path-to-yes document.
-

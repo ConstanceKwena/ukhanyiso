@@ -1,7 +1,7 @@
 package com.ukhanyiso.bursary;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BursaryDataTest {
-    private final List<Bursary> all = new BursaryRepository(new ObjectMapper().findAndRegisterModules()).findAll();
+    private final List<Bursary> all = new BursaryRepository(new ObjectMapper()).findAll();
 
     @Test void loadsElevenBursaries() { assertThat(all).hasSize(11); }
 

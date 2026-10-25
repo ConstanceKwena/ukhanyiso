@@ -30,6 +30,21 @@ nav {
     border-bottom: 1px solid var(--border);
 }
 
+#main-menu[hidden] {
+    display: none !important;
+}
+
+#main-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 0 14px;
+}
+
+#main-menu a {
+    border: 1px solid var(--border);
+    background: #fff;
+}
+
 nav a {
     min-height: 44px;
     display: flex;
@@ -81,11 +96,35 @@ nav a[aria-current="page"] {
     background: var(--green);
 }
 
+#main-menu a[aria-current="page"] {
+    border-color: var(--green);
+}
+
 .nav-logout {
     width: auto;
     min-height: 44px;
     margin: 0;
     padding: 8px 14px;
+}
+
+.privacy-notice {
+    margin-top: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.privacy-notice summary {
+    color: var(--green-dark);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.privacy-notice p {
+    margin: 10px 0 0;
 }
 
 a {
@@ -681,9 +720,9 @@ input:focus-visible {
         padding-top: 12px;
     }
 
-    nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 4px;
+    #main-menu {
+        grid-template-columns: 1fr;
+        gap: 6px;
     }
 
     nav a {
@@ -772,4 +811,8 @@ input:focus-visible {
     button {
         transition: background-color 120ms ease;
     }
+}
+
+#main-menu[hidden] {
+    display: none !important;
 }

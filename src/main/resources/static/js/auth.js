@@ -14,6 +14,17 @@
         message.textContent = text;
     }
 
+    function validateSignupPassword() {
+        if (mode !== "signup") return;
+        if (password.value.length > 128) {
+            password.setCustomValidity("Use no more than 128 characters.");
+        } else if (password.value.length > 0 && password.value.length < 12) {
+            password.setCustomValidity("Use at least 12 characters. A unique passphrase is okay.");
+        } else {
+            password.setCustomValidity("");
+        }
+    }
+
     async function loadCsrfToken() {
         try {
             const response = await fetch("/api/auth/csrf", { credentials: "same-origin" });
@@ -37,6 +48,8 @@
         });
     }
 
+    password.addEventListener("input", validateSignupPassword);
+
     form.addEventListener("submit", async event => {
         event.preventDefault();
         message.textContent = "";
@@ -44,6 +57,7 @@
             showError("Secure sign-in is not ready. Refresh the page and try again.");
             return;
         }
+        validateSignupPassword();
         if (!form.reportValidity()) return;
         if (confirmation && password.value !== confirmation.value) {
             showError("The passwords do not match.");
@@ -73,11 +87,13 @@
                 return;
             }
             if (response.status === 409) {
-                showError("That fictional username is already in use. Choose another one or log in.");
+                showError("That username is already in use. Choose another one or log in.");
             } else if (response.status === 401) {
-                showError("The fictional username or password is incorrect.");
+                showError("The username or password is incorrect.");
             } else if (response.status === 400) {
-                showError("Use a fictional username and a made-up password of at least 12 characters.");
+                showError(mode === "signup"
+                    ? "Check your username (3–50 letters, numbers, underscores or hyphens) and use a password of 12–128 characters."
+                    : "Check your username and password, then try again.");
             } else if (response.status === 429) {
                 showError("Too many attempts. Wait a minute, then try again.");
             } else {
