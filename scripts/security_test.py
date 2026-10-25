@@ -127,8 +127,8 @@ def main():
                    "codes: " + " ".join(map(str, codes)) + "  |  now run --probe-only from network B within a minute")
         else:
             s = req("POST", "/api/match", VALID)[0]
-            record("F-01b", "Network B: one request while network A is rate-limited (expect 200, not 429)", "PASS" if s == 200 else "FAIL",
-                   "status %s (a 429 from a DIFFERENT network means the limit is shared by everyone; from the same network as run A it is expected)" % s)
+            record("F-01b", "Network B: one request while network A is rate-limited (expect it not to be 429)", "PASS" if s in (200, 401) else "FAIL",
+                   "status %s (401 is expected without login; a 429 from a DIFFERENT network means the limit is shared by everyone)" % s)
         finish(a)
         return
 

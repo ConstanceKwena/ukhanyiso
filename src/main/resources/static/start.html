@@ -24,9 +24,9 @@
     <header class="page-heading">
         <p class="eyebrow">Marks, courses and funding</p>
         <h1>See your courses and bursaries in one go</h1>
-        <p>Enter fictional marks. We send them only to the course-matching service for this request; they are not saved to your account.</p>
+        <p>Add a subject and enter its mark. The form starts blank; use fictional marks only. We send marks only for this course-matching request and do not save them to your account.</p>
     </header>
-    <form id="marks-form" novalidate>
+    <form id="marks-form" autocomplete="off" novalidate>
         <div id="rows" class="subject-list"></div>
         <div class="form-actions">
             <button type="button" class="secondary" id="add">Add a subject</button>
@@ -69,6 +69,7 @@
         const s = el("select");
         s.name = "subject";
         s.id = `subject-${number}`;
+        s.autocomplete = "off";
         const blank = el("option", "Choose subject"); blank.value = ""; s.appendChild(blank);
         [...SUBJECTS].sort((a, b) => a.localeCompare(b)).forEach(n => {
             const o = el("option", n);
@@ -82,7 +83,16 @@
         markLabel.htmlFor = `mark-${number}`;
         const m = el("input");
         m.id = `mark-${number}`;
-        m.name = "mark"; m.type = "number"; m.inputMode = "numeric"; m.min = 0; m.max = 100; m.step = 1; m.placeholder = "e.g. 75";
+        m.name = `uk-matric-mark-${number}`;
+        m.className = "mark-input";
+        m.type = "number";
+        m.inputMode = "numeric";
+        m.min = 0;
+        m.max = 100;
+        m.step = 1;
+        m.value = "";
+        m.placeholder = "Enter mark";
+        m.autocomplete = "off";
         markField.append(markLabel, m);
         const remove = el("button", "Remove", "remove-button");
         remove.type = "button";
@@ -95,7 +105,7 @@
         rowsEl.appendChild(d);
         addButton.disabled = rowsEl.children.length >= 12;
     }
-    ["English Home Language", "Mathematics", "Life Orientation"].forEach(addRow);
+    for (let i = 0; i < 7; i++) addRow();
     addButton.onclick = () => addRow();
     function courseCard(r) {
         const c = el("article", null, "card");
@@ -148,7 +158,11 @@
         document.getElementById("results-storage-status").className = "form-note";
         document.getElementById("bursary-status").textContent = "";
         document.getElementById("bursary-status").className = "form-note";
-        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector('input[name="mark"]').value }));
+        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input.mark-input").value }));
+        if (rows.length === 0) {
+            errorsEl.textContent = "Add at least one subject before checking your options.";
+            return;
+        }
         const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
         errorsEl.textContent = errors.join(" ");
         if (errors.length > 0) return;

@@ -5,7 +5,7 @@ Hosted-app retests are NOT TESTED until someone records the date and result in t
 
 | ID | Finding | Severity | Owner | Status | Retest evidence needed |
 |---|---|---|---|---|---|
-| F-01 | Rate limiting uses `remoteAddr`. Behind the host's reverse proxy this may identify the proxy, so one client could use up everyone's quota. | Medium | Backend | Open | Retest on the hosted app from two clients. Confirm trusted-proxy settings before using forwarded headers. |
+| F-01 | Rate limiting must distinguish clients behind the host's reverse proxy without trusting caller-supplied forwarding headers. | Medium | Backend | Fix implemented locally; hosted retest pending | Deploy the proxy-aware configuration, then retest on the hosted app from two networks. Confirm the 11th request from network A gets 429 and a request from network B still gets 401/200 rather than 429. |
 | F-02 | Original finding kept as a placeholder: the security lead must add what it was, a reproduction and an owner, or close it as "no reproduction". | Unknown | Security lead | Needs detail | Reproduction and hosted retest. |
 | F-03 | In-memory H2 loses accounts and checklist ticks on every restart. Accepted for the hackathon; the demo account is re-created at start. | Low (accepted) | Backend | Accepted risk | State it on the deck. Production path: a persistent database. |
 | F-04 | Login has only the general limit (60 per minute per address), not its own stricter one. Password guessing is slowed by PBKDF2 but not capped. | Medium | Backend | Open | Add a limit of about 10 per minute on `POST /api/auth/login`; test with 11 requests (expect 429). |
