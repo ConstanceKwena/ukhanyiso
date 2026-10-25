@@ -29,7 +29,7 @@ class ProfileApiTest {
 
         @Test
         void profileStartsEmptyAndSavesOptionalDetails() throws Exception {
-                String username = "learner-" + System.nanoTime();
+                String username = "learner-" + System.nanoTime() + "@example.invalid";
                 AuthSession account = signup(username, "fictional-password-profile");
 
                 mvc.perform(get("/api/auth/profile").session(account.session()))
@@ -58,7 +58,7 @@ class ProfileApiTest {
 
         @Test
         void profileRejectsBadNamesEmailsAndNumbers() throws Exception {
-                AuthSession account = signup("learner-" + System.nanoTime(), "fictional-password-profile");
+                AuthSession account = signup("learner-" + System.nanoTime() + "@example.invalid", "fictional-password-profile");
                 mvc.perform(put("/api/auth/profile").session(account.session())
                                 .header("X-CSRF-Token", account.csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -81,6 +81,16 @@ class ProfileApiTest {
                 mvc.perform(get("/api/auth/profile")).andExpect(status().isUnauthorized());
                 mvc.perform(put("/api/auth/profile").contentType(MediaType.APPLICATION_JSON).content("{}"))
                                 .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void profileRequiresEveryDetail() throws Exception {
+                AuthSession account = signup("learner-" + System.nanoTime() + "@example.invalid", "fictional-password-profile");
+                mvc.perform(put("/api/auth/profile").session(account.session())
+                                .header("X-CSRF-Token", account.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"firstName\":\"Thandi\",\"surname\":\"Nkosi\",\"contactEmail\":\"t@example.invalid\"}"))
+                                .andExpect(status().isBadRequest());
         }
 
         private AuthSession signup(String username, String password) throws Exception {

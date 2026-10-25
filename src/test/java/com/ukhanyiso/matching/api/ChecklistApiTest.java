@@ -131,7 +131,7 @@ class ChecklistApiTest {
                 new ChecklistRepository(firstJdbc);
         ShowcaseAuthController firstController =
                 new ShowcaseAuthController(firstRepository, new PasswordRecoveryService(firstRepository));
-        String username = nextUsername();
+        String username = "persist@ex.co"; // short: the legacy table here only allows 24 characters
         String password = "fictional-password-persisted";
 
         MockHttpServletRequest signupRequest = new MockHttpServletRequest();
@@ -160,10 +160,11 @@ class ChecklistApiTest {
     }
 
     @Test
-    void usernamesMayContainThreeThroughFiftyCharacters() throws Exception {
+    void emailsMayBeShortOrUpToOneHundredCharacters() throws Exception {
         String password = "unique-fictional-password";
-        String shortUsername = "a_1";
-        String longUsername = "u".repeat(50);
+        String domain = "@example.invalid";
+        String shortUsername = "a@b.co";
+        String longUsername = "u".repeat(100 - domain.length()) + domain;
 
         signup(shortUsername, password);
         signup(longUsername, password);
@@ -184,7 +185,7 @@ class ChecklistApiTest {
                         .with(nextClient())
                         .header("X-CSRF-Token", tooLong.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(credentials("u".repeat(51), password)))
+                        .content(credentials("u".repeat(101 - domain.length()) + domain, password)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -350,13 +351,13 @@ class ChecklistApiTest {
     }
 
     @Test
-    void signupRejectsPersonalInformationFields() throws Exception {
+    void signupRequiresAnEmailAddress() throws Exception {
         AuthSession attempt = csrfSession();
         mvc.perform(post("/api/auth/signup").session(attempt.session())
                         .with(nextClient())
                         .header("X-CSRF-Token", attempt.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"fictional-person\",\"password\":\"fictional-password-321\",\"email\":\"not-real@example.invalid\"}"))
+                        .content(credentials("fictional-person", "fictional-password-321")))
                 .andExpect(status().isBadRequest());
     }
 
@@ -399,7 +400,7 @@ class ChecklistApiTest {
     }
 
     private static String nextUsername() {
-        return "learner" + USER_SEQUENCE.incrementAndGet();
+        return "learner" + USER_SEQUENCE.incrementAndGet() + "@example.invalid";
     }
 
     private static String credentials(String username, String password) {
