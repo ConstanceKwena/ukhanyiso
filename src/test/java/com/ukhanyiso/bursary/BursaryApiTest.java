@@ -23,6 +23,10 @@ class BursaryApiTest {
         mvc.perform(get("/api/bursaries").session(authenticatedSession())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.bursaries.length()").value(11))
                 .andExpect(jsonPath("$.bursaries[0].documents").isArray())
+                .andExpect(jsonPath("$.bursaries[0].status").value("partial"))
+                .andExpect(jsonPath("$.bursaries[0].officialLink").doesNotExist())
+                .andExpect(jsonPath("$.bursaries[1].status").value("verified"))
+                .andExpect(jsonPath("$.bursaries[1].officialLink").value("https://www.nsfas.org.za"))
                 .andExpect(jsonPath("$.disclaimer").isNotEmpty());
     }
 

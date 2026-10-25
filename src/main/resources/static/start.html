@@ -37,11 +37,13 @@
     <section id="courses" hidden>
         <h2>Courses that fit your marks</h2>
         <div id="course-list"></div>
+        <p id="results-storage-status" class="form-note" role="status" aria-live="polite"></p>
         <p><a href="/results.html">See every course detail, then update your marks to compare options</a></p>
     </section>
     <section id="bursaries" hidden>
         <h2>Bursaries to look at</h2>
         <div id="bursary-list"></div>
+        <p id="bursary-status" class="form-note" role="status" aria-live="polite"></p>
         <p><a href="/funding.html">See funding and documents</a> · <a href="/calendar.html">Set application reminders</a> · <a href="/plan.html">Plan your budget</a> · <a href="/signup.html">Create an account</a></p>
     </section>
     <p class="disclaimer">Use fictional marks only. Marks are used for this matching request and are kept in this browser tab only to show your results. Guides only; meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
@@ -142,6 +144,10 @@
         document.getElementById("bursaries").hidden = true;
         document.getElementById("course-list").textContent = "";
         document.getElementById("bursary-list").textContent = "";
+        document.getElementById("results-storage-status").textContent = "";
+        document.getElementById("results-storage-status").className = "form-note";
+        document.getElementById("bursary-status").textContent = "";
+        document.getElementById("bursary-status").className = "form-note";
         const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector('input[name="mark"]').value }));
         const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
         errorsEl.textContent = errors.join(" ");
@@ -153,28 +159,41 @@
             const data = await res.json().catch(() => null);
             if (res.status === 429) { errorsEl.textContent = "Too many tries. Please wait a minute."; return; }
             if (!res.ok || !data || !Array.isArray(data.results)) { errorsEl.textContent = (data && data.errors ? data.errors : ["Something went wrong. Please try again."]).join(" "); return; }
+            let resultsAvailableOnResultsPage = true;
             try {
                 sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
                 sessionStorage.setItem("ukhanyiso-marks", JSON.stringify(rows));
-            } catch (err) { }
+            } catch (err) {
+                resultsAvailableOnResultsPage = false;
+            }
             const list = document.getElementById("course-list");
             list.textContent = "";
             if (data.results.length === 0) list.appendChild(el("p", "No matching or near-miss courses for these marks."));
             data.results.slice(0, 5).forEach(r => list.appendChild(courseCard(r)));
             document.getElementById("courses").hidden = false;
+            if (!resultsAvailableOnResultsPage) {
+                const storageStatus = document.getElementById("results-storage-status");
+                storageStatus.textContent = "Your matches are shown here, but this browser could not save the full results for the Results page.";
+                storageStatus.className = "error";
+            }
             const graded = rows.filter(r => r.subject !== "Life Orientation");
             const avg = graded.length ? Math.round(graded.reduce((s, r) => s + Number(r.mark), 0) / graded.length) : null;
             const bl = document.getElementById("bursary-list");
             bl.textContent = "";
+            const bursaryStatus = document.getElementById("bursary-status");
+            bursaryStatus.textContent = "Loading funding information…";
             try {
                 const br = await fetch("/api/bursaries");
+                if (!br.ok) throw new Error("Funding service returned an error.");
                 const bj = await br.json();
                 const open = (bj.bursaries || []).filter(b => b.deadline !== "CLOSED")
                     .sort((a, b) => (a.closingDate || "9999").localeCompare(b.closingDate || "9999"));
                 if (open.length === 0) bl.appendChild(el("p", "No open bursaries to show right now."));
                 open.forEach(b => bl.appendChild(bursaryCard(b, avg)));
+                bursaryStatus.textContent = "";
             } catch (err) {
-                bl.appendChild(el("p", "We could not load bursaries. Please try again."));
+                bursaryStatus.textContent = "We could not load funding information. Your course matches are available; try the Funding page again later.";
+                bursaryStatus.className = "error";
             }
             document.getElementById("bursaries").hidden = false;
             document.getElementById("courses").scrollIntoView();

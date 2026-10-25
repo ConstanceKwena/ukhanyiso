@@ -24,11 +24,11 @@
     <header class="page-heading">
         <p class="eyebrow">Your account</p>
         <h1>Profile</h1>
-        <p>Your account uses a fictional username only. Ukhanyiso does not need your real name, email address, phone number, or ID number.</p>
+        <p>Your account uses your username only. Ukhanyiso does not need your email address, phone number, ID number, or exam number.</p>
     </header>
 
     <section class="calendar-panel" aria-labelledby="account-heading">
-        <h2 id="account-heading">Fictional account</h2>
+        <h2 id="account-heading">Ukhanyiso account</h2>
         <p id="account-status" class="form-note" role="status" aria-live="polite">Loading account…</p>
     </section>
 
@@ -42,7 +42,7 @@
     <section class="calendar-panel" aria-labelledby="next-heading">
         <h2 id="next-heading">Continue your study journey</h2>
         <ul>
-            <li><a href="/start.html">Enter or update fictional marks</a></li>
+            <li><a href="/start.html">Enter or update marks</a></li>
             <li><a href="/results.html">Review course results</a></li>
             <li><a href="/funding.html">Check funding information and sources</a></li>
             <li><a href="/checklist.html">Review your application checklist</a></li>
@@ -63,7 +63,7 @@
             }
             if (!response.ok) throw new Error("Account information could not be loaded.");
             const account = await response.json();
-            accountStatus.textContent = "Signed in as " + account.username + ". This fictional username is the only profile detail stored.";
+            accountStatus.textContent = "Signed in as " + account.username + ". Your username is the only profile detail stored.";
         } catch (error) {
             accountStatus.textContent = "Could not load your account. Refresh the page and try again.";
             accountStatus.className = "error";
