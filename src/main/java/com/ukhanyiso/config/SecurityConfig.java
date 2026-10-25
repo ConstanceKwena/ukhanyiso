@@ -6,6 +6,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -14,32 +21,39 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Enable and customize HTTP Security Headers
             .headers(headers -> headers
-                // 1. Strict-Transport-Security (HSTS)
                 .httpStrictTransportSecurity(hsts -> hsts
                     .includeSubDomains(true)
-                    .maxAgeInSeconds(31536000) // 1 year
+                    .maxAgeInSeconds(31536000)
                 )
-                // 2. X-Frame-Options (Prevent Clickjacking)
                 .frameOptions(frame -> frame.deny())
-                
-                // 3. X-Content-Type-Options (Prevent MIME sniffing)
                 .contentTypeOptions(contentType -> {})
-                
-                // 4. Referrer-Policy
                 .referrerPolicy(referrer -> referrer
                     .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 )
-                
-                // 5. Content Security Policy (CSP)
                 .contentSecurityPolicy(csp -> csp
                     .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;")
                 )
             )
-            // CSRF protection configuration for API endpoints
             .csrf(csrf -> csrf.disable());
 
         return http.build();
+    }
+
+    // Bean to ensure security headers are added globally to static resources & HTML files as well
+    @Bean
+    public OncePerRequestFilter securityHeadersFilter() {
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+                    throws ServletException, IOException {
+                response.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+                response.setHeader("X-Frame-Options", "DENY");
+                response.setHeader("X-Content-Type-Options", "nosniff");
+                response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+                response.setHeader("Content-Security-Policy", "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:;");
+                filterChain.doFilter(request, response);
+            }
+        };
     }
 }
