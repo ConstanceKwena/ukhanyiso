@@ -47,13 +47,36 @@ public final class Matcher {
         // ---- CANNOT_CHECK: data not good enough to judge ----
         boolean sourceOk = "verified".equals(course.sourceStatus()) || "partial".equals(course.sourceStatus());
         ApsCalculator.Method method = parseMethod(institution.apsMethod());
-        if (course.minAps() == null || !sourceOk || method == null || method == ApsCalculator.Method.CUSTOM) {
+        boolean noAps = method == ApsCalculator.Method.NO_APS;
+        if (course.minAps() == null && !noAps || !sourceOk || method == null || method == ApsCalculator.Method.CUSTOM) {
             return build(course, institution, FitStatus.CANNOT_CHECK, deadline, null, course.minAps(), null, null, null,
                     List.of(), List.of("We can't check this course yet because its requirements are not fully confirmed."),
                     caveats);
         }
 
         int aps = ApsCalculator.calculate(method, marks, institution.excludeLevelOne()).aps();
+        if (noAps) {
+            // TVET courses: judge only on subject groups; APS is not part of admission.
+            List<String> noApsReasons = new ArrayList<>();
+            int gaps = 0;
+            for (Map.Entry<Integer, List<Requirement>> e : groupBy(course)) {
+                GroupOutcome g = evaluateGroup(e.getKey(), e.getValue(), marks, 0);
+                if (!g.satisfied()) {
+                    gaps++;
+                    if (g.missing()) {
+                        noApsReasons.add("This course needs " + alternativesText(g, subjectNames) + ". It is not in your marks.");
+                    } else {
+                        noApsReasons.add("You need " + needText(g, subjectNames) + ". You have Level " + g.learnerLevel()
+                                + " (" + g.learnerPercent() + "%).");
+                    }
+                }
+            }
+            FitStatus noApsFit = gaps == 0 ? FitStatus.MATCH
+                    : gaps <= cfg.maxGapsForNear() ? FitStatus.NEAR_MISS : FitStatus.NO_MATCH;
+            Label noApsLabel = noApsFit == FitStatus.MATCH ? Label.POSSIBLE : Label.UNLIKELY;
+            return build(course, institution, noApsFit, deadline, noApsLabel, null, null, null, null,
+                    List.of(), noApsReasons, caveats);
+        }
 
         // ---- subject groups ----
         Map<Integer, List<Requirement>> byGroup = new LinkedHashMap<>();
@@ -120,6 +143,14 @@ public final class Matcher {
         }
 
         return build(course, institution, fit, deadline, label, apsNeeded, aps, margin, gapSize, suggestions, reasons, caveats);
+    }
+
+    private static List<Map.Entry<Integer, List<Requirement>>> groupBy(Course course) {
+        Map<Integer, List<Requirement>> byGroup = new LinkedHashMap<>();
+        for (Requirement r : course.requirements()) {
+            byGroup.computeIfAbsent(r.groupId(), k -> new ArrayList<>()).add(r);
+        }
+        return new ArrayList<>(byGroup.entrySet());
     }
 
     // ------------------------------------------------------------------ groups

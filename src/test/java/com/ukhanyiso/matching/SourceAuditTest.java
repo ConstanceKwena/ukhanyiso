@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class SourceAuditTest {
 
-    private static final Set<String> OFFICIAL_DOMAINS = Set.of("uj.ac.za", "up.ac.za", "tut.ac.za");
+    private static final Set<String> OFFICIAL_DOMAINS = Set.of("uj.ac.za", "up.ac.za", "tut.ac.za", "swgc.co.za");
 
     @Autowired
     JdbcTemplate jdbc;

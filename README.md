@@ -9,7 +9,7 @@ app_port: 7860
 
 # Ukhanyiso
 
-Ukhanyiso guides a learner from matric marks to campus. It shows the university and university-of-technology courses a learner qualifies for, plus the funding and documents they need to apply. TVET college courses are on the roadmap.
+Ukhanyiso guides a learner from matric marks to campus. It shows the university, university-of-technology, and TVET college courses a learner qualifies for, plus the funding and documents they need to apply.
 
 Built by **Ubuntu Innovators** for the FNB App of the Year Hackathon 2026.
 Challenge: **Access to higher education**.
@@ -22,6 +22,8 @@ Challenge: **Access to higher education**.
 - **Keep my funding:** a money planner that uses only the numbers the learner types in.
 - **Funding and document checklist:** bursaries, what each needs, and closing dates.
 - **Username/password accounts** with saved, account-specific checklist progress.
+- **Optional profile details** (first name, surname, reminder email, WhatsApp number) — every field is optional and never required.
+- **Password recovery (prototype)** via an optional recovery email, stored only as a hash.
 
 Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
 
@@ -55,7 +57,41 @@ Create your Ukhanyiso account using a username (3–50 letters, numbers, undersc
 
 After signing in, enter fictional matric marks yourself. Marks are sent to the server for course matching but are not persisted. Checklist progress is attached to your account and, with the local H2 database, survives app restarts on the same computer. Never enter real learner identity, school-record, contact, or financial details.
 
+### Profile details (all optional)
+
+The Profile page lets an account add a first name, surname, an email address for reminders, and a WhatsApp number. Every field is optional and the app works fully without them. Names accept letters, spaces, hyphens and apostrophes; the WhatsApp number accepts digits with an optional leading +; the reminder email is validated as an email address. These values are stored in the account database in plain text (they are contact details, not secrets) and are never used for marketing or shared with anyone. WhatsApp delivery is not built yet — the field saves the preference for when it is.
+
+### Password recovery (prototype)
+
+Accounts can optionally store a recovery email for password resets. The email is stored **only as a salted SHA-256 hash** — the app never keeps the address itself, so a database leak does not expose learner contact details. The reset flow uses a one-time token that expires after one hour, only its hash is stored, and the "forgot password" endpoint always answers the same way whether or not the account exists. Until a mail provider is connected, the reset token is written to the application log (prototype delivery only).
+
 **Prototype privacy:** this app has not been approved for real learner records. Use sample/fictional marks and learner information while testing, and never enter an ID or exam number. Account usernames, salted password hashes, and checklist ticks are stored in the configured database. Marks are processed for matching and kept in the current browser tab only to show results. Study plans, reminders, funding-document ticks, language preference, and financial planning entries stay in browser storage or in the current page, not in the account database. Browser data can be cleared or lost with the device. Before inviting real learners, complete a privacy, security, retention, and support review and configure persistent hosted storage.
+
+### Backing up accounts
+
+Accounts and checklist progress live in the local H2 file database (`data/ukhanyiso.mv.db`). Deleting or losing that file deletes every account. Run `scripts/backup_db.sh` (from the project root or any directory) to write a timestamped SQL backup to `data/backups/ukhanyiso-<date>.sql.zip`; it is safe to run while the app is running and keeps the 10 most recent backups. To restore, unzip a backup and run its `script.sql` into an empty H2 database, e.g.:
+
+```bash
+java -cp ~/.m2/repository/com/h2database/h2/<version>/h2-<version>.jar org.h2.tools.RunScript \
+    -url "jdbc:h2:file:./data/ukhanyiso" -user sa -script script.sql
+```
+
+## TVET college courses
+
+The catalogue now includes South West Gauteng TVET College (SWGC) alongside UJ, UP and TUT: NC(V) Information Technology and Computer Science, NC(V) Electrical Infrastructure Construction, NC(V) Finance, Economics and Accounting, N4 Financial Management, and N4 Mechanical Engineering. TVET admission does not use a university APS — every requirement is a per-subject percentage pass from the [official SWGC Student Admission Policy](https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf) (sections 13 and 15, checked 2026-10-25), so results for SWGC courses report subject requirements only, with no APS number. NC(V) closing dates follow policy section 12 (end of October of the preceding year) and are marked "partial" until the college calendar confirms the exact date. Matric/Grade 12 holders apply for Report 191 programmes only; Grade 9–11 learners apply for NC(V) programmes only.
+
+## Databases: H2 by default, PostgreSQL supported
+
+The default database is the H2 file database (`data/ukhanyiso.mv.db`). The Postgres JDBC driver is already on the classpath, so switching is configuration only — set these environment variables and restart:
+
+```bash
+export SPRING_DATASOURCE_URL=jdbc:postgresql://host:5432/ukhanyiso
+export SPRING_DATASOURCE_USERNAME=ukhanyiso
+export SPRING_DATASOURCE_PASSWORD=...
+export SPRING_SQL_INIT_MODE=always   # first boot creates the schema; set to never afterwards
+```
+
+`schema.sql` and `data.sql` are written to run on both engines, and the username-length migration already has a Postgres branch. A live-Postgres integration test (`PostgresSchemaIT`) runs automatically when those environment variables point at a reachable Postgres and skips silently otherwise.
 
 ## Deploy to Hugging Face Spaces
 

@@ -130,7 +130,7 @@ class ChecklistApiTest {
         ChecklistRepository firstRepository =
                 new ChecklistRepository(firstJdbc);
         ShowcaseAuthController firstController =
-                new ShowcaseAuthController(firstRepository);
+                new ShowcaseAuthController(firstRepository, new PasswordRecoveryService(firstRepository));
         String username = nextUsername();
         String password = "fictional-password-persisted";
 
@@ -148,7 +148,7 @@ class ChecklistApiTest {
         ChecklistRepository restartedRepository =
                 new ChecklistRepository(new JdbcTemplate(restartedDataSource));
         ShowcaseAuthController restartedController =
-                new ShowcaseAuthController(restartedRepository);
+                new ShowcaseAuthController(restartedRepository, new PasswordRecoveryService(restartedRepository));
         MockHttpServletRequest loginRequest = new MockHttpServletRequest();
         String loginCsrf = restartedController.csrf(loginRequest).csrfToken();
         ShowcaseAuthController.AuthResponse loggedIn = restartedController.login(

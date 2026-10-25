@@ -23,7 +23,7 @@
     <header class="page-heading">
         <p class="eyebrow">Your account</p>
         <h1>Profile</h1>
-        <p>Your account uses your username only. Ukhanyiso does not need your email address, phone number, ID number, or exam number.</p>
+        <p>Your account uses your username. The details below are optional — fill in only what you want to share. Ukhanyiso never asks for an ID or exam number.</p>
     </header>
 
     <section class="calendar-panel" aria-labelledby="account-heading">
@@ -31,11 +31,55 @@
         <p id="account-status" class="form-note" role="status" aria-live="polite">Loading account…</p>
     </section>
 
+    <section class="calendar-panel" aria-labelledby="profile-heading">
+        <h2 id="profile-heading">About you (optional)</h2>
+        <p class="form-note">These details are optional and are used to personalise your reminders and checklist. Only fill in what you are comfortable sharing. They stay in your account on this app's database and are never sold or shared.</p>
+        <form id="profile-form" novalidate>
+            <div class="field">
+                <label for="first-name">First name</label>
+                <input id="first-name" name="firstName" type="text" maxlength="80" autocomplete="given-name">
+            </div>
+            <div class="field">
+                <label for="surname">Surname</label>
+                <input id="surname" name="surname" type="text" maxlength="80" autocomplete="family-name">
+            </div>
+            <div class="field">
+                <label for="contact-email">Email for reminders</label>
+                <input id="contact-email" name="contactEmail" type="email" maxlength="200" autocomplete="email">
+                <p class="form-note">Used only if you ask for reminder emails. Ukhanyiso does not send marketing mail.</p>
+            </div>
+            <div class="field">
+                <label for="whatsapp">WhatsApp number (optional)</label>
+                <input id="whatsapp" name="whatsapp" type="tel" maxlength="30" placeholder="+27 82 000 0000">
+                <p class="form-note">Digits only, a leading + is fine. Reminders are not sent to WhatsApp yet; this saves your preference for when it is built.</p>
+            </div>
+            <div class="form-actions">
+                <button type="submit" id="profile-submit">Save profile</button>
+            </div>
+            <p id="profile-status" class="form-note" role="status" aria-live="polite"></p>
+        </form>
+    </section>
+
     <section class="calendar-panel" aria-labelledby="reminders-heading">
         <h2 id="reminders-heading">Reminders on this device</h2>
         <p id="reminder-summary" class="form-note" role="status" aria-live="polite">Checking this browser…</p>
         <a class="button-link" href="/calendar.html">Manage reminders</a>
         <p class="form-note">Reminders are saved in this browser only. They are not linked to your account or sent to Ukhanyiso.</p>
+    </section>
+
+    <section class="calendar-panel" aria-labelledby="recovery-heading">
+        <h2 id="recovery-heading">Password recovery</h2>
+        <p class="form-note">Optionally add a recovery email so you can reset your password if you forget it. It is stored only as a secure hash — Ukhanyiso never keeps the address itself and never uses it for anything else.</p>
+        <form id="recovery-form" novalidate>
+            <div class="field">
+                <label for="recovery-email">Recovery email</label>
+                <input id="recovery-email" name="recoveryEmail" type="email" maxlength="200" autocomplete="email">
+            </div>
+            <div class="form-actions">
+                <button type="submit" id="recovery-submit">Save recovery email</button>
+            </div>
+            <p id="recovery-status" class="form-note" role="status" aria-live="polite"></p>
+        </form>
     </section>
 
     <section class="calendar-panel" aria-labelledby="next-heading">
@@ -61,11 +105,96 @@
             }
             if (!response.ok) throw new Error("Account information could not be loaded.");
             const account = await response.json();
-            accountStatus.textContent = "Signed in as " + account.username + ". Your username is the only profile detail stored.";
+            accountStatus.textContent = "Signed in as " + account.username + ".";
         } catch (error) {
             accountStatus.textContent = "Could not load your account. Refresh the page and try again.";
             accountStatus.className = "error";
         }
+
+        // Load and save the optional profile details.
+        const profileForm = document.getElementById("profile-form");
+        const profileStatus = document.getElementById("profile-status");
+        try {
+            const response = await fetch("/api/auth/profile", { credentials: "same-origin" });
+            if (response.ok) {
+                const profile = await response.json();
+                document.getElementById("first-name").value = profile.firstName || "";
+                document.getElementById("surname").value = profile.surname || "";
+                document.getElementById("contact-email").value = profile.contactEmail || "";
+                document.getElementById("whatsapp").value = profile.whatsapp || "";
+            }
+        } catch (error) {
+            // Profile stays empty; saving still works.
+        }
+        profileForm.addEventListener("submit", async event => {
+            event.preventDefault();
+            profileStatus.textContent = "";
+            if (!profileForm.reportValidity()) return;
+            try {
+                const me = await fetch("/api/auth/me", { credentials: "same-origin" });
+                if (!me.ok) throw new Error("not signed in");
+                const token = (await me.json()).csrfToken;
+                const response = await fetch("/api/auth/profile", {
+                    method: "PUT",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+                    body: JSON.stringify({
+                        firstName: document.getElementById("first-name").value,
+                        surname: document.getElementById("surname").value,
+                        contactEmail: document.getElementById("contact-email").value,
+                        whatsapp: document.getElementById("whatsapp").value
+                    })
+                });
+                if (response.ok) {
+                    profileStatus.textContent = "Profile saved.";
+                    profileStatus.className = "form-note";
+                } else if (response.status === 400) {
+                    profileStatus.textContent = "Check the fields: names take letters, spaces, hyphens and apostrophes; the number takes digits only.";
+                    profileStatus.className = "error";
+                } else {
+                    profileStatus.textContent = "We could not save your profile. Please try again.";
+                    profileStatus.className = "error";
+                }
+            } catch (error) {
+                profileStatus.textContent = "We could not reach the account service. Please try again.";
+                profileStatus.className = "error";
+            }
+        });
+
+        const recoveryStatus = document.getElementById("recovery-status");
+        document.getElementById("recovery-form").addEventListener("submit", async event => {
+            event.preventDefault();
+            recoveryStatus.textContent = "";
+            const emailInput = document.getElementById("recovery-email");
+            if (emailInput.value && !emailInput.checkValidity()) {
+                recoveryStatus.textContent = "Enter a valid email address.";
+                recoveryStatus.className = "error";
+                return;
+            }
+            try {
+                const me = await fetch("/api/auth/me", { credentials: "same-origin" });
+                if (!me.ok) throw new Error("not signed in");
+                const token = (await me.json()).csrfToken;
+                const response = await fetch("/api/auth/recovery-email", {
+                    method: "PUT",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+                    body: JSON.stringify({ email: emailInput.value })
+                });
+                if (response.ok) {
+                    recoveryStatus.textContent = emailInput.value
+                        ? "Recovery email saved. It is stored only as a secure hash."
+                        : "Recovery email updated.";
+                    recoveryStatus.className = "form-note";
+                } else {
+                    recoveryStatus.textContent = "We could not save the recovery email. Please try again.";
+                    recoveryStatus.className = "error";
+                }
+            } catch (error) {
+                recoveryStatus.textContent = "We could not reach the account service. Please try again.";
+                recoveryStatus.className = "error";
+            }
+        });
 
         const reminderSummary = document.getElementById("reminder-summary");
         try {

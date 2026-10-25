@@ -9,6 +9,8 @@ public final class ApsCalculator {
     public enum Method {
         BEST6_EXCL_LO,
         ALL_EXCL_LO,
+        /** TVET colleges: no APS is used; admission is per-subject requirements only. */
+        NO_APS,
         CUSTOM
     }
 
@@ -54,6 +56,9 @@ public final class ApsCalculator {
 
         if (method == Method.CUSTOM) {
             return new Result(0, false, "CUSTOM APS method is unsupported");
+        }
+        if (method == Method.NO_APS) {
+            return new Result(0, true, "No APS: per-subject requirements only");
         }
 
         List<Integer> levels = marks.stream()

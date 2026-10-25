@@ -16,9 +16,10 @@ class CatalogRepositoryTest {
     @Test
     void loadsTheTwelveCoursesFromTheDatabase() {
         Catalog catalog = repository.load();
-        assertEquals(12, catalog.courses().size());
-        assertEquals(3, catalog.institutions().size());
-        assertEquals(51, catalog.courses().stream().mapToInt(c -> c.requirements().size()).sum());
+        assertEquals(17, catalog.courses().size(), "12 university/TUT courses + 5 SWGC TVET courses");
+        assertEquals(4, catalog.institutions().size(), "UJ, UP, TUT, SWGC");
+        assertEquals(70, catalog.courses().stream().mapToInt(c -> c.requirements().size()).sum(),
+                "51 existing + 19 SWGC subject requirements");
         assertEquals(3, catalog.config().likelyApsMargin());
     }
 

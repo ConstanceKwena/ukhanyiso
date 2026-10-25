@@ -99,3 +99,54 @@ INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_req
 INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('TUT-DIP-CSE',3,'PHYS_SCI',4,NULL,NULL,'S033');
 INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('TUT-DIP-CSE',3,'TECH_SCI',4,NULL,NULL,'S033');
 INSERT INTO match_config DEFAULT VALUES;
+
+-- South West Gauteng TVET College (SWGC) - added from the official Student Admission Policy
+-- (https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf,
+-- sections 13 and 15, checked 2026-10-25). NC(V) and Report 191 courses do not use a
+-- university APS: the policy lists per-subject pass requirements, so the institution uses
+-- the NO_APS method and every requirement carries min_percent. The NC(V) closing date
+-- follows policy section 12 (applications close preferably end of October of the preceding
+-- year); 2027 entry therefore closes 2026-10-31, status 'partial' until the college
+-- calendar confirms the exact date.
+INSERT INTO sources VALUES ('S040','SWGC',NULL,'closing_date','NC(V) applications close preferably end of October of the preceding year (policy section 12.v.a)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','partial');
+INSERT INTO sources VALUES ('S041','SWGC',NULL,'aps_method','No APS: NC(V) and Report 191 entry is per-subject pass requirements in the admission policy sections 13 and 15','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
+INSERT INTO sources VALUES ('S050','SWGC','SWGC-NCV-IT','min_aps','NC(V) Information Technology and Computer Science L2: English Grade 9 (40%); Mathematics Grade 9 (50%); policy section 13(xi)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
+INSERT INTO sources VALUES ('S051','SWGC','SWGC-NCV-ENG-ELECTRICAL','min_aps','NC(V) Electrical Infrastructure Construction L2: Mathematics (40%); English FAL (40%); Natural Science or Technology (40%); policy section 13(xiii)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
+INSERT INTO sources VALUES ('S052','SWGC','SWGC-NCV-FINANCE','min_aps','NC(V) Finance, Economics and Accounting L2: EMS, English and Mathematics Grade 9 passes; policy section 13(i)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
+INSERT INTO sources VALUES ('S053','SWGC','SWGC-N4-FIN-MGMT','min_aps','Report 191 Financial Management N4: English Grade 12; Maths Literacy or Mathematics Grade 12; Accounting Grade 12 (40%); policy section 15(9)(ii)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
+INSERT INTO sources VALUES ('S054','SWGC','SWGC-N4-MECH-ENG','min_aps','Report 191 Mechanical Engineering N4: Grade 12 with English FAL (40%), Mathematics (40%), Natural Science (40%), or an N3 certificate; policy section 15(9) Engineering iii','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
+-- New subjects needed by the SWGC rows (inserted before the courses that reference them).
+INSERT INTO subjects VALUES ('EMS','Economic and Management Sciences',1);
+INSERT INTO subjects VALUES ('ACCOUNTING','Accounting',1);
+INSERT INTO institutions VALUES ('SWGC','South West Gauteng TVET College','tvet_college','NO_APS',1,'No APS: admission is per-subject pass requirements per the official admission policy. Matric/Grade 12 holders apply for Report 191 only; Grade 9/10/11 apply for NC(V) only (official SWGC site).','https://www.swgc.co.za',NULL,'S040',0);
+-- NC(V) subjects (Grade 9 percentages) and NATED (Grade 12 percentages) use min_percent.
+-- Grade 9 passes are treated as Level 2/3 equivalents using the same percentage bands.
+INSERT INTO courses VALUES ('SWGC-NCV-IT','SWGC','NC(V) Information Technology and Computer Science (Level 2)',NULL,'ncv','Utility Studies',NULL,'2026-10-31',NULL,'https://www.swgc.co.za',2027,'S050');
+INSERT INTO courses VALUES ('SWGC-NCV-ENG-ELECTRICAL','SWGC','NC(V) Electrical Infrastructure Construction (Level 2)',NULL,'ncv','Engineering Studies',NULL,'2026-10-31',NULL,'https://www.swgc.co.za',2027,'S051');
+INSERT INTO courses VALUES ('SWGC-NCV-FINANCE','SWGC','NC(V) Finance, Economics and Accounting (Level 2)',NULL,'ncv','Business Studies',NULL,'2026-10-31',NULL,'https://www.swgc.co.za',2027,'S052');
+INSERT INTO courses VALUES ('SWGC-N4-FIN-MGMT','SWGC','N4 Financial Management (Report 191)',NULL,'nated','Business Studies',NULL,'2026-10-31',NULL,'https://www.swgc.co.za',2027,'S053');
+INSERT INTO courses VALUES ('SWGC-N4-MECH-ENG','SWGC','N4 Mechanical Engineering (Report 191)',NULL,'nated','Engineering Studies',NULL,'2026-10-31',NULL,'https://www.swgc.co.za',2027,'S054');
+-- NC(V) IT and Computer Science: English 40%, Mathematics 50% (section 13 xi)
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-IT',1,'ENG_HL',2,NULL,40,'S050');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-IT',1,'ENG_FAL',2,NULL,40,'S050');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-IT',2,'MATHS',3,NULL,50,'S050');
+-- NC(V) Electrical Infrastructure Construction: Maths 40%, English FAL 40%, Natural/Tech Science 40% (section 13 xiii)
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-ENG-ELECTRICAL',1,'MATHS',3,NULL,40,'S051');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-ENG-ELECTRICAL',2,'ENG_FAL',3,NULL,40,'S051');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-ENG-ELECTRICAL',3,'PHYS_SCI',3,NULL,40,'S051');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-ENG-ELECTRICAL',3,'TECH_SCI',3,NULL,40,'S051');
+-- NC(V) Finance, Economics and Accounting: EMS, English and Mathematics Grade 9 passes (section 13 i)
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-FINANCE',1,'ENG_HL',2,NULL,50,'S052');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-FINANCE',1,'ENG_FAL',2,NULL,50,'S052');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-FINANCE',2,'MATHS',2,NULL,50,'S052');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-NCV-FINANCE',3,'EMS',2,NULL,50,'S052');
+-- N4 Financial Management: English G12, Maths Literacy/Maths G12, Accounting G12 40% (section 15(9)(ii))
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-FIN-MGMT',1,'ENG_HL',4,NULL,50,'S053');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-FIN-MGMT',1,'ENG_FAL',4,NULL,50,'S053');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-FIN-MGMT',2,'MATHS',4,NULL,50,'S053');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-FIN-MGMT',2,'MATHS_LIT',4,NULL,50,'S053');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-FIN-MGMT',3,'ACCOUNTING',4,NULL,40,'S053');
+-- N4 Mechanical Engineering: English FAL 40%, Mathematics 40%, Natural Science 40% (section 15(9) iii)
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-MECH-ENG',1,'ENG_FAL',4,NULL,40,'S054');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-MECH-ENG',2,'MATHS',4,NULL,40,'S054');
+INSERT INTO course_requirements (course_id,group_id,subject_id,min_level,aps_required,min_percent,source_id) VALUES ('SWGC-N4-MECH-ENG',3,'PHYS_SCI',4,NULL,40,'S054');
