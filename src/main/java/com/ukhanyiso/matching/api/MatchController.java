@@ -2,6 +2,7 @@ package com.ukhanyiso.matching.api;
 
 import com.ukhanyiso.matching.CourseMatchService;
 import com.ukhanyiso.matching.ApsCalculator.SubjectMark;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +27,9 @@ public class MatchController {
     /** includeAll=true also returns courses that do not fit and courses we cannot check. */
     @PostMapping("/match")
     public MatchResponse match(@RequestBody MatchRequest request,
-                               @RequestParam(name = "includeAll", defaultValue = "false") boolean includeAll) {
+                               @RequestParam(name = "includeAll", defaultValue = "false") boolean includeAll,
+                               HttpSession session) {
+        ShowcaseSession.requireUser(session);
         List<SubjectMark> marks = MarksValidator.validate(request);
         return new MatchResponse(service.match(marks, includeAll), DISCLAIMER);
     }

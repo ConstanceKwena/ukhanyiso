@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
@@ -39,8 +40,15 @@ class MatchApiTest {
     private org.springframework.test.web.servlet.ResultActions send(String body) throws Exception {
         return mvc.perform(post("/api/match")
                 .with(from("192.0.2." + (CLIENT_SEQUENCE.incrementAndGet() % 250 + 1)))
+                .session(authenticatedSession())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body));
+    }
+
+    private static MockHttpSession authenticatedSession() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(ShowcaseSession.USER_ATTRIBUTE, "test-learner");
+        return session;
     }
 
     private static RequestPostProcessor from(String address) {
@@ -69,6 +77,7 @@ class MatchApiTest {
         String body = "{\"marks\":[{\"subject\":\"Mathematics\",\"mark\":20}]}";
         send(body).andExpect(jsonPath("$.results.length()").value(0));
         mvc.perform(post("/api/match").with(from("192.0.2.251")).param("includeAll", "true")
+                        .session(authenticatedSession())
                         .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.results.length()").value(12));
     }
@@ -115,6 +124,7 @@ class MatchApiTest {
     @Test
     void badIncludeAllValueIsRejected() throws Exception {
         mvc.perform(post("/api/match").with(from("192.0.2.252")).param("includeAll", "maybe")
+                        .session(authenticatedSession())
                         .contentType(MediaType.APPLICATION_JSON).content(GOOD))
                 .andExpect(status().isBadRequest());
     }
@@ -123,19 +133,28 @@ class MatchApiTest {
     void allowsTenRequestsPerClientAndRejectsTheEleventhWith429() throws Exception {
         for (int i = 0; i < 10; i++) {
             mvc.perform(post("/api/match").with(from("198.51.100.10"))
+                            .session(authenticatedSession())
                             .contentType(MediaType.APPLICATION_JSON).content(GOOD))
                     .andExpect(status().isOk());
         }
 
         mvc.perform(post("/api/match").with(from("198.51.100.10"))
+                        .session(authenticatedSession())
                         .contentType(MediaType.APPLICATION_JSON).content(GOOD))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.errors[0]")
                         .value("Too many attempts. Please wait a minute and try again."));
 
         mvc.perform(post("/api/match").with(from("198.51.100.11"))
+                        .session(authenticatedSession())
                         .contentType(MediaType.APPLICATION_JSON).content(GOOD))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void matchingRequiresAnAuthenticatedSession() throws Exception {
+        mvc.perform(post("/api/match").contentType(MediaType.APPLICATION_JSON).content(GOOD))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

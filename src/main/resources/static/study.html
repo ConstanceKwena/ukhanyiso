@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: study plan</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
+    <a href="/index.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html">Funding</a>
+    <a href="/calendar.html">Reminders</a>
+    <a href="/plan.html">Budget</a>
+    <a href="/checklist.html">Checklist</a>
+    <a href="/signup.html">Sign up</a>
+    <a href="/login.html">Log in</a>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Make time for learning</p>
+        <h1>Study Plan</h1>
+        <p>Build a simple weekly plan around your subjects, available time, and confidence.</p>
+    </header>
+
+    <div id="study-planner" class="study-planner-panel">
+        <section aria-labelledby="grade-heading">
+            <h2 id="grade-heading">Your grade</h2>
+            <div class="field">
+                <label for="grade">Choose your grade</label>
+                <select id="grade" required>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+            </div>
+        </section>
+
+        <section aria-labelledby="subjects-heading">
+            <h2 id="subjects-heading">Your subjects</h2>
+            <p class="form-note">Add each subject and choose how confident you feel. Topic is optional.</p>
+            <div id="subject-list" aria-live="polite"></div>
+            <div class="subject-entry">
+                <div class="field">
+                    <label for="subject-name">Subject</label>
+                    <input id="subject-name" maxlength="48" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label for="subject-confidence">Confidence</label>
+                    <select id="subject-confidence">
+                        <option value="help">I need help</option>
+                        <option value="getting">I’m getting there</option>
+                        <option value="confident">I’m confident</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="subject-topic">A difficult topic (optional)</label>
+                    <input id="subject-topic" maxlength="120" autocomplete="off">
+                </div>
+                <button type="button" id="add-subject" class="secondary">Add subject</button>
+            </div>
+        </section>
+
+        <section aria-labelledby="days-heading">
+            <h2 id="days-heading">When you are available</h2>
+            <p class="form-note">For each study day, enter your school or class hours and a study window that does not overlap. Times are editable to fit your own timetable.</p>
+            <div id="study-days"></div>
+        </section>
+
+        <div class="form-actions">
+            <button type="button" id="generate-timetable">Generate weekly timetable</button>
+        </div>
+        <p id="planner-status" class="form-note" role="status" aria-live="polite"></p>
+    </div>
+
+    <section id="timetable-section" aria-labelledby="timetable-heading" hidden>
+        <div class="study-section-heading">
+            <h2 id="timetable-heading">Your weekly timetable</h2>
+            <button type="button" id="export-study-calendar" class="secondary">Add sessions to my calendar</button>
+        </div>
+        <p class="form-note">Study blocks are scheduled only inside your chosen study window, outside the school/class hours you entered. A short break separates longer study periods. The planner may use fewer minutes when the remaining time cannot fit another short session and break.</p>
+        <p id="calendar-export-status" class="form-note" role="status" aria-live="polite"></p>
+        <div id="timetable" aria-live="polite"></div>
+        <h3>Study links</h3>
+        <div id="study-resources"></div>
+        <p class="form-note">Export adds the next occurrence of each selected study day; it does not create a repeating series. Calendar alerts are controlled by your calendar app. Enable alerts there if you want notifications. Ukhanyiso does not send notifications while this page is closed.</p>
+    </section>
+
+    <p class="disclaimer">Privacy: your grade, subjects, confidence, topics, and timetable stay in this browser on this device. They are not sent to Ukhanyiso. Do not enter personal information.</p>
+</main>
+<script src="/js/site.js"></script>
+<script src="/js/calendar-export.js"></script>
+<script src="/js/study-planner-core.js"></script>
+<script src="/js/study-planner.js"></script>
+</body>
+</html>

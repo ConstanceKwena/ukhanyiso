@@ -1,9 +1,11 @@
 package com.ukhanyiso.bursary;
 
+import com.ukhanyiso.matching.api.ShowcaseSession;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,7 +20,7 @@ class BursaryApiTest {
 
     @Test
     void getReturnsTheListAndADisclaimer() throws Exception {
-        mvc.perform(get("/api/bursaries")).andExpect(status().isOk())
+        mvc.perform(get("/api/bursaries").session(authenticatedSession())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.bursaries.length()").value(11))
                 .andExpect(jsonPath("$.bursaries[0].documents").isArray())
                 .andExpect(jsonPath("$.disclaimer").isNotEmpty());
@@ -32,7 +34,7 @@ class BursaryApiTest {
 
     @Test
     void bursariesIncludeLastCheckedField() throws Exception {
-        mvc.perform(get("/api/bursaries"))
+        mvc.perform(get("/api/bursaries").session(authenticatedSession()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.bursaries[0].lastChecked").hasJsonPath())
                 .andExpect(jsonPath("$.bursaries[1].lastChecked").hasJsonPath())
@@ -47,6 +49,7 @@ class BursaryApiTest {
 
         for (int i = 0; i < 60; i++) {
             mvc.perform(get("/api/bursaries")
+                            .session(authenticatedSession())
                             .with(request -> {
                                 request.setRemoteAddr(clientAddress);
                                 return request;
@@ -55,6 +58,7 @@ class BursaryApiTest {
         }
 
         mvc.perform(get("/api/bursaries")
+                        .session(authenticatedSession())
                         .with(request -> {
                             request.setRemoteAddr(clientAddress);
                             return request;
@@ -74,5 +78,16 @@ class BursaryApiTest {
                         .contentType("application/json")
                         .content(largeBody))
                 .andExpect(status().isPayloadTooLarge());
+    }
+
+    @Test
+    void bursariesRequireAnAuthenticatedSession() throws Exception {
+        mvc.perform(get("/api/bursaries")).andExpect(status().isUnauthorized());
+    }
+
+    private static MockHttpSession authenticatedSession() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(ShowcaseSession.USER_ATTRIBUTE, "test-learner");
+        return session;
     }
 }

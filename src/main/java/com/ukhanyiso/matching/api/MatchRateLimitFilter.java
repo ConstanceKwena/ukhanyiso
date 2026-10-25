@@ -50,7 +50,8 @@ public final class MatchRateLimitFilter extends OncePerRequestFilter {
 
         int limit = "POST".equalsIgnoreCase(method) && "/api/match".equals(path)
                 ? MATCH_MAX_REQUESTS
-                : "POST".equalsIgnoreCase(method) && "/api/auth/signup".equals(path)
+                : "POST".equalsIgnoreCase(method)
+                && ("/api/auth/signup".equals(path) || "/api/auth/login".equals(path))
                 ? 5
                 : MAX_REQUESTS;
 

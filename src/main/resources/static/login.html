@@ -3,75 +3,42 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ukhanyiso: demo login</title>
+    <title>Ukhanyiso: log in</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <nav aria-label="Main navigation">
-    <a href="/index.html">Marks</a>
-    <a href="/results.html">Results</a>
-    <a href="/funding.html">Funding</a>
-    <a href="/checklist.html">My checklist</a>
+    <a class="nav-brand" href="/login.html">Ukhanyiso</a>
+    <a href="/signup.html">Sign up</a>
+    <a href="/login.html" aria-current="page">Log in</a>
 </nav>
 <main>
     <header class="page-heading">
-        <p class="eyebrow">Demo account</p>
-        <h1>Log in to save your checklist</h1>
-        <p>This is a demo with a synthetic learner profile. Please do not enter real personal information.</p>
+        <p class="eyebrow">Fictional account</p>
+        <h1>Log in</h1>
+        <p>Enter the fictional username and made-up password you created for this app. Do not enter real or reused credentials.</p>
     </header>
-    <form id="login-form" novalidate>
+    <form id="auth-form" data-mode="login" novalidate>
         <div class="field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" autocomplete="username" maxlength="100">
+            <label for="username">Fictional username</label>
+            <input id="username" name="username" type="text" minlength="5" maxlength="24"
+                   pattern="[A-Za-z0-9_\-]{5,24}" autocomplete="username" autocapitalize="none"
+                   spellcheck="false" required>
         </div>
         <div class="field">
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" maxlength="200">
+            <label for="password">Made-up password</label>
+            <input id="password" name="password" type="password" minlength="12" maxlength="128"
+                   autocomplete="current-password" required>
         </div>
         <div class="form-actions">
-            <button type="submit" id="login-btn">Log in</button>
+            <button type="submit" id="submit">Log in</button>
         </div>
-        <p id="errors" class="error" role="alert" aria-live="polite"></p>
+        <p id="message" class="error" role="alert" aria-live="polite"></p>
+        <p class="form-note">No email, phone number, real name, or ID number is used. This account has no password recovery.</p>
     </form>
 </main>
-<script>
-    // Already signed in on this device? Skip the form.
-    fetch("/api/checklist").then(r => { if (r.ok) location.replace("/checklist.html"); }).catch(() => {});
-    const form = document.getElementById("login-form");
-    const box = document.getElementById("errors");
-    const button = document.getElementById("login-btn");
-
-    form.onsubmit = async e => {
-        e.preventDefault();
-        box.textContent = "";
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-        if (!email || !password) {
-            box.textContent = "Please enter the demo email and password.";
-            return;
-        }
-        button.disabled = true;
-        button.textContent = "Logging in…";
-        try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-            if (res.ok) {
-                location.href = "/checklist.html";
-                return;
-            }
-            box.textContent = res.status === 401
-                ? "That email or password is not right."
-                : "Something went wrong. Please try again.";
-        } catch (err) {
-            box.textContent = "We could not reach the server. Please try again.";
-        }
-        button.disabled = false;
-        button.textContent = "Log in";
-    };
-</script>
+<script src="/js/site.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>

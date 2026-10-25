@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,69 +9,43 @@
 </head>
 <body>
 <nav aria-label="Main navigation">
-    <a href="/start.html">Start</a>
-    <a href="/plan.html">Budget</a>
-    <a href="/checklist.html">My checklist</a>
+    <a class="nav-brand" href="/login.html">Ukhanyiso</a>
     <a href="/signup.html" aria-current="page">Sign up</a>
+    <a href="/login.html">Log in</a>
 </nav>
 <main>
     <header class="page-heading">
-        <p class="eyebrow">Save your progress</p>
-        <h1>Create your account</h1>
-        <p>Pick your language first. We will use it across the app.</p>
+        <p class="eyebrow">Create a fictional account</p>
+        <h1>Sign up</h1>
+        <p>Use a fictional username and a made-up password only. Do not use your real name, email, phone number, ID number, or a password you use elsewhere.</p>
     </header>
-    <form id="signup" novalidate>
-        <div class="field"><label for="language">Your language</label>
-            <select id="language">
-                <option value="en">English</option>
-                <option value="zu">isiZulu</option>
-                <option value="xh">isiXhosa</option>
-                <option value="st">Sesotho</option>
-                <option value="af">Afrikaans</option>
-            </select></div>
-        <div class="field"><label for="email">Email</label>
-            <input id="email" type="email" autocomplete="email" maxlength="100"></div>
-        <div class="field"><label for="password">Password (at least 10 characters)</label>
-            <input id="password" type="password" autocomplete="new-password" minlength="10" maxlength="200"></div>
-        <div class="field"><label><input id="consent" type="checkbox"> I agree that Ukhanyiso may store my email, language and the plans I save, to run my account. I can ask for my account to be deleted.</label></div>
-        <div class="form-actions"><button type="submit" id="go">Create account</button></div>
-        <p id="msg" class="error" role="alert"></p>
-        <p>Already have an account? <a href="/checklist.html">Log in</a></p>
+    <form id="auth-form" data-mode="signup" novalidate>
+        <div class="field">
+            <label for="username">Fictional username</label>
+            <input id="username" name="username" type="text" minlength="5" maxlength="24"
+                   pattern="[A-Za-z0-9_\-]{5,24}" autocomplete="username" autocapitalize="none"
+                   spellcheck="false" required>
+            <p class="form-note">Use 5–24 letters, numbers, hyphens, or underscores. Do not use personal details.</p>
+        </div>
+        <div class="field">
+            <label for="password">Made-up password</label>
+            <input id="password" name="password" type="password" minlength="12" maxlength="128"
+                   autocomplete="new-password" required>
+            <p class="form-note">Use at least 12 characters. Never reuse a real password.</p>
+        </div>
+        <div class="field">
+            <label for="confirm-password">Confirm made-up password</label>
+            <input id="confirm-password" name="confirmPassword" type="password" minlength="12"
+                   maxlength="128" autocomplete="new-password" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" id="submit">Create account</button>
+        </div>
+        <p id="message" class="error" role="alert" aria-live="polite"></p>
+        <p class="form-note">This account is only for this app. No email or account recovery is collected. Accounts and checklist progress may be erased when the app restarts.</p>
     </form>
 </main>
 <script src="/js/site.js"></script>
-<script>
-    document.getElementById("language").value = Site.lang();
-    document.getElementById("signup").onsubmit = async e => {
-        e.preventDefault();
-        const msg = document.getElementById("msg");
-        const body = {
-            email: document.getElementById("email").value.trim(),
-            password: document.getElementById("password").value,
-            language: document.getElementById("language").value,
-            consent: document.getElementById("consent").checked
-        };
-        if (!body.email || body.password.length < 10 || !body.consent) {
-            msg.textContent = "Please enter your email, a password of at least 10 characters, and tick the box to agree.";
-            return;
-        }
-        const btn = document.getElementById("go");
-        btn.disabled = true;
-        try {
-            const res = await fetch("/api/auth/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-            if (res.ok) {
-                try { localStorage.setItem("ukhanyiso-lang", body.language); } catch (err) { }
-                location.href = "/checklist.html";
-                return;
-            }
-            const j = await res.json().catch(() => null);
-            msg.textContent = res.status === 429 ? "Too many tries. Please wait a minute." : ((j && j.message) || "We could not create that account. Please check your details.");
-        } catch (err) {
-            msg.textContent = "We could not reach the server. Please try again.";
-        } finally {
-            btn.disabled = false;
-        }
-    };
-</script>
+<script src="/js/auth.js"></script>
 </body>
 </html>

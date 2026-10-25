@@ -9,10 +9,15 @@
 </head>
 <body>
 <nav aria-label="Main navigation">
+    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
     <a href="/index.html">Marks</a>
     <a href="/results.html">Results</a>
     <a href="/funding.html" aria-current="page">Funding</a>
-    <a href="/checklist.html">My checklist</a>
+    <a href="/calendar.html">Reminders</a>
+    <a href="/plan.html">Budget</a>
+    <a href="/checklist.html">Checklist</a>
+    <a href="/signup.html">Sign up</a>
+    <a href="/login.html">Log in</a>
 </nav>
 <main>
     <header class="page-heading">
@@ -21,6 +26,11 @@
         <p>Check closing dates and tick off the documents you need to gather.</p>
     </header>
     <div id="list" aria-live="polite"></div>
+    <section class="label-guide" aria-label="Next step">
+        <h2>Next step: prepare an application</h2>
+        <p>Use the checklist to review the documents to prepare before applying. Only use fictional data in this app.</p>
+        <a class="button-link" href="/checklist.html">Open the checklist</a>
+    </section>
     <p class="disclaimer" id="disclaimer">Bursary details may change. Always confirm the closing date and required documents on the official page before applying.</p>
 </main>
 <script>
@@ -130,5 +140,6 @@
 
     load();
 </script>
+<script src="/js/site.js"></script>
 </body>
 </html>
