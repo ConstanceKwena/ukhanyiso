@@ -1,0 +1,46 @@
+name: Ukhanyiso tests
+
+on:
+  push:
+    branches: [day1-submission]
+  pull_request:
+    branches: [main, day1-submission]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: URL to test (defaults to the live Render app)
+        required: true
+        default: https://ukhanyiso.onrender.com
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.base_url || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Run Java tests
+        if: github.event_name != 'workflow_dispatch'
+        run: mvn --batch-mode test
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Run JavaScript unit tests
+        if: github.event_name != 'workflow_dispatch'
+        run: npm run test:unit
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright smoke test
+        run: npm run test:e2e

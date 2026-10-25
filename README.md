@@ -114,6 +114,12 @@ Use a persistent PostgreSQL database for hosted deployments; some hosts erase lo
 
 Live app: https://ukhanyiso.onrender.com (free hosting: it sleeps when idle and the first request can take about a minute). Persistence there depends on configuring a persistent PostgreSQL database as described above. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 
+## Testing
+
+Pushes and pull requests targeting `day1-submission` run the Maven tests, JavaScript unit tests, and a Playwright browser smoke test against a locally started app. The Docker build also runs the Maven tests before producing the image, so a failed Java test prevents the Render image from building.
+
+To run the same browser smoke test against the deployed Render app, open the **Ukhanyiso tests** workflow in GitHub Actions, choose **Run workflow** on `day1-submission`, and leave the URL as `https://ukhanyiso.onrender.com` (or enter another deployment URL). The smoke test only opens the dashboard and marks page; it does not create an account or submit learner data.
+
 ## Contributing
 
 1. Never push to `main`. Work on a branch: `it<number>-<name>-<task>`.
