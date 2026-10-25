@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS match_config (
 );
 
 CREATE TABLE IF NOT EXISTS app_users (
-    user_id       VARCHAR(50) PRIMARY KEY,
-    display_name  VARCHAR(50) NOT NULL,
+    user_id       VARCHAR(100) PRIMARY KEY,   -- the learner's email address
+    display_name  VARCHAR(100) NOT NULL,
     password_salt VARCHAR(64) NOT NULL,
     password_hash VARCHAR(64) NOT NULL,
     recovery_hash VARCHAR(64),                -- salted hash of the recovery email, never the email itself
@@ -82,12 +82,12 @@ CREATE TABLE IF NOT EXISTS app_users (
     contact_email VARCHAR(200),               -- optional, used for reminders only
     whatsapp      VARCHAR(30),                -- optional, digits/spaces/+ only
     created_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT app_users_username_length_check CHECK (LENGTH(user_id) BETWEEN 3 AND 50)
+    CONSTRAINT app_users_username_length_check CHECK (LENGTH(user_id) BETWEEN 3 AND 100)
 );
 
 CREATE TABLE IF NOT EXISTS password_resets (
     token_hash  VARCHAR(64) PRIMARY KEY,      -- SHA-256 of the one-time token; the token itself is never stored
-    user_id     VARCHAR(50) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+    user_id     VARCHAR(100) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
     expires_at  TIMESTAMP   NOT NULL,
     used_at     TIMESTAMP,
     created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
