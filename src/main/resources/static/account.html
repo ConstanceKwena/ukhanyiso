@@ -1,434 +1,86 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ukhanyiso: My account</title>
+    <title>Ukhanyiso: profile</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <nav aria-label="Main navigation">
     <a class="nav-brand" href="/index.html">Ukhanyiso</a>
-    <a href="/index.html">Marks</a>
+    <a href="/start.html">Marks</a>
     <a href="/results.html">Results</a>
     <a href="/funding.html">Funding</a>
     <a href="/calendar.html">Reminders</a>
-    <a href="/plan.html">Budget</a>
+    <a href="/plan.html">Financial Plan</a>
+    <a href="/study.html">Study Plan</a>
     <a href="/checklist.html">Checklist</a>
-    <a href="/account.html" aria-current="page">My account</a>
-    <a href="/signup.html">Sign up</a>
-    <a href="/login.html">Log in</a>
+    <a href="/account.html" aria-current="page">Profile</a>
+    <button type="button" id="sign-out" class="nav-logout" hidden>Sign out</button>
 </nav>
-
 <main>
     <header class="page-heading">
         <p class="eyebrow">Your account</p>
-        <h1>My account</h1>
-        <p>Manage your details and keep your study and funding plans moving.</p>
+        <h1>Profile</h1>
+        <p>Your account uses a fictional username only. Ukhanyiso does not need your real name, email address, phone number, or ID number.</p>
     </header>
 
-    <!-- Student dashboard -->
-    <section class="calendar-panel" aria-labelledby="dashboard-heading">
-        <p class="eyebrow">Your student journey</p>
-        <h2 id="dashboard-heading">Your dashboard</h2>
-        <p id="dashboard-greeting">
-            Welcome back. Let’s keep your study plans moving.
-        </p>
-
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin:1rem 0">
-            <article class="card">
-                <p class="form-note">Profile completion</p>
-                <p id="profile-completion" style="font-size:1.6rem;font-weight:700;margin:.25rem 0">Loading…</p>
-                <p id="profile-completion-hint" class="form-note">Checking your details</p>
-            </article>
-
-            <article class="card">
-                <p class="form-note">Saved reminders</p>
-                <p id="reminder-count" style="font-size:1.6rem;font-weight:700;margin:.25rem 0">—</p>
-                <p class="form-note">Important dates you are tracking</p>
-            </article>
-
-            <article class="card">
-                <p class="form-note">Unread notifications</p>
-                <p id="unread-count" style="font-size:1.6rem;font-weight:700;margin:.25rem 0">—</p>
-                <p class="form-note">Updates to review</p>
-            </article>
-        </div>
-
-        <div class="card" style="margin-top:1rem">
-            <h3>Your recommended next step</h3>
-            <p id="next-action">Checking what you may need to do next…</p>
-            <a id="next-action-link" href="/checklist.html">Open my checklist</a>
-        </div>
-
-        <p class="form-note">
-            Recommendations are guidance based on your saved account information.
-            Always verify eligibility and deadlines with the institution or funder.
-        </p>
+    <section class="calendar-panel" aria-labelledby="account-heading">
+        <h2 id="account-heading">Fictional account</h2>
+        <p id="account-status" class="form-note" role="status" aria-live="polite">Loading account…</p>
     </section>
 
-    <!-- Profile -->
-    <section class="calendar-panel" aria-labelledby="profile-heading">
-        <h2 id="profile-heading">Personal details</h2>
-        <p class="form-note">
-            Your details are saved to your Ukhanyiso account. Your WhatsApp number
-            is profile information only; no WhatsApp messages are sent.
-        </p>
-
-        <form id="profile-form" novalidate>
-            <div class="field">
-                <label for="username">Username</label>
-                <input id="username" type="text" readonly>
-            </div>
-
-            <div class="field">
-                <label for="first-name">First name</label>
-                <input id="first-name" name="firstName" type="text"
-                       maxlength="80" autocomplete="given-name" required>
-            </div>
-
-            <div class="field">
-                <label for="surname">Surname</label>
-                <input id="surname" name="surname" type="text"
-                       maxlength="80" autocomplete="family-name" required>
-            </div>
-
-            <div class="field">
-                <label for="email">Email address</label>
-                <input id="email" name="email" type="email"
-                       maxlength="254" autocomplete="email" required>
-            </div>
-
-            <div class="field">
-                <label for="whatsapp-number">WhatsApp number (optional)</label>
-                <input id="whatsapp-number" name="whatsappNumber" type="tel"
-                       maxlength="25" autocomplete="tel" placeholder="+27 12 345 6789">
-            </div>
-
-            <button type="submit" id="save-profile">Save details</button>
-            <p id="profile-status" class="form-note" role="status" aria-live="polite"></p>
-        </form>
+    <section class="calendar-panel" aria-labelledby="reminders-heading">
+        <h2 id="reminders-heading">Reminders on this device</h2>
+        <p id="reminder-summary" class="form-note" role="status" aria-live="polite">Checking this browser…</p>
+        <a class="button-link" href="/calendar.html">Manage reminders</a>
+        <p class="form-note">Reminders are saved in this browser only. They are not linked to your account or sent to Ukhanyiso.</p>
     </section>
 
-    <!-- Reminder preferences -->
-    <section class="calendar-panel" aria-labelledby="preferences-heading">
-        <h2 id="preferences-heading">Reminder preferences</h2>
-
-        <form id="preferences-form">
-            <div class="field">
-                <label for="email-enabled">
-                    <input id="email-enabled" type="checkbox">
-                    Email reminders
-                </label>
-                <p class="form-note">
-                    Email delivery requires the site administrator to configure an email service.
-                </p>
-            </div>
-
-            <div class="field">
-                <label for="onsite-enabled">
-                    <input id="onsite-enabled" type="checkbox">
-                    On-site notifications
-                </label>
-                <p class="form-note">See reminders inside your Ukhanyiso account.</p>
-            </div>
-
-            <button type="submit">Save preferences</button>
-            <p id="preferences-status" class="form-note" role="status" aria-live="polite"></p>
-        </form>
-    </section>
-
-    <!-- Notifications -->
-    <section class="calendar-panel" aria-labelledby="notifications-heading">
-        <h2 id="notifications-heading">My notifications</h2>
-        <p class="form-note">
-            Deadline reminders can appear within 7, 3, 1 or 0 days of a tracked deadline.
-        </p>
-        <div id="notifications-list" aria-live="polite">Loading notifications…</div>
-        <p id="notifications-status" class="form-note" role="status" aria-live="polite"></p>
-    </section>
-
-    <!-- Quick links -->
-    <section class="calendar-panel" aria-labelledby="links-heading">
-        <h2 id="links-heading">Where to next?</h2>
+    <section class="calendar-panel" aria-labelledby="next-heading">
+        <h2 id="next-heading">Continue your study journey</h2>
         <ul>
-            <li><a href="/checklist.html">My application checklist</a></li>
-            <li><a href="/funding.html">Funding and documents</a></li>
-            <li><a href="/calendar.html">Application reminders</a></li>
-            <li><a href="/results.html">Course results</a></li>
-            <li><a href="/plan.html">Budget planner</a></li>
+            <li><a href="/start.html">Enter or update fictional marks</a></li>
+            <li><a href="/results.html">Review course results</a></li>
+            <li><a href="/funding.html">Check funding information and sources</a></li>
+            <li><a href="/checklist.html">Review your application checklist</a></li>
+            <li><a href="/plan.html">Open the financial planner</a></li>
+            <li><a href="/study.html">Open your study plan</a></li>
         </ul>
     </section>
-
-    <p id="page-error" class="error" role="alert" aria-live="assertive"></p>
 </main>
-
 <script src="/js/site.js"></script>
 <script>
-(() => {
-    "use strict";
-
-    let csrfToken = "";
-    const el = id => document.getElementById(id);
-
-    async function api(url, options = {}) {
-        const headers = { "Accept": "application/json" };
-
-        if (options.body) {
-            headers["Content-Type"] = "application/json";
-        }
-
-        if (options.method && options.method !== "GET") {
-            headers["X-CSRF-Token"] = csrfToken;
-        }
-
-        const response = await fetch(url, {
-            ...options,
-            headers,
-            credentials: "same-origin"
-        });
-
-        if (response.status === 401) {
-            location.href = "/login.html";
-            throw new Error("Your session expired. Please sign in again.");
-        }
-
-        if (!response.ok) {
-            let message = "The request could not be completed.";
-            try {
-                const body = await response.json();
-                if (body.message) message = body.message;
-            } catch (_) {}
-            throw new Error(message);
-        }
-
-        if (response.status === 204) return null;
-        return response.json();
-    }
-
-    function status(id, message, error = false) {
-        el(id).textContent = message;
-        el(id).className = error ? "error" : "form-note";
-    }
-
-    async function loadProfile() {
-        const p = await api("/api/profile");
-        el("first-name").value = p.firstName || "";
-        el("surname").value = p.surname || "";
-        el("email").value = p.email || "";
-        el("whatsapp-number").value = p.whatsappNumber || "";
-    }
-
-    async function loadPreferences() {
-        const p = await api("/api/reminder-preferences");
-        el("email-enabled").checked = p.emailEnabled === true;
-        el("onsite-enabled").checked = p.onsiteEnabled !== false;
-    }
-
-    async function loadNotifications() {
+    (async () => {
+        const accountStatus = document.getElementById("account-status");
         try {
-            const items = await api("/api/notifications");
-            const list = el("notifications-list");
-            list.replaceChildren();
-
-            if (!Array.isArray(items) || items.length === 0) {
-                const empty = document.createElement("p");
-                empty.textContent = "You have no notifications yet.";
-                list.appendChild(empty);
+            const response = await fetch("/api/auth/me", { credentials: "same-origin" });
+            if (response.status === 401) {
+                location.assign("/login.html");
                 return;
             }
-
-            items.forEach(item => {
-                const card = document.createElement("article");
-                card.className = "card";
-
-                const title = document.createElement("strong");
-                title.textContent = item.title || "Application reminder";
-                card.appendChild(title);
-
-                const message = document.createElement("p");
-                message.textContent = item.message || "";
-                card.appendChild(message);
-
-                if (item.deadline) {
-                    const date = document.createElement("p");
-                    date.textContent = "Deadline: " + item.deadline;
-                    card.appendChild(date);
-                }
-
-                if (!item.read) {
-                    const button = document.createElement("button");
-                    button.type = "button";
-                    button.className = "secondary";
-                    button.textContent = "Mark as read";
-
-                    button.addEventListener("click", async () => {
-                        button.disabled = true;
-                        try {
-                            await api(
-                                "/api/notifications/" +
-                                encodeURIComponent(item.id) + "/read",
-                                { method: "POST" }
-                            );
-                            await loadNotifications();
-                            await loadDashboard();
-                        } catch (error) {
-                            button.disabled = false;
-                            status("notifications-status", error.message, true);
-                        }
-                    });
-
-                    card.appendChild(button);
-                }
-
-                list.appendChild(card);
-            });
+            if (!response.ok) throw new Error("Account information could not be loaded.");
+            const account = await response.json();
+            accountStatus.textContent = "Signed in as " + account.username + ". This fictional username is the only profile detail stored.";
         } catch (error) {
-            status("notifications-status",
-                "Could not load notifications: " + error.message, true);
-            el("notifications-list").replaceChildren();
+            accountStatus.textContent = "Could not load your account. Refresh the page and try again.";
+            accountStatus.className = "error";
         }
-    }
 
-    function setNextAction(message, href, linkText) {
-        el("next-action").textContent = message;
-        el("next-action-link").href = href;
-        el("next-action-link").textContent = linkText;
-    }
-
-    async function loadDashboard() {
-        const [profile, reminders, notifications] = await Promise.all([
-            api("/api/profile"),
-            api("/api/reminders"),
-            api("/api/notifications")
-        ]);
-
-        const firstName = (profile.firstName || "").trim();
-        el("dashboard-greeting").textContent = firstName
-            ? `Welcome back, ${firstName}. Let’s keep your study plans moving.`
-            : "Welcome back. Complete your details so your student-support dashboard is ready.";
-
-        const fields = [profile.firstName, profile.surname, profile.email];
-        const completed = fields.filter(value =>
-            typeof value === "string" && value.trim().length > 0
-        ).length;
-
-        const percent = Math.round((completed / fields.length) * 100);
-        el("profile-completion").textContent = `${percent}%`;
-        el("profile-completion-hint").textContent = percent === 100
-            ? "Your required profile details are complete."
-            : "Add your name and email to complete your profile.";
-
-        const reminderItems = Array.isArray(reminders) ? reminders : [];
-        const notificationItems = Array.isArray(notifications) ? notifications : [];
-        const unread = notificationItems.filter(item =>
-            item && item.read === false
-        ).length;
-
-        el("reminder-count").textContent = String(reminderItems.length);
-        el("unread-count").textContent = String(unread);
-
-        if (percent < 100) {
-            setNextAction(
-                "Complete your profile so your account has the basic details needed for student support.",
-                "#profile-heading",
-                "Complete my profile"
-            );
-        } else if (unread > 0) {
-            setNextAction(
-                `You have ${unread} unread notification${unread === 1 ? "" : "s"}. Review them so you do not miss an important deadline.`,
-                "#notifications-heading",
-                "Review notifications"
-            );
-        } else if (reminderItems.length === 0) {
-            setNextAction(
-                "Add a study, application or funding deadline so you have a date to work towards.",
-                "/calendar.html",
-                "Add a reminder"
-            );
-        } else {
-            setNextAction(
-                "Review your application checklist and funding options to decide on the next step in your study journey.",
-                "/checklist.html",
-                "Open my checklist"
-            );
-        }
-    }
-
-    el("profile-form").addEventListener("submit", async event => {
-        event.preventDefault();
-        if (!event.currentTarget.reportValidity()) return;
-
-        const button = el("save-profile");
-        button.disabled = true;
-        status("profile-status", "Saving your details…");
-
-        const body = {
-            firstName: el("first-name").value.trim(),
-            surname: el("surname").value.trim(),
-            email: el("email").value.trim(),
-            whatsappNumber: el("whatsapp-number").value.trim()
-        };
-
+        const reminderSummary = document.getElementById("reminder-summary");
         try {
-            await api("/api/profile", {
-                method: "PUT",
-                body: JSON.stringify(body)
-            });
-            status("profile-status", "Your details have been saved.");
-            await loadDashboard();
+            const reminders = JSON.parse(localStorage.getItem("ukhanyiso-reminders-v1") || "[]");
+            const count = Array.isArray(reminders) ? reminders.length : 0;
+            reminderSummary.textContent = count + (count === 1
+                ? " reminder saved in this browser."
+                : " reminders saved in this browser.");
         } catch (error) {
-            status("profile-status", "Could not save details: " + error.message, true);
-        } finally {
-            button.disabled = false;
+            reminderSummary.textContent = "This browser could not read the local reminders.";
+            reminderSummary.className = "error";
         }
-    });
-
-    el("preferences-form").addEventListener("submit", async event => {
-        event.preventDefault();
-        status("preferences-status", "Saving preferences…");
-
-        const body = {
-            emailEnabled: el("email-enabled").checked,
-            onsiteEnabled: el("onsite-enabled").checked
-        };
-
-        try {
-            await api("/api/reminder-preferences", {
-                method: "PUT",
-                body: JSON.stringify(body)
-            });
-            status("preferences-status", "Your reminder preferences have been saved.");
-            await loadNotifications();
-            await loadDashboard();
-        } catch (error) {
-            status("preferences-status",
-                "Could not save preferences: " + error.message, true);
-        }
-    });
-
-    async function initialise() {
-        try {
-            const user = await api("/api/auth/me");
-            csrfToken = user.csrfToken;
-            el("username").value = user.username || "";
-
-            await Promise.all([
-                loadProfile(),
-                loadPreferences(),
-                loadNotifications()
-            ]);
-
-            await loadDashboard();
-        } catch (error) {
-            status("page-error", error.message, true);
-        }
-    }
-
-    initialise();
-})();
+    })();
 </script>
 </body>
 </html>
