@@ -30,6 +30,10 @@ nav {
     border-bottom: 1px solid var(--border);
 }
 
+#main-menu[hidden] {
+    display: none !important;
+}
+
 nav a {
     min-height: 44px;
     display: flex;
@@ -772,4 +776,8 @@ input:focus-visible {
     button {
         transition: background-color 120ms ease;
     }
+}
+
+#main-menu[hidden] {
+    display: none !important;
 }
