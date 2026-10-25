@@ -356,12 +356,12 @@
 
     // Mobile menu toggle.
     if (menuToggle && menu) {
+        menuToggle.setAttribute("aria-expanded", String(!menu.hidden));
         menuToggle.addEventListener("click", () => {
-            const opening = menu.hidden;
-
-            menu.hidden = !opening;
-            menuToggle.setAttribute("aria-expanded", String(opening));
-            menuToggle.textContent = opening ? "✕ Close menu" : "☰ Menu";
+            menu.hidden = !menu.hidden;
+            const isOpen = !menu.hidden;
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuToggle.textContent = isOpen ? "✕ Close menu" : "☰ Menu";
         });
     }
 
