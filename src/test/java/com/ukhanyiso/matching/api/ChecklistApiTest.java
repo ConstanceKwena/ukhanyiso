@@ -1,18 +1,26 @@
 package com.ukhanyiso.matching.api;
 
 import com.jayway.jsonpath.JsonPath;
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -92,6 +100,63 @@ class ChecklistApiTest {
         mvc.perform(get("/api/checklist").session(account.session()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.progress.school-results").value(true));
+    }
+
+    @Test
+    void accountCanLogInAfterDatabaseIsClosedAndReopened(
+            @TempDir Path tempDir) throws Exception {
+        String url = "jdbc:h2:file:" + tempDir.resolve("persistent-auth");
+        JdbcDataSource firstDataSource = dataSource(url);
+        new ResourceDatabasePopulator(new ClassPathResource("schema.sql"))
+                .execute(firstDataSource);
+        ChecklistRepository firstRepository =
+                new ChecklistRepository(new JdbcTemplate(firstDataSource));
+        ShowcaseAuthController firstController =
+                new ShowcaseAuthController(firstRepository);
+        String username = nextUsername();
+        String password = "fictional-password-persisted";
+
+        MockHttpServletRequest signupRequest = new MockHttpServletRequest();
+        String signupCsrf = firstController.csrf(signupRequest).csrfToken();
+        firstController.signup(new ShowcaseAuthController.CredentialsRequest(username, password),
+                signupCsrf, signupRequest);
+        try (var connection = firstDataSource.getConnection();
+             var statement = connection.createStatement()) {
+            statement.execute("SHUTDOWN");
+        }
+
+        ChecklistRepository restartedRepository =
+                new ChecklistRepository(new JdbcTemplate(dataSource(url)));
+        ShowcaseAuthController restartedController =
+                new ShowcaseAuthController(restartedRepository);
+        MockHttpServletRequest loginRequest = new MockHttpServletRequest();
+        String loginCsrf = restartedController.csrf(loginRequest).csrfToken();
+        ShowcaseAuthController.AuthResponse loggedIn = restartedController.login(
+                new ShowcaseAuthController.CredentialsRequest(username, password),
+                loginCsrf, loginRequest);
+
+        assertEquals(username, loggedIn.username());
+    }
+
+    @Test
+    void checklistProgressIsIsolatedBetweenLearners() throws Exception {
+        String firstUsername = nextUsername();
+        String secondUsername = nextUsername();
+        AuthSession first = signup(firstUsername, "fictional-password-111");
+        AuthSession second = signup(secondUsername, "fictional-password-222");
+
+        mvc.perform(put("/api/checklist").session(first.session())
+                        .header("X-CSRF-Token", first.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"itemId\":\"school-results\",\"completed\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progress.school-results").value(true));
+
+        mvc.perform(get("/api/checklist").session(second.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progress.school-results").doesNotExist());
+        assertTrue(repository.progress(firstUsername).get("school-results"));
+        assertTrue(repository.progress(secondUsername).isEmpty());
     }
 
     @Test
@@ -259,6 +324,14 @@ class ChecklistApiTest {
             request.setRemoteAddr("192.0.2." + address);
             return request;
         };
+    }
+
+    private static JdbcDataSource dataSource(String url) {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL(url);
+        dataSource.setUser("sa");
+        dataSource.setPassword("");
+        return dataSource;
     }
 
     private record AuthSession(MockHttpSession session, String csrf) { }

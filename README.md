@@ -22,7 +22,7 @@ Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
 |---|---|
 | Frontend | HTML, CSS, JavaScript (mobile-first) |
 | Backend | Java, Spring Boot (Maven) |
-| Database | H2 (in-memory). Accounts and checklist progress reset when the app restarts |
+| Database | File-based H2 locally; PostgreSQL for hosted deployments |
 
 ## Run it locally
 
@@ -31,37 +31,26 @@ Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
    git clone https://github.com/ConstanceKwena/ukhanyiso.git
    cd ukhanyiso
    ```
-2. Create your env file:
-   ```bash
-   cp .env.example .env
-   set -a
-   . ./.env
-   set +a
-   ```
-   `.env.example` contains the local server port only; this app currently needs no credentials or external service keys. Never commit `.env`.
-3. Start the app:
+2. Start the app:
    ```bash
    mvn spring-boot:run
    ```
-4. Open http://localhost:8080 (Spring Boot default port).
+   By default, the app creates `./data/ukhanyiso.mv.db` for local accounts and checklist progress. The `data` directory is ignored by Git and must not be committed.
+3. Open http://localhost:8080 (Spring Boot default port).
 
-<<<<<<< Updated upstream
-Requirements: Java 17 (set in `pom.xml` and the `Dockerfile`), Maven, Git.
-=======
 Requirements: Java 21 LTS, Maven, Git.
->>>>>>> Stashed changes
 
 ## Sign-up and log-in
 
 Create an app-only account using a **fictional username** (5–24 letters, numbers, hyphens, or underscores) and a **made-up password** (12–128 characters). Do not use your real name, contact details, ID number, or a password reused elsewhere. No email, phone number, identity details, or recovery information is collected. Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes; the app does not store the password itself. There is no password recovery, so use fictional credentials you can remember.
 
-After signing in, enter fictional matric marks yourself. Marks are sent to the server for course matching but are not persisted. Checklist progress is attached to the fictional username. The current in-memory H2 database clears accounts and checklist progress when the app restarts. Never enter real learner identity, school-record, contact, or financial details.
+After signing in, enter fictional matric marks yourself. Marks are sent to the server for course matching but are not persisted. Checklist progress is attached to the fictional username and, with the local H2 database, survives app restarts on the same computer. Never enter real learner identity, school-record, contact, or financial details.
 
-For an HTTPS deployment, set `SESSION_COOKIE_SECURE=true`; leave it unset for local HTTP development.
+## Hosted deployments
 
-Live app: https://ukhanyiso.onrender.com (free hosting: it sleeps when idle and the first request can take about a minute; saved checklist ticks reset when it restarts).
+Use a persistent PostgreSQL database for hosted deployments; some hosts erase local files when they restart or redeploy. Configure the host with `SPRING_DATASOURCE_URL` (for example, `jdbc:postgresql://<host>:<port>/<database>`), `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD`. Set these as deployment environment variables or secrets, never in source code. For HTTPS deployments, also set `SESSION_COOKIE_SECURE=true`.
 
-The app uses an in-memory H2 database, so accounts and checklist progress are lost on restart. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
+Live app: https://ukhanyiso.onrender.com (free hosting: it sleeps when idle and the first request can take about a minute). Persistence there depends on configuring a persistent PostgreSQL database as described above. Checklist API details are in [docs/checklist-api.md](docs/checklist-api.md).
 
 ## Contributing
 
