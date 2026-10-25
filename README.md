@@ -12,7 +12,7 @@ Challenge: **Access to higher education**.
 - **Path to yes:** for a course you narrowly missed that is still open, shows the cheapest mark improvements that would meet the minimum (for example "Raise Mathematics from 58% to 60%"). Every suggestion is proven by re-running the real matching rules. Rules: `docs/path-to-yes.md`.
 - **Keep my funding:** a money planner that uses only the numbers the learner types in.
 - **Funding and document checklist:** bursaries, what each needs, and closing dates.
-- **Fictional username/password accounts** with saved, account-specific checklist progress.
+- **Username/password accounts** with saved, account-specific checklist progress.
 
 Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
 
@@ -42,9 +42,11 @@ Requirements: Java 21 LTS, Maven, Git.
 
 ## Sign-up and log-in
 
-Create an app-only account using a **fictional username** (5–24 letters, numbers, hyphens, or underscores) and a **made-up password** (12–128 characters). Do not use your real name, contact details, ID number, or a password reused elsewhere. No email, phone number, identity details, or recovery information is collected. Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes; the app does not store the password itself. There is no password recovery, so use fictional credentials you can remember.
+Create your Ukhanyiso account using a username (3–50 letters, numbers, underscores, or hyphens) and a unique password (12–128 characters). Do not reuse a password from another account or enter an ID or exam number. No email, phone number, or recovery information is collected. Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes; the app does not store the password itself. Password recovery is not available yet.
 
-After signing in, enter fictional matric marks yourself. Marks are sent to the server for course matching but are not persisted. Checklist progress is attached to the fictional username and, with the local H2 database, survives app restarts on the same computer. Never enter real learner identity, school-record, contact, or financial details.
+After signing in, enter fictional matric marks yourself. Marks are sent to the server for course matching but are not persisted. Checklist progress is attached to your account and, with the local H2 database, survives app restarts on the same computer. Never enter real learner identity, school-record, contact, or financial details.
+
+**Prototype privacy:** this app has not been approved for real learner records. Use sample/fictional marks and learner information while testing, and never enter an ID or exam number. Account usernames, salted password hashes, and checklist ticks are stored in the configured database. Marks are processed for matching and kept in the current browser tab only to show results. Study plans, reminders, funding-document ticks, language preference, and financial planning entries stay in browser storage or in the current page, not in the account database. Browser data can be cleared or lost with the device. Before inviting real learners, complete a privacy, security, retention, and support review and configure persistent hosted storage.
 
 ## Hosted deployments
 

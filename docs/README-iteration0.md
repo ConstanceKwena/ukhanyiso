@@ -1,5 +1,7 @@
 # Iteration 0 checklist (Data)
 
+> **Historical snapshot:** The security checklist and evidence below describe iteration 0 and are not a current application-status report. Accounts and account-specific checklist storage have since been implemented; local H2 data persists across restarts, and hosted deployments require persistent PostgreSQL. For current setup and privacy behavior, see [README.md](../README.md) and [checklist-api.md](checklist-api.md). This remains a fictional-data prototype and is not approved for real learner information.
+
 - [x] Design the tables: `data/schema.sql`
 - [x] Pick 3 institutions (UJ, UP, TUT) and 12 courses (4 each)
 - [x] Start the source sheet: `data/source_sheet.csv` (APS, subjects, closing date, official link, date checked, checked by, status)
