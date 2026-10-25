@@ -17,11 +17,11 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/auth")
 public class ShowcaseAuthController {
     private static final Logger log = LoggerFactory.getLogger(ShowcaseAuthController.class);
-    private static final Pattern USERNAME = Pattern.compile("[a-zA-Z0-9_-]{3,50}");
     private static final Pattern EMAIL = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
     private static final Pattern NAME = Pattern.compile("[\\p{L}][\\p{L}\\s'’-]{0,79}");
     public static final int MIN_PASSWORD_LENGTH = 12;
     public static final int MAX_PASSWORD_LENGTH = 128;
+    public static final int MAX_EMAIL_LENGTH = 100;
     private static final PasswordHasher.Credentials DUMMY_CREDENTIALS =
             new PasswordHasher.Credentials(
                     "AAAAAAAAAAAAAAAAAAAAAA==",
@@ -46,11 +46,12 @@ public class ShowcaseAuthController {
             @RequestHeader(value = "X-CSRF-Token", required = false) String token,
             HttpServletRequest request) {
         verifyCsrf(request.getSession(false), token);
-        if (body == null || !validUsername(body.username())
+        // The email address is the username, so it must be a valid email.
+        if (body == null || !validEmail(body.username())
                 || !validPassword(body.password())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Use a valid username and a password of 12 to 128 characters.");
+                    "Use a valid email address and a password of 12 to 128 characters.");
         }
 
         String username = normalizeUsername(body.username());
@@ -65,7 +66,7 @@ public class ShowcaseAuthController {
             repository.createAccount(username, credentials.salt(), credentials.hash());
         } catch (DuplicateKeyException exception) {
             throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "That username is already in use.");
+                    HttpStatus.CONFLICT, "That email is already registered.");
         }
 
         return startSession(username, request);
@@ -77,7 +78,7 @@ public class ShowcaseAuthController {
             @RequestHeader(value = "X-CSRF-Token", required = false) String token,
             HttpServletRequest request) {
         verifyCsrf(request.getSession(false), token);
-        if (body == null || !validUsername(body.username())
+        if (body == null || !validEmail(body.username())
                 || !validPassword(body.password())) {
             throw invalidCredentials();
         }
@@ -136,7 +137,7 @@ public class ShowcaseAuthController {
         return new ProfileResponse(p.firstName(), p.surname(), p.contactEmail(), p.whatsapp());
     }
 
-    /** All fields optional and validated; empty strings clear a value. */
+    /** All four details are required and validated. */
     @PutMapping("/profile")
     public ProfileResponse updateProfile(
             @RequestBody(required = false) ProfileRequest body,
@@ -159,6 +160,11 @@ public class ShowcaseAuthController {
         if (whatsapp != null && (whatsapp.length() > 30 || !whatsapp.matches("\\+?[0-9]+"))) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Enter a valid WhatsApp number, digits only (a leading + is allowed).");
+        }
+        if (firstName == null || surname == null || email == null || whatsapp == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "First name, surname, email and WhatsApp number are all required.");
         }
         repository.updateProfile(user, firstName, surname, email, whatsapp);
         return new ProfileResponse(firstName, surname, email, whatsapp);
@@ -218,8 +224,9 @@ public class ShowcaseAuthController {
         }
     }
 
-    private boolean validUsername(String username) {
-        return username != null && USERNAME.matcher(username).matches();
+    private boolean validEmail(String email) {
+        return email != null && email.length() <= MAX_EMAIL_LENGTH
+                && EMAIL.matcher(email).matches();
     }
 
     private boolean validPassword(String password) {
