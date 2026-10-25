@@ -42,7 +42,7 @@ Also keep the same wording in the pitch deck, the video script and the Lean Busi
 
 ## 4. Data provenance statement (paste into README, SSDLC write-up and deck)
 
-> **Where our data comes from.** Course requirements and closing dates are taken from official institution pages (UJ, UP, TUT). Each course records its APS, subjects, closing date, official link, the date it was checked and a verification status (verified, partial, unverified, conflicting). Bursary details come from the funders' own pages where we could find them, and from reputable news reports or listing sites where we could not; those entries are marked partial or unverified and show no official link rather than an unconfirmed one. We use no learner data: marks are processed in memory and the demo account is fictional. Closing dates change, so the app always tells learners to confirm with the institution or funder before applying.
+> **Where our data comes from.** Course requirements and closing dates are taken from official institution pages (UJ, UP, TUT). Each course records its APS, subjects, closing date, official link, the date it was checked and a verification status (verified, partial, unverified, conflicting). Bursary details come from the funders' own pages where we could find them, and from reputable news reports or listing sites where we could not; those entries are marked partial or unverified and show no official link rather than an unconfirmed one. Marks are processed for matching but not saved. Account usernames, salted password hashes, and checklist progress are saved in the configured database. Closing dates change, so the app always tells learners to confirm with the institution or funder before applying.
 
 ## 5. How to apply the bursary patch
 

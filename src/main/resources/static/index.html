@@ -1,229 +1,193 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ukhanyiso: enter your marks</title>
+    <title>Ukhanyiso | Dashboard</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<nav aria-label="Main navigation">
-    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
-    <a href="/index.html" aria-current="page">Marks</a>
-    <a href="/results.html">Results</a>
-    <a href="/funding.html">Funding</a>
-    <a href="/calendar.html">Reminders</a>
-    <a href="/plan.html">Budget</a>
-    <a href="/checklist.html">Checklist</a>
-    <a href="/signup.html">Sign up</a>
-    <a href="/login.html">Log in</a>
-</nav>
-<main>
-    <header class="page-heading">
-        <p class="eyebrow">From APS to graduation</p>
-        <h1>Check courses that fit your marks</h1>
-        <p>Enter your matric subject marks to see courses that meet their published minimum requirements.</p>
-    </header>
-    <form id="marks-form" novalidate aria-describedby="errors">
-        <p class="form-note">Add at least one subject. Life Orientation is accepted but does not count towards APS. You can enter up to 12 subjects.</p>
-        <div id="rows" class="subject-list"></div>
-        <div class="form-actions">
-            <button type="button" class="secondary" id="add">Add a subject</button>
-            <button type="submit" id="submit">See matching courses</button>
+
+<header class="app-header">
+    <div class="topbar">
+        <a class="nav-brand" href="/index.html">Ukhanyiso</a>
+
+        <div class="top-actions">
+            <button
+                type="button"
+                id="menu-toggle"
+                class="menu-toggle"
+                aria-controls="main-menu"
+                aria-expanded="false">
+                ☰ Menu
+            </button>
+
+            <button
+                type="button"
+                id="sign-out"
+                class="nav-logout"
+                hidden>
+                Sign out
+            </button>
         </div>
-        <p id="errors" class="error" role="alert" aria-live="polite"></p>
-        <p class="form-note">Your marks are used to check course requirements. They are not saved to a learner profile.</p>
-    </form>
+    </div>
 
-    <!-- POPIA privacy notice -->
-    <section class="privacy-notice" aria-labelledby="privacy-heading">
-        <h2 id="privacy-heading">Privacy notice (POPIA)</h2>
+    <nav id="main-menu" aria-label="Main navigation" hidden>
+        <a href="/index.html" aria-current="page">Dashboard</a>
+        <a href="/start.html">Marks</a>
+        <a href="/results.html">Results</a>
+        <a href="/funding.html">Funding</a>
+        <a href="/calendar.html">Reminders</a>
+        <a href="/plan.html">Financial Plan</a>
+        <a href="/checklist.html">Checklist</a>
+        <a class="profile-link" href="/account.html">Profile</a>
+    </nav>
+</header>
 
+<main>
+    <header class="page-heading dashboard-heading">
+        <p class="eyebrow">Your higher education journey</p>
+        <h1>Student Dashboard</h1>
         <p>
-            Ukhanyiso uses the matric marks you enter to calculate
-            possible course matches. In this prototype, marks are sent
-            to the application server for calculation and are not saved
-            to a learner profile.
+            Welcome to Ukhanyiso. Keep your marks, course options,
+            funding tasks and study plans in one place.
         </p>
+    </header>
 
-        <p>
-            Use fictional data only. Do not enter real identity numbers, contact details,
-            household-income information, or personal documents.
-        </p>
+    <section class="dashboard-summary" aria-label="Your dashboard">
 
-        <p>
-            Ukhanyiso is a prototype, not an official university,
-            TVET college, NSFAS, or bursary application service.
-            Confirm all requirements with the relevant institution.
-        </p>
+        <article class="dashboard-welcome">
+            <p class="eyebrow">Start here</p>
+            <h2>Build your next step</h2>
+            <p>
+                Add your marks to explore course options, then use your
+                checklist and reminders to keep applications moving.
+            </p>
+            <a class="dashboard-primary" href="/start.html">
+                Enter or update my marks
+            </a>
+        </article>
 
+        <article class="dashboard-profile card">
+            <h2>Your Profile</h2>
+            <p>
+                Review your account and see which reminders are
+                saved in this browser.
+            </p>
+            <a class="button-link" href="/account.html">
+                View Profile
+            </a>
+        </article>
+
+    </section>
+
+    <section aria-labelledby="tools-heading">
+        <div class="section-heading">
+            <p class="eyebrow">Your workspace</p>
+            <h2 id="tools-heading">Student Tools</h2>
+            <p>
+                Choose a tool below, or use the Menu button at the top
+                to navigate to another section.
+            </p>
+        </div>
+
+        <div class="dashboard-grid">
+
+            <article class="dashboard-tile">
+                <span class="tile-number">01</span>
+                <h3>Marks</h3>
+                <p>
+                    Enter your subject marks and explore courses that
+                    may fit the published entry requirements.
+                </p>
+                <a href="/start.html">
+                    Open Marks <span aria-hidden="true">→</span>
+                </a>
+            </article>
+
+            <article class="dashboard-tile">
+                <span class="tile-number">02</span>
+                <h3>Course Results</h3>
+                <p>
+                    Review course matches based on the marks you entered.
+                    Confirm all requirements with the institution.
+                </p>
+                <a href="/results.html">
+                    View Results <span aria-hidden="true">→</span>
+                </a>
+            </article>
+
+            <article class="dashboard-tile">
+                <span class="tile-number">03</span>
+                <h3>Funding Opportunities</h3>
+                <p>
+                    Explore bursaries and funding information, and check
+                    application requirements with official providers.
+                </p>
+                <a href="/funding.html">
+                    Explore Funding <span aria-hidden="true">→</span>
+                </a>
+            </article>
+
+            <article class="dashboard-tile">
+                <span class="tile-number">04</span>
+                <h3>Reminders</h3>
+                <p>
+                    Keep track of application deadlines and the next
+                    actions you need to complete.
+                </p>
+                <a href="/calendar.html">
+                    Open Reminders <span aria-hidden="true">→</span>
+                </a>
+            </article>
+
+            <article class="dashboard-tile">
+                <span class="tile-number">05</span>
+                <h3>Financial Plan</h3>
+                <p>
+                    Estimate your monthly expenses and plan for the period
+                    before your first funding payout.
+                </p>
+                <a href="/plan.html">
+                    Plan My Finances <span aria-hidden="true">→</span>
+                </a>
+            </article>
+
+            <article class="dashboard-tile">
+                <span class="tile-number">06</span>
+                <h3>Application Checklist</h3>
+                <p>
+                    Organise your application tasks and identify what
+                    still needs your attention.
+                </p>
+                <a href="/checklist.html">
+                    Open Checklist <span aria-hidden="true">→</span>
+                </a>
+            </article>
+
+        </div>
+    </section>
+
+    <section class="dashboard-note" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">Plan your future with confidence</h2>
         <p>
-            Before public release, the project team must publish the
-            responsible party's contact details, processing purposes,
-            retention periods, data-subject rights, and privacy-request
-            process.
+            Ukhanyiso helps students organise their higher education
+            journey. It is a planning tool, not an official university,
+            TVET college, NSFAS or bursary application service.
+            Always confirm deadlines and requirements with the relevant
+            organisation. Use fictional information while testing.
         </p>
     </section>
+    <details class="privacy-notice">
+        <summary>Privacy notice (POPIA)</summary>
+        <p>Marks are sent to the server to calculate course matches, but are not saved. Use fictional data only—never enter real identity, contact, financial details, or personal documents.</p>
+        <p>Ukhanyiso is a prototype, not an official university, TVET, NSFAS, or bursary application service. Confirm requirements with the relevant institution.</p>
+        <p>Before public release, the project must publish its contact details, purposes for using information, retention periods, and how people can exercise their privacy rights.</p>
+    </details>
 </main>
-<script src="/js/validate.js"></script>
+
 <script src="/js/site.js"></script>
-<script>
-    const rowsEl = document.getElementById("rows");
-    const addButton = document.getElementById("add");
-    let rowNumber = 0;
-    function addRow(subjectValue, markValue) {
-        if (rowsEl.children.length >= 12) return;
-        const number = ++rowNumber;
-        const d = document.createElement("div");
-        d.className = "row";
-        d.setAttribute("role", "group");
-        d.setAttribute("aria-label", `Subject ${number}`);
-        const subjectLabel = document.createElement("label");
-        subjectLabel.htmlFor = `subject-${number}`;
-        subjectLabel.textContent = "Subject";
-        const sel = document.createElement("select");
-        sel.id = `subject-${number}`;
-        sel.name = "subject";
-        const blank = document.createElement("option");
-        blank.value = ""; blank.textContent = "Choose subject";
-        sel.appendChild(blank);
-        [...SUBJECTS].sort((a, b) => a.localeCompare(b)).forEach(s => {
-            const o = document.createElement("option");
-            o.value = s;
-            o.textContent = s;
-            sel.appendChild(o);
-        });
-        if (SUBJECTS.includes(subjectValue)) sel.value = subjectValue;
-        const markLabel = document.createElement("label");
-        markLabel.htmlFor = `mark-${number}`;
-        markLabel.textContent = "Mark (%)";
-        const mark = document.createElement("input");
-        mark.id = `mark-${number}`;
-        mark.name = "mark";
-        mark.type = "number"; mark.min = 0; mark.max = 100; mark.step = 1; mark.placeholder = "e.g. 75";
-        mark.inputMode = "numeric";
-        if (/^\d{1,3}$/.test(markValue || "") && Number(markValue) <= 100) {
-            mark.value = markValue;
-        }
-        const rm = document.createElement("button");
-        rm.type = "button"; rm.className = "remove-button"; rm.textContent = "Remove";
-        rm.setAttribute("aria-label", `Remove subject row ${number}`);
-        rm.onclick = () => {
-            d.remove();
-            addButton.disabled = rowsEl.children.length >= 12;
-        };
-        const subjectField = document.createElement("div");
-        subjectField.className = "field";
-        subjectField.append(subjectLabel, sel);
-        const markField = document.createElement("div");
-        markField.className = "field";
-        markField.append(markLabel, mark);
-        d.append(subjectField, markField, rm);
-        rowsEl.appendChild(d);
-        addButton.disabled = rowsEl.children.length >= 12;
-    }
 
-    let restoredMarks = null;
-    try {
-        const saved = JSON.parse(sessionStorage.getItem("ukhanyiso-marks"));
-        if (Array.isArray(saved)) {
-            restoredMarks = saved.filter(row => row && SUBJECTS.includes(row.subject)
-                && /^\d{1,3}$/.test(String(row.mark))
-                && Number(row.mark) <= 100);
-        }
-    } catch (error) {
-        restoredMarks = null;
-    }
-    if (restoredMarks && restoredMarks.length > 0) {
-        restoredMarks.forEach(row => addRow(row.subject, String(row.mark)));
-    } else {
-        for (let i = 0; i < 4; i++) addRow("", "");
-    }
-    addButton.disabled = rowsEl.children.length >= 12;
-    addButton.onclick = addRow;
-
-    const form = document.getElementById("marks-form");
-    form.addEventListener("input", () => {
-        document.getElementById("errors").textContent = "";
-    });
-    form.addEventListener("change", () => {
-        document.getElementById("errors").textContent = "";
-    });
-    form.onsubmit = async e => {
-        e.preventDefault();
-        const submitButton = document.getElementById("submit");
-        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector('input[name="mark"]').value }));
-        const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
-        const box = document.getElementById("errors");
-        box.textContent = errors.join(" ");
-        if (errors.length > 0) return;
-
-        submitButton.disabled = true;
-        submitButton.textContent = "Checking courses…";
-        try {
-            const requestBody = JSON.stringify({ marks: rows });
-            let res = await fetch("/api/match", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: requestBody
-            });
-            let data;
-            try {
-                data = await res.json();
-            } catch (err) {
-                data = null;
-            }
-            if (!res.ok) {
-                box.textContent = (data && Array.isArray(data.errors) && data.errors.length > 0
-                    ? data.errors
-                    : ["Something went wrong. Please try again."]).join(" ");
-                return;
-            }
-            if (!data || !Array.isArray(data.results)) {
-                box.textContent = "We received an unexpected response. Please try again.";
-                return;
-            }
-            let showingAllCourses = false;
-            if (data.results.length === 0) {
-                res = await fetch("/api/match?includeAll=true", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: requestBody
-                });
-                try {
-                    data = await res.json();
-                } catch (responseError) {
-                    data = null;
-                }
-                if (!res.ok || !data || !Array.isArray(data.results)) {
-                    box.textContent = "We could not load course options for these marks. Please try again.";
-                    return;
-                }
-                showingAllCourses = data.results.length > 0;
-            }
-            try {
-                sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
-                sessionStorage.setItem("ukhanyiso-marks", JSON.stringify(rows));
-                if (showingAllCourses) {
-                    sessionStorage.setItem("ukhanyiso-showing-all-courses", "true");
-                } else {
-                    sessionStorage.removeItem("ukhanyiso-showing-all-courses");
-                }
-            } catch (storageError) {
-                box.textContent = "Your results are ready, but this browser could not keep them for the results page. Please allow session storage and try again.";
-                return;
-            }
-            location.href = "/results.html";
-        } catch (err) {
-            box.textContent = "We could not complete your request. Please try again.";
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = "See matching courses";
-        }
-    };
-</script>
-    <script src="/js/stage.js" defer></script>
 </body>
 </html>

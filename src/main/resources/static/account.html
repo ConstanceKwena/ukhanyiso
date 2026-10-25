@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ukhanyiso: profile</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav aria-label="Main navigation">
+    <a class="nav-brand" href="/index.html">Ukhanyiso</a>
+    <a href="/start.html">Marks</a>
+    <a href="/results.html">Results</a>
+    <a href="/funding.html">Funding</a>
+    <a href="/calendar.html">Reminders</a>
+    <a href="/plan.html">Financial Plan</a>
+    <a href="/checklist.html">Checklist</a>
+    <a href="/account.html" aria-current="page">Profile</a>
+    <button type="button" id="sign-out" class="nav-logout" hidden>Sign out</button>
+</nav>
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Your account</p>
+        <h1>Profile</h1>
+        <p>Your account uses your username only. Ukhanyiso does not need your email address, phone number, ID number, or exam number.</p>
+    </header>
+
+    <section class="calendar-panel" aria-labelledby="account-heading">
+        <h2 id="account-heading">Ukhanyiso account</h2>
+        <p id="account-status" class="form-note" role="status" aria-live="polite">Loading account…</p>
+    </section>
+
+    <section class="calendar-panel" aria-labelledby="reminders-heading">
+        <h2 id="reminders-heading">Reminders on this device</h2>
+        <p id="reminder-summary" class="form-note" role="status" aria-live="polite">Checking this browser…</p>
+        <a class="button-link" href="/calendar.html">Manage reminders</a>
+        <p class="form-note">Reminders are saved in this browser only. They are not linked to your account or sent to Ukhanyiso.</p>
+    </section>
+
+    <section class="calendar-panel" aria-labelledby="next-heading">
+        <h2 id="next-heading">Continue your study journey</h2>
+        <ul>
+            <li><a href="/start.html">Enter or update marks</a></li>
+            <li><a href="/results.html">Review course results</a></li>
+            <li><a href="/funding.html">Check funding information and sources</a></li>
+            <li><a href="/checklist.html">Review your application checklist</a></li>
+            <li><a href="/plan.html">Open the financial planner</a></li>
+        </ul>
+    </section>
+</main>
+<script src="/js/site.js"></script>
+<script>
+    (async () => {
+        const accountStatus = document.getElementById("account-status");
+        try {
+            const response = await fetch("/api/auth/me", { credentials: "same-origin" });
+            if (response.status === 401) {
+                location.assign("/login.html");
+                return;
+            }
+            if (!response.ok) throw new Error("Account information could not be loaded.");
+            const account = await response.json();
+            accountStatus.textContent = "Signed in as " + account.username + ". Your username is the only profile detail stored.";
+        } catch (error) {
+            accountStatus.textContent = "Could not load your account. Refresh the page and try again.";
+            accountStatus.className = "error";
+        }
+
+        const reminderSummary = document.getElementById("reminder-summary");
+        try {
+            const reminders = JSON.parse(localStorage.getItem("ukhanyiso-reminders-v1") || "[]");
+            const count = Array.isArray(reminders) ? reminders.length : 0;
+            reminderSummary.textContent = count + (count === 1
+                ? " reminder saved in this browser."
+                : " reminders saved in this browser.");
+        } catch (error) {
+            reminderSummary.textContent = "This browser could not read the local reminders.";
+            reminderSummary.className = "error";
+        }
+    })();
+</script>
+</body>
+</html>

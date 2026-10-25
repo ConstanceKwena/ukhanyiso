@@ -73,11 +73,11 @@
                 return;
             }
             if (response.status === 409) {
-                showError("That fictional username is already in use. Choose another one or log in.");
+                showError("That username is already in use. Choose another one or log in.");
             } else if (response.status === 401) {
-                showError("The fictional username or password is incorrect.");
+                showError("The username or password is incorrect.");
             } else if (response.status === 400) {
-                showError("Use a fictional username and a made-up password of at least 12 characters.");
+                showError("Use a valid username and a password of at least 12 characters.");
             } else if (response.status === 429) {
                 showError("Too many attempts. Wait a minute, then try again.");
             } else {

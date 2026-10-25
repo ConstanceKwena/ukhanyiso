@@ -10,7 +10,7 @@
 <body>
 <nav aria-label="Main navigation">
     <a class="nav-brand" href="/index.html">Ukhanyiso</a>
-    <a href="/index.html">Marks</a>
+    <a href="/start.html">Marks</a>
     <a href="/results.html">Results</a>
     <a href="/funding.html" aria-current="page">Funding</a>
     <a href="/calendar.html">Reminders</a>
@@ -26,21 +26,36 @@
         <p>Check closing dates and tick off the documents you need to gather.</p>
     </header>
     <div id="list" aria-live="polite"></div>
+    <p id="document-status" class="form-note" role="status" aria-live="polite"></p>
     <section class="label-guide" aria-label="Next step">
         <h2>Next step: prepare an application</h2>
         <p>Use the checklist to review the documents to prepare before applying. Only use fictional data in this app.</p>
         <a class="button-link" href="/checklist.html">Open the checklist</a>
     </section>
-    <p class="disclaimer" id="disclaimer">Bursary details may change. Always confirm the closing date and required documents on the official page before applying.</p>
+    <p class="form-note">Document checklist ticks are saved in this browser only and are not linked to your account.</p>
+    <p class="disclaimer" id="disclaimer">Funding details may change; confirm requirements and dates with the funder before applying.</p>
 </main>
 <script>
     const list = document.getElementById("list");
+    const documentStatus = document.getElementById("document-status");
+    const DOCUMENT_PROGRESS_KEY = "ukhanyiso-funding-documents-v1";
+    let documentProgress = {};
     const STATUS = {
         verified: { text: "Verified", css: "fit-match" },
         partial: { text: "Partly verified", css: "fit-unknown" },
         conflicting: { text: "Sources disagree: check carefully", css: "fit-no-match" },
         unverified: { text: "Not verified yet", css: "fit-unknown" }
     };
+
+    try {
+        const saved = JSON.parse(localStorage.getItem(DOCUMENT_PROGRESS_KEY) || "{}");
+        if (saved && typeof saved === "object" && !Array.isArray(saved)) {
+            documentProgress = saved;
+        }
+    } catch (error) {
+        documentStatus.textContent = "This browser could not load saved document checklist ticks.";
+        documentStatus.className = "error";
+    }
 
     function el(tag, text, className) {
         const e = document.createElement(tag);
@@ -81,13 +96,29 @@
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
                 checkbox.id = "document-" + i + "-" + j;
+                const progressKey = b.id + ":" + doc;
+                checkbox.checked = documentProgress[progressKey] === true;
+                checkbox.addEventListener("change", () => {
+                    const previous = !checkbox.checked;
+                    documentProgress[progressKey] = checkbox.checked;
+                    try {
+                        localStorage.setItem(DOCUMENT_PROGRESS_KEY, JSON.stringify(documentProgress));
+                        documentStatus.textContent = "Document checklist updated in this browser.";
+                        documentStatus.className = "form-note";
+                    } catch (error) {
+                        checkbox.checked = previous;
+                        documentProgress[progressKey] = previous;
+                        documentStatus.textContent = "This browser could not save that document checklist change.";
+                        documentStatus.className = "error";
+                    }
+                });
                 label.appendChild(checkbox);
                 label.appendChild(document.createTextNode(" " + doc));
                 card.appendChild(label);
             });
         }
 
-        card.appendChild(el("p", "Official source last checked: " + (b.lastChecked || "Not verified yet")));
+        card.appendChild(el("p", "Information last reviewed: " + (b.lastChecked || "Not verified yet")));
 
         if (b.notes) {
             card.appendChild(el("p", "Important: " + b.notes));

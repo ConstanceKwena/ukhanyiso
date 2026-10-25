@@ -39,13 +39,6 @@
         }).format(date) : value;
     }
 
-    function addDays(value, days) {
-        const date = parseDate(value);
-        if (!date) return value;
-        date.setDate(date.getDate() + days);
-        return localDate(date);
-    }
-
     function loadReminders() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -75,9 +68,9 @@
     }
 
     function addReminder(title, date, sourceUrl) {
-        if (!parseDate(date)) return false;
+        if (!parseDate(date)) return "failed";
         const existing = reminders.find(item => item.title === title && item.date === date);
-        if (existing) return true;
+        if (existing) return "duplicate";
         reminders.push({
             id: makeId(),
             title,
@@ -86,10 +79,10 @@
         });
         if (!saveReminders()) {
             reminders.pop();
-            return false;
+            return "failed";
         }
         render();
-        return true;
+        return "saved";
     }
 
     function element(tag, text, className) {
@@ -157,9 +150,13 @@
         remove.type = "button";
         remove.setAttribute("aria-label", "Remove reminder: " + item.title);
         remove.onclick = () => {
+            const previousReminders = reminders;
             reminders = reminders.filter(reminder => reminder.id !== item.id);
             if (saveReminders()) {
                 status.textContent = "Reminder removed.";
+                render();
+            } else {
+                reminders = previousReminders;
                 render();
             }
         };
@@ -184,10 +181,15 @@
     }
 
     function addDeadlineReminder(item, button) {
-        if (addReminder("Funding deadline: " + item.name, item.closingDate, item.officialLink)) {
+        const result = addReminder("Funding deadline: " + item.name, item.closingDate, item.officialLink);
+        if (result === "saved") {
             button.disabled = true;
             button.textContent = "Added";
             status.textContent = "Funding deadline added to your local calendar.";
+        } else if (result === "duplicate") {
+            button.disabled = true;
+            button.textContent = "Added";
+            status.textContent = "That funding deadline is already in your local calendar.";
         }
     }
 
@@ -226,49 +228,29 @@
         }
     }
 
-    function escapeIcs(value) {
-        return String(value || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n")
-            .replace(/,/g, "\\,").replace(/;/g, "\\;");
-    }
-
     function exportCalendar() {
         if (!reminders.length) {
             status.textContent = "Add at least one reminder before exporting your calendar.";
             return;
         }
-        const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ukhanyiso//Application reminders//EN", "CALSCALE:GREGORIAN"];
-        reminders.forEach(item => {
-            const date = item.date.replace(/-/g, "");
-            lines.push(
-                "BEGIN:VEVENT",
-                "UID:" + escapeIcs(item.id) + "@ukhanyiso.local",
-                "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""),
-                "DTSTART;VALUE=DATE:" + date,
-                "DTEND;VALUE=DATE:" + addDays(item.date, 1).replace(/-/g, ""),
-                "SUMMARY:" + escapeIcs(item.title),
-                "DESCRIPTION:" + escapeIcs("Ukhanyiso reminder. Confirm deadlines with the official organisation."),
-                "BEGIN:VALARM",
-                "TRIGGER:-P1D",
-                "ACTION:DISPLAY",
-                "DESCRIPTION:" + escapeIcs(item.title),
-                "END:VALARM",
-                "END:VEVENT"
-            );
-            if (item.sourceUrl && item.sourceUrl.startsWith("https://")) {
-                lines.splice(lines.length - 1, 0, "URL:" + item.sourceUrl.replace(/[\r\n]/g, ""));
+        try {
+            const events = reminders.map(item => ({
+                id: item.id,
+                title: item.title,
+                date: item.date,
+                allDay: true,
+                description: "Ukhanyiso reminder. Confirm deadlines with the official organisation.",
+                sourceUrl: item.sourceUrl,
+                alarm: "-P1D"
+            }));
+            if (!window.UkhanyisoCalendarExport.download(events, "ukhanyiso-reminders.ics", "Application reminders")) {
+                status.textContent = "No reminders were available to export.";
+                return;
             }
-        });
-        lines.push("END:VCALENDAR", "");
-        const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "ukhanyiso-reminders.ics";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        status.textContent = "Calendar file downloaded. Import it into your calendar app to receive notifications.";
+            status.textContent = "Calendar file downloaded. Import it into your calendar app to receive notifications.";
+        } catch (error) {
+            status.textContent = "Calendar export failed. Please try again.";
+        }
     }
 
     document.getElementById("previous-month").onclick = () => {
@@ -287,11 +269,14 @@
             status.textContent = "Choose a valid date today or later.";
             return;
         }
-        if (addReminder(title, date)) {
+        const result = addReminder(title, date);
+        if (result === "saved") {
             selectedDate = date;
             displayedMonth = new Date(date.slice(0, 4), Number(date.slice(5, 7)) - 1, 1);
             status.textContent = "Reminder saved only in this browser.";
             render();
+        } else if (result === "duplicate") {
+            status.textContent = "That reminder is already saved for this date.";
         }
     };
     document.getElementById("export-calendar").onclick = exportCalendar;

@@ -30,6 +30,21 @@ nav {
     border-bottom: 1px solid var(--border);
 }
 
+#main-menu[hidden] {
+    display: none !important;
+}
+
+#main-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 0 14px;
+}
+
+#main-menu a {
+    border: 1px solid var(--border);
+    background: #fff;
+}
+
 nav a {
     min-height: 44px;
     display: flex;
@@ -81,11 +96,35 @@ nav a[aria-current="page"] {
     background: var(--green);
 }
 
+#main-menu a[aria-current="page"] {
+    border-color: var(--green);
+}
+
 .nav-logout {
     width: auto;
     min-height: 44px;
     margin: 0;
     padding: 8px 14px;
+}
+
+.privacy-notice {
+    margin-top: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.privacy-notice summary {
+    color: var(--green-dark);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.privacy-notice p {
+    margin: 10px 0 0;
 }
 
 a {
@@ -165,7 +204,8 @@ li + li {
 }
 
 form,
-.card {
+.card,
+.study-planner-panel {
     padding: 20px;
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -532,15 +572,157 @@ input:focus-visible {
     min-height: 1.5em;
 }
 
+.study-section-heading,
+.study-day legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.study-section-heading {
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.study-section-heading h2 {
+    margin: 0;
+}
+
+#study-planner > section + section {
+    margin-top: 24px;
+}
+
+.subject-entry,
+.study-day-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+
+.subject-entry button {
+    align-self: end;
+}
+
+.study-day {
+    min-width: 0;
+    margin: 14px 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.study-day legend {
+    padding: 0 8px;
+    font-weight: 700;
+}
+
+.study-day legend label {
+    cursor: pointer;
+}
+
+.study-day-controls {
+    padding-top: 8px;
+}
+
+.study-subject,
+.study-session,
+.study-resource {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.study-subject {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 220px);
+    gap: 10px 14px;
+    align-items: end;
+    margin: 12px 0;
+}
+
+.study-subject h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.study-subject button {
+    grid-column: 2;
+}
+
+.study-day-schedule,
+.study-resource-group {
+    margin: 20px 0;
+}
+
+.study-day-schedule > h3,
+.study-resource-group > h4 {
+    margin-bottom: 10px;
+}
+
+.study-session-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+}
+
+.study-session h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+}
+
+.study-session p,
+.study-resource p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.study-session label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 12px 0 0;
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.study-session input[type="checkbox"] {
+    width: 22px;
+    min-height: 22px;
+    height: 22px;
+    padding: 0;
+}
+
+.study-session select {
+    margin-top: 6px;
+}
+
+.study-break {
+    border-style: dashed;
+    background: #f5f8f6;
+}
+
+.study-session.is-complete {
+    border-color: #5b9a73;
+    background: #f0f8f2;
+}
+
+.study-resource {
+    margin: 10px 0;
+}
+
 @media (max-width: 520px) {
     body {
         width: min(100% - 24px, 720px);
         padding-top: 12px;
     }
 
-    nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 4px;
+    #main-menu {
+        grid-template-columns: 1fr;
+        gap: 6px;
     }
 
     nav a {
@@ -557,6 +739,7 @@ input:focus-visible {
     }
 
     form,
+    .study-planner-panel,
     .card {
         padding: 16px;
     }
@@ -592,6 +775,20 @@ input:focus-visible {
         padding: 12px;
     }
 
+    .subject-entry,
+    .study-day-controls,
+    .study-subject {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .study-subject button {
+        grid-column: 1;
+    }
+
+    .study-section-heading > button {
+        width: 100%;
+    }
+
     .calendar-day {
         min-height: 42px;
         padding: 4px;
@@ -614,4 +811,8 @@ input:focus-visible {
     button {
         transition: background-color 120ms ease;
     }
+}
+
+#main-menu[hidden] {
+    display: none !important;
 }

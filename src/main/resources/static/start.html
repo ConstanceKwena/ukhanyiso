@@ -11,7 +11,7 @@
 <body>
 <nav aria-label="Main navigation">
     <a class="nav-brand" href="/index.html">Ukhanyiso</a>
-    <a href="/index.html" aria-current="page">Explore</a>
+    <a href="/start.html" aria-current="page">Marks</a>
     <a href="/results.html">Results</a>
     <a href="/funding.html">Funding</a>
     <a href="/calendar.html">Reminders</a>
@@ -24,7 +24,7 @@
     <header class="page-heading">
         <p class="eyebrow">Marks, courses and funding</p>
         <h1>See your courses and bursaries in one go</h1>
-        <p>Enter your marks. We show courses that fit, then bursaries to look at. Nothing is saved.</p>
+        <p>Enter fictional marks. We send them only to the course-matching service for this request; they are not saved to your account.</p>
     </header>
     <form id="marks-form" novalidate>
         <div id="rows" class="subject-list"></div>
@@ -37,14 +37,16 @@
     <section id="courses" hidden>
         <h2>Courses that fit your marks</h2>
         <div id="course-list"></div>
-        <p><a href="/results.html">See every detail and try "what if my marks were higher"</a></p>
+        <p id="results-storage-status" class="form-note" role="status" aria-live="polite"></p>
+        <p><a href="/results.html">See every course detail, then update your marks to compare options</a></p>
     </section>
     <section id="bursaries" hidden>
         <h2>Bursaries to look at</h2>
         <div id="bursary-list"></div>
+        <p id="bursary-status" class="form-note" role="status" aria-live="polite"></p>
         <p><a href="/funding.html">See funding and documents</a> · <a href="/calendar.html">Set application reminders</a> · <a href="/plan.html">Plan your budget</a> · <a href="/signup.html">Create an account</a></p>
     </section>
-    <p class="disclaimer">Guides only. Meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
+    <p class="disclaimer">Use fictional marks only. Marks are used for this matching request and are kept in this browser tab only to show your results. Guides only; meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
 </main>
 <script src="/js/validate.js"></script>
 <script src="/js/site.js"></script>
@@ -106,19 +108,46 @@
     function bursaryCard(b, avg) {
         const c = el("article", null, "card");
         c.appendChild(el("h3", b.name || "Bursary"));
+        const statuses = {
+            verified: { text: "Verified", css: "fit-match" },
+            partial: { text: "Partly verified", css: "fit-unknown" },
+            conflicting: { text: "Sources disagree: check carefully", css: "fit-no-match" },
+            unverified: { text: "Not verified yet", css: "fit-unknown" }
+        };
+        const status = statuses[b.status] || statuses.unverified;
+        c.appendChild(el("span", status.text, "badge " + status.css));
         c.appendChild(el("p", b.closingDate ? "Closing date: " + b.closingDate + (b.closingTime ? " at " + String(b.closingTime).slice(0, 5) : "") : "Closing date not confirmed"));
+        c.appendChild(el("p", "Information last reviewed: " + (b.lastChecked || "Not verified yet")));
         if (b.whoItsFor) c.appendChild(el("p", "Who can apply: " + b.whoItsFor));
         const m = /(\d{2,3})% average/.exec(b.whoItsFor || "");
         if (m && avg !== null) {
             const ok = avg >= Number(m[1]);
             c.appendChild(el("span", ok ? "Your average (" + avg + "%) meets the listed minimum" : "Your average (" + avg + "%) is below the listed minimum (" + m[1] + "%)", "badge " + (ok ? "fit-match" : "fit-near-miss")));
-        } else {
+        } else if (b.whoItsFor) {
             c.appendChild(el("span", "Check the conditions yourself", "badge fit-unknown"));
+        }
+        if (b.notes) c.appendChild(el("p", "Important: " + b.notes));
+        if (b.officialLink && /^https:\/\//i.test(b.officialLink)) {
+            const link = el("a", "Visit official funder page");
+            link.href = b.officialLink;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            c.appendChild(link);
+        } else {
+            c.appendChild(el("p", "No official application link has been confirmed."));
         }
         return c;
     }
     document.getElementById("marks-form").onsubmit = async e => {
         e.preventDefault();
+        document.getElementById("courses").hidden = true;
+        document.getElementById("bursaries").hidden = true;
+        document.getElementById("course-list").textContent = "";
+        document.getElementById("bursary-list").textContent = "";
+        document.getElementById("results-storage-status").textContent = "";
+        document.getElementById("results-storage-status").className = "form-note";
+        document.getElementById("bursary-status").textContent = "";
+        document.getElementById("bursary-status").className = "form-note";
         const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector('input[name="mark"]').value }));
         const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
         errorsEl.textContent = errors.join(" ");
@@ -130,28 +159,41 @@
             const data = await res.json().catch(() => null);
             if (res.status === 429) { errorsEl.textContent = "Too many tries. Please wait a minute."; return; }
             if (!res.ok || !data || !Array.isArray(data.results)) { errorsEl.textContent = (data && data.errors ? data.errors : ["Something went wrong. Please try again."]).join(" "); return; }
+            let resultsAvailableOnResultsPage = true;
             try {
                 sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
                 sessionStorage.setItem("ukhanyiso-marks", JSON.stringify(rows));
-            } catch (err) { }
+            } catch (err) {
+                resultsAvailableOnResultsPage = false;
+            }
             const list = document.getElementById("course-list");
             list.textContent = "";
             if (data.results.length === 0) list.appendChild(el("p", "No matching or near-miss courses for these marks."));
             data.results.slice(0, 5).forEach(r => list.appendChild(courseCard(r)));
             document.getElementById("courses").hidden = false;
+            if (!resultsAvailableOnResultsPage) {
+                const storageStatus = document.getElementById("results-storage-status");
+                storageStatus.textContent = "Your matches are shown here, but this browser could not save the full results for the Results page.";
+                storageStatus.className = "error";
+            }
             const graded = rows.filter(r => r.subject !== "Life Orientation");
             const avg = graded.length ? Math.round(graded.reduce((s, r) => s + Number(r.mark), 0) / graded.length) : null;
             const bl = document.getElementById("bursary-list");
             bl.textContent = "";
+            const bursaryStatus = document.getElementById("bursary-status");
+            bursaryStatus.textContent = "Loading funding information…";
             try {
                 const br = await fetch("/api/bursaries");
+                if (!br.ok) throw new Error("Funding service returned an error.");
                 const bj = await br.json();
                 const open = (bj.bursaries || []).filter(b => b.deadline !== "CLOSED")
                     .sort((a, b) => (a.closingDate || "9999").localeCompare(b.closingDate || "9999"));
                 if (open.length === 0) bl.appendChild(el("p", "No open bursaries to show right now."));
                 open.forEach(b => bl.appendChild(bursaryCard(b, avg)));
+                bursaryStatus.textContent = "";
             } catch (err) {
-                bl.appendChild(el("p", "We could not load bursaries. Please try again."));
+                bursaryStatus.textContent = "We could not load funding information. Your course matches are available; try the Funding page again later.";
+                bursaryStatus.className = "error";
             }
             document.getElementById("bursaries").hidden = false;
             document.getElementById("courses").scrollIntoView();
