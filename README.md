@@ -45,7 +45,11 @@ Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
    ```
 4. Open http://localhost:8080 (Spring Boot default port).
 
+<<<<<<< Updated upstream
 Requirements: Java 17 (set in `pom.xml` and the `Dockerfile`), Maven, Git.
+=======
+Requirements: Java 21 LTS, Maven, Git.
+>>>>>>> Stashed changes
 
 ## Sign-up and log-in
 

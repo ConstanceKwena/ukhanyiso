@@ -1,8 +1,16 @@
 (function () {
     "use strict";
 
-    // Core interface strings; native speakers should review translations before public release.
-    const LANGS = { en: "English", zu: "isiZulu", xh: "isiXhosa", st: "Sesotho", af: "Afrikaans" };
+    // Supported languages
+    const LANGS = {
+        en: "English",
+        zu: "isiZulu",
+        xh: "isiXhosa",
+        st: "Sesotho",
+        af: "Afrikaans"
+    };
+
+    // Core interface translations
     const TEXT = {
         "Skip to main content": ["Yeqela kokuqukethwe okuyinhloko", "Tsiba uye kumxholo ophambili", "Tlola ho dikahare tsa sehlooho", "Slaan oor na hoofinhoud"],
         "Language": ["Ulimi", "Ulwimi", "Puo", "Taal"],
@@ -75,6 +83,7 @@
         "My application checklist": ["Uhlu lwami lokuhlola izicelo", "Uluhlu lwam lokukhangela izicelo", "Lenane la ka la tlhahlobo ya dikopo", "My aansoek-kontrolelys"],
         "Log out": ["Phuma", "Phuma", "Tswa", "Teken uit"],
         "Account": ["I-akhawunti", "Iakhawunti", "Akhaonto", "Rekening"],
+        "Profile": ["Iphrofayela", "Iprofayile", "Boemo", "Profiel"],
         "Certified ID or birth certificate": ["Ikhophi eqinisekisiwe kamazisi noma isitifiketi sokuzalwa", "Ikopi eqinisekisiweyo yesazisi okanye isatifikethi sokuzalwa", "Khopi e netefaditsweng ya ID kapa setifikeiti sa tswalo", "Gesertifiseerde ID of geboortesertifikaat"],
         "Latest school results": ["Imiphumela yakamuva yesikole", "Iziphumo zamva nje zesikolo", "Diphetho tsa morao tsa sekolo", "Jongste skooluitslae"],
         "Proof of home address": ["Ubufakazi bekheli lasekhaya", "Ubungqina bedilesi yasekhaya", "Bopaki ba aterese ya lapeng", "Bewys van huisadres"],
@@ -90,54 +99,86 @@
     };
 
     let lang = "en";
+
     try {
         lang = localStorage.getItem("ukhanyiso-lang") || "en";
     } catch (error) {
         lang = "en";
     }
-    if (!Object.prototype.hasOwnProperty.call(LANGS, lang)) lang = "en";
+
+    if (!Object.prototype.hasOwnProperty.call(LANGS, lang)) {
+        lang = "en";
+    }
 
     const canonicalText = new Map();
+
     Object.keys(TEXT).forEach(english => {
         canonicalText.set(english, english);
-        TEXT[english].forEach(translation => canonicalText.set(translation, english));
+        TEXT[english].forEach(translation => {
+            canonicalText.set(translation, english);
+        });
     });
 
     function translate(value, target) {
         const english = canonicalText.get(value.trim());
-        if (!english || target === "en") return english || value;
+
+        if (!english || target === "en") {
+            return english || value;
+        }
+
         const leading = value.match(/^\s*/)[0];
         const trailing = value.match(/\s*$/)[0];
-        return leading + TEXT[english][["zu", "xh", "st", "af"].indexOf(target)] + trailing;
+        const index = ["zu", "xh", "st", "af"].indexOf(target);
+
+        if (index < 0 || !TEXT[english] || !TEXT[english][index]) {
+            return value;
+        }
+
+        return leading + TEXT[english][index] + trailing;
     }
 
     function t(key, vars) {
         const englishKey = canonicalText.get(key) || key;
         let value = translate(englishKey, lang);
+
         Object.keys(vars || {}).forEach(name => {
             value = value.replace("{" + name + "}", vars[name]);
         });
+
         return value;
     }
 
     function translateTree(root) {
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
         let node;
+
         while ((node = walker.nextNode())) {
             const parent = node.parentElement;
-            if (!parent || parent.closest("script, style, noscript")) continue;
+
+            if (!parent || parent.closest("script, style, noscript")) {
+                continue;
+            }
+
             const translated = translate(node.nodeValue, lang);
-            if (translated !== node.nodeValue) node.nodeValue = translated;
+
+            if (translated !== node.nodeValue) {
+                node.nodeValue = translated;
+            }
         }
 
         if (root.nodeType === Node.ELEMENT_NODE) {
             const elements = [root].concat(Array.from(root.querySelectorAll("*")));
+
             elements.forEach(element => {
                 ["aria-label", "placeholder", "title"].forEach(attribute => {
                     const value = element.getAttribute(attribute);
+
                     if (value) {
                         const translated = translate(value, lang);
-                        if (translated !== value) element.setAttribute(attribute, translated);
+
+                        if (translated !== value) {
+                            element.setAttribute(attribute, translated);
+                        }
                     }
                 });
             });
@@ -145,145 +186,249 @@
     }
 
     function applyLanguage(nextLang) {
-        lang = Object.prototype.hasOwnProperty.call(LANGS, nextLang) ? nextLang : "en";
+        lang = Object.prototype.hasOwnProperty.call(LANGS, nextLang)
+            ? nextLang
+            : "en";
+
         document.documentElement.lang = lang;
         translateTree(document.body);
+
         const label = document.querySelector('label[for="lang"]');
-        if (label) label.textContent = t("Language") + " ";
+
+        if (label) {
+            label.textContent = t("Language") + " ";
+        }
+
         const skip = document.querySelector(".skip");
-        if (skip) skip.textContent = t("Skip to main content");
+
+        if (skip) {
+            skip.textContent = t("Skip to main content");
+        }
     }
 
-    function say(text) {
+    function say(message) {
         const status = document.getElementById("status");
-        if (status) status.textContent = text;
+
+        if (status) {
+            status.textContent = message;
+        }
     }
 
-    function listen(text) {
-        if (!("speechSynthesis" in window)) return false;
-        speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
+    function listen(message) {
+        if (!("speechSynthesis" in window)) {
+            say("Speech is not supported by this browser.");
+            return false;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(message);
         utterance.lang = lang;
-        speechSynthesis.speak(utterance);
+
+        window.speechSynthesis.speak(utterance);
         return true;
     }
 
-    window.Site = { t: t, say: say, listen: listen, lang: () => lang };
+    window.Site = {
+        t: t,
+        say: say,
+        listen: listen,
+        lang: () => lang
+    };
 
+    // Add accessible skip link styling.
     const style = document.createElement("style");
-    style.textContent = ".skip{position:absolute;left:-999px}.skip:focus{left:0;top:0;padding:.5rem;background:#fff;z-index:9}";
+
+    style.textContent =
+        ".skip{position:absolute;left:-999px}" +
+        ".skip:focus{left:0;top:0;padding:.5rem;background:#fff;z-index:9999}";
+
     document.head.appendChild(style);
 
+    // Add skip link.
     const skip = document.createElement("a");
+
     skip.className = "skip";
     skip.href = "#main";
     skip.textContent = t("Skip to main content");
+
     document.body.prepend(skip);
 
+    // Provide a main landmark and live status region.
     const main = document.querySelector("main");
+
     if (main) {
-        main.id = "main";
+        main.id = main.id || "main";
         main.tabIndex = -1;
+
         if (!document.getElementById("status")) {
             const status = document.createElement("p");
+
             status.id = "status";
             status.className = "form-note";
             status.setAttribute("role", "status");
+            status.setAttribute("aria-live", "polite");
+
             main.prepend(status);
         }
     }
 
+    // Add language selector next to the navigation.
     const nav = document.querySelector("nav");
+
     if (nav) {
         const toolbar = document.createElement("div");
         toolbar.className = "site-toolbar";
+
         const label = document.createElement("label");
         label.htmlFor = "lang";
         label.textContent = t("Language") + " ";
+
         const select = document.createElement("select");
         select.id = "lang";
+        select.name = "lang";
+        select.setAttribute("aria-label", "Language");
+
         Object.keys(LANGS).forEach(code => {
             const option = document.createElement("option");
+
             option.value = code;
             option.textContent = LANGS[code];
             option.selected = code === lang;
+
             select.appendChild(option);
         });
+
         select.addEventListener("change", () => {
             applyLanguage(select.value);
+
             try {
                 localStorage.setItem("ukhanyiso-lang", lang);
             } catch (error) {
                 say("Language changed for this page, but your browser could not save the preference.");
             }
         });
+
         toolbar.append(label, select);
         nav.insertAdjacentElement("afterend", toolbar);
     }
 
     applyLanguage(lang);
-    const select = document.getElementById("lang");
-    if (select) select.value = lang;
 
+    const languageSelect = document.getElementById("lang");
+
+    if (languageSelect) {
+        languageSelect.value = lang;
+    }
+
+    // Translate text added dynamically by the page.
     const observer = new MutationObserver(records => {
         records.forEach(record => {
             record.addedNodes.forEach(node => {
                 if (node.nodeType === Node.TEXT_NODE) {
                     const translated = translate(node.nodeValue, lang);
-                    if (translated !== node.nodeValue) node.nodeValue = translated;
+
+                    if (translated !== node.nodeValue) {
+                        node.nodeValue = translated;
+                    }
                 } else if (node.nodeType === Node.ELEMENT_NODE) {
                     translateTree(node);
                 }
             });
         });
     });
-    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
 
-    const authPage = location.pathname === "/login.html"
-        || location.pathname === "/signup.html";
-    if (!authPage && nav) {
-        fetch("/api/auth/me", { credentials: "same-origin" })
-            .then(response => response.ok ? response.json() : null)
+    observer.observe(document.body, {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
+
+    // Authentication pages should not trigger account navigation checks.
+    const authPage =
+        location.pathname === "/login.html" ||
+        location.pathname === "/signup.html";
+
+    const profileLink = document.querySelector(".profile-link");
+    const signOutButton = document.getElementById("sign-out");
+    const menuToggle = document.getElementById("menu-toggle");
+    const menu = document.getElementById("main-menu");
+
+    // Mobile menu toggle.
+    if (menuToggle && menu) {
+        menuToggle.addEventListener("click", () => {
+            const opening = menu.hidden;
+
+            menu.hidden = !opening;
+            menuToggle.setAttribute("aria-expanded", String(opening));
+            menuToggle.textContent = opening ? "✕ Close menu" : "☰ Menu";
+        });
+    }
+
+    // Check the logged-in user and configure sign-out.
+    if (!authPage && signOutButton) {
+        fetch("/api/auth/me", {
+            credentials: "same-origin"
+        })
+            .then(response => {
+                return response.ok ? response.json() : null;
+            })
             .then(user => {
-                if (!user) return;
-                nav.querySelectorAll('a[href="/signup.html"], a[href="/login.html"]')
-                    .forEach(link => link.remove());
-                const account = document.createElement("a");
-                account.href = "/checklist.html";
-                account.textContent = t("Account") + ": " + user.username;
-                nav.appendChild(account);
+                if (!user) {
+                    if (profileLink) {
+                        profileLink.textContent = t("Profile");
+                    }
 
-                const studyPlan = document.createElement("a");
-                studyPlan.href = "/study.html";
-                studyPlan.textContent = t("Study Plan");
-                if (location.pathname === "/study.html") {
-                    studyPlan.setAttribute("aria-current", "page");
+                    signOutButton.hidden = true;
+                    return;
                 }
-                nav.appendChild(studyPlan);
 
-                const logout = document.createElement("button");
-                logout.type = "button";
-                logout.className = "nav-logout";
-                logout.textContent = t("Log out");
-                logout.addEventListener("click", async () => {
-                    logout.disabled = true;
+                if (profileLink) {
+                    profileLink.textContent = t("Profile");
+                    profileLink.title = "Signed in as " + user.username;
+                }
+
+                signOutButton.hidden = false;
+
+                signOutButton.addEventListener("click", async () => {
+                    signOutButton.disabled = true;
+
                     try {
+                        const headers = {};
+
+                        if (user.csrfToken) {
+                            headers["X-CSRF-Token"] = user.csrfToken;
+                        }
+
                         const result = await fetch("/api/auth/logout", {
                             method: "POST",
                             credentials: "same-origin",
-                            headers: { "X-CSRF-Token": user.csrfToken }
+                            headers: headers
                         });
-                        if (!result.ok) throw new Error("logout");
-                        ["ukhanyiso-marks", "ukhanyiso-results", "ukhanyiso-showing-all-courses",
-                            "ukhanyiso-stage", "ukhanyiso-showcase"].forEach(key => sessionStorage.removeItem(key));
+
+                        if (!result.ok) {
+                            throw new Error("Could not log out.");
+                        }
+
+                        [
+                            "ukhanyiso-marks",
+                            "ukhanyiso-results",
+                            "ukhanyiso-showing-all-courses",
+                            "ukhanyiso-stage",
+                            "ukhanyiso-showcase"
+                        ].forEach(key => {
+                            sessionStorage.removeItem(key);
+                        });
+
                         location.assign("/login.html");
                     } catch (error) {
                         say("We could not log you out. Please try again.");
-                        logout.disabled = false;
+                        signOutButton.disabled = false;
                     }
                 });
-                nav.appendChild(logout);
             })
-            .catch(() => say("We could not load your account details. Please refresh the page."));
+            .catch(() => {
+                say("We could not load your account details. Please refresh the page.");
+            });
     }
 })();
