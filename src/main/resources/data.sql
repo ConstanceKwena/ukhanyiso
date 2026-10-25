@@ -1,7 +1,5 @@
--- Seed data (iteration 0, fixed in iteration 2 for H2). Spring runs this after schema.sql.
--- Idempotent: the named in-memory test DB survives between Spring test contexts (DB_CLOSE_DELAY=-1),
--- so clear only the tables seeded here (child-first) before re-inserting. app_users and
--- checklist_progress are never seeded, so anything tests create there is left alone.
+-- Refresh only the course catalogue on startup. Learner accounts and checklist progress
+-- are intentionally not touched, so they survive database/application restarts.
 DELETE FROM course_requirements;
 DELETE FROM courses;
 DELETE FROM institutions;

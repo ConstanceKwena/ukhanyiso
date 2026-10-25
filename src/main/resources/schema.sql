@@ -1,4 +1,4 @@
--- Ukhanyiso data model. Written for H2 (Spring Boot runs this at startup). Also loads in SQLite except the IDENTITY clause.
+-- Ukhanyiso data model, compatible with H2 and PostgreSQL.
 -- Rule: every fact a learner can see (APS, subject, date) points to a row in `sources`.
 
 CREATE TABLE IF NOT EXISTS sources (
