@@ -1,6 +1,6 @@
--- Refresh only the course catalogue on startup. Learner accounts and checklist progress
--- are intentionally not touched, so they survive database/application restarts.
--- Institution rows are seeded only when absent because application data may reference them.
+-- Refresh the seeded catalogue on startup. Learner accounts and checklist progress
+-- are intentionally not touched. Institution rows are never deleted: application
+-- records in this or other tables may reference them.
 DELETE FROM course_requirements;
 DELETE FROM courses;
 DELETE FROM subjects;

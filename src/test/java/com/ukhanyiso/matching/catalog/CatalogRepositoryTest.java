@@ -48,23 +48,27 @@ class CatalogRepositoryTest {
     }
 
     @Test
-    void rerunningSeedDataPreservesApplicationsReferencingInstitutions() {
+    void startupWithExistingApplicationsPreservesInstitutionsAndApplicationRecords() {
         var jdbc = new JdbcTemplate(dataSource);
-        jdbc.execute("CREATE TABLE seed_test_institution_applications ("
+        jdbc.execute("CREATE TABLE institution_applications ("
                 + "application_id VARCHAR(40) PRIMARY KEY, "
                 + "institution_id VARCHAR(20) NOT NULL REFERENCES institutions(institution_id))");
         try {
-            jdbc.update("INSERT INTO seed_test_institution_applications VALUES (?, ?)",
+            jdbc.update("INSERT INTO institution_applications VALUES (?, ?)",
                     "application-1", "UJ");
 
+            new ResourceDatabasePopulator(new ClassPathResource("schema.sql")).execute(dataSource);
             new ResourceDatabasePopulator(new ClassPathResource("data.sql")).execute(dataSource);
 
             assertEquals(1, jdbc.queryForObject(
-                    "SELECT COUNT(*) FROM seed_test_institution_applications WHERE application_id = ?",
+                    "SELECT COUNT(*) FROM institution_applications WHERE application_id = ?",
                     Integer.class, "application-1"));
+            assertEquals("UJ", jdbc.queryForObject(
+                    "SELECT institution_id FROM institution_applications WHERE application_id = ?",
+                    String.class, "application-1"));
             assertEquals(4, jdbc.queryForObject("SELECT COUNT(*) FROM institutions", Integer.class));
         } finally {
-            jdbc.execute("DROP TABLE seed_test_institution_applications");
+            jdbc.execute("DROP TABLE institution_applications");
         }
     }
 }

@@ -7,8 +7,10 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -145,7 +147,18 @@ class ChecklistApiTest {
             statement.execute("SHUTDOWN");
         }
         JdbcDataSource restartedDataSource = dataSource(url);
-        new UsernameSchemaMigration(new JdbcTemplate(restartedDataSource)).migrate();
+        // Mirrors Spring Boot startup: schema.sql creates missing tables before ApplicationRunner migrations run.
+        new ResourceDatabasePopulator(new ClassPathResource("schema.sql")).execute(restartedDataSource);
+        UsernameSchemaMigration migration = new UsernameSchemaMigration(new JdbcTemplate(restartedDataSource));
+        migration.migrate();
+        migration.migrate();
+        assertEquals(1, new JdbcTemplate(restartedDataSource).queryForObject(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                        + "WHERE TABLE_NAME = 'REMINDER_DELIVERIES'", Integer.class));
+        assertEquals(1, new JdbcTemplate(restartedDataSource).queryForObject(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+                        + "WHERE TABLE_NAME = 'REMINDER_DELIVERIES' AND COLUMN_NAME = 'REMIND_TIME'",
+                Integer.class));
         ChecklistRepository restartedRepository =
                 new ChecklistRepository(new JdbcTemplate(restartedDataSource));
         ShowcaseAuthController restartedController =
