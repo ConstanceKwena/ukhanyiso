@@ -35,19 +35,19 @@ Roadmap (not built, not in the app): first-year survival hub, WhatsApp bot.
 | Backend | Java, Spring Boot (Maven) |
 | Database | File-based H2 locally; PostgreSQL for hosted deployments |
 
-## Run it locally
 
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/ConstanceKwena/ukhanyiso.git
-   cd ukhanyiso
-   ```
-2. Start the app:
-   ```bash
-   mvn spring-boot:run
-   ```
-   By default, the app creates `./data/ukhanyiso.mv.db` for local accounts and checklist progress. The `data` directory is ignored by Git and must not be committed.
-3. Open http://localhost:8080 (Spring Boot default port).
+## 🌐 Live Hosted Deployment & Demo Access
+
+The live web application is hosted on Render and open for testing:
+
+* **Live App URL:** **[https://ukhanyiso.onrender.com](https://ukhanyiso.onrender.com)**  
+  *(Note: Free-tier cloud instances sleep when idle; the first request may take up to 60 seconds to spin up).*
+
+### Judge Demo Account (Quick Evaluation)
+To test saved checklist progress and account features immediately without creating an account:
+* **Username:** `demo_learner`
+* **Password:** `DemoPassword2026!`
+
 
 Requirements: Java 21 LTS, Maven, Git.
 
