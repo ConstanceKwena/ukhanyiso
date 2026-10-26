@@ -24,6 +24,7 @@
         "Checklist": ["Uhlu lokuhlola", "Uluhlu lokukhangela", "Lenane la tlhahlobo", "Kontrolelys"],
         "Sign up": ["Bhalisa", "Bhalisa", "Ingolise", "Registreer"],
         "Log in": ["Ngena", "Ngena", "Kena", "Meld aan"],
+        "Sign out": ["Phuma", "Phuma", "Tswa", "Teken uit"],
         "Ukhanyiso account": ["I-akhawunti ye-Ukhanyiso", "Iakhawunti ye-Ukhanyiso", "Akhaonto ya Ukhanyiso", "Ukhanyiso-rekening"],
         "Create your Ukhanyiso account": ["Dala i-akhawunti yakho ye-Ukhanyiso", "Yenza iakhawunti yakho ye-Ukhanyiso", "Theha akhaonto ya hao ya Ukhanyiso", "Skep jou Ukhanyiso-rekening"],
         "Username": ["Igama lomsebenzisi", "Igama lomsebenzisi", "Lebitso la mosebedisi", "Gebruikersnaam"],
@@ -353,16 +354,48 @@
         subtree: true
     });
 
-    // Authentication pages should not trigger account navigation checks.
+    // Authentication pages update menu state without redirecting to the profile.
     const authPage =
         location.pathname === "/login.html" ||
         location.pathname === "/signup.html";
 
-    const profileLink = document.querySelector(".profile-link");
-    const signOutButton = document.getElementById("sign-out");
     const menuToggle = document.getElementById("menu-toggle");
     const menu = document.getElementById("main-menu");
     const navigation = menu || document.querySelector('nav[aria-label="Main navigation"]');
+    const profileLink = document.querySelector(".profile-link");
+    let signOutButton = document.getElementById("sign-out");
+    let signUpLink;
+    let loginLink;
+
+    if (navigation) {
+        signUpLink = navigation.querySelector('a[href="/signup.html"]');
+        if (!signUpLink) {
+            signUpLink = document.createElement("a");
+            signUpLink.href = "/signup.html";
+            signUpLink.textContent = t("Sign up");
+            navigation.appendChild(signUpLink);
+        }
+
+        loginLink = navigation.querySelector('a[href="/login.html"]');
+        if (!loginLink) {
+            loginLink = document.createElement("a");
+            loginLink.href = "/login.html";
+            loginLink.textContent = t("Log in");
+            navigation.appendChild(loginLink);
+        }
+
+        if (!signOutButton) {
+            signOutButton = document.createElement("button");
+            signOutButton.type = "button";
+            signOutButton.id = "sign-out";
+            signOutButton.className = "nav-logout";
+            signOutButton.textContent = t("Sign out");
+            signOutButton.hidden = true;
+        }
+        if (!navigation.contains(signOutButton)) {
+            navigation.appendChild(signOutButton);
+        }
+    }
 
     // Mobile menu toggle.
     if (menuToggle && menu) {
@@ -384,28 +417,88 @@
         });
     }
 
-    // Check the logged-in user and configure sign-out.
-    if (!authPage && navigation) {
-        fetch("/api/auth/me", {
-            credentials: "same-origin"
-        })
-            .then(response => {
-                return response.ok ? response.json() : null;
-            })
-            .then(user => {
+    let authenticatedUser = null;
+    let authCheckVersion = 0;
+
+    if (navigation) {
+        signOutButton.addEventListener("click", async () => {
+            if (!authenticatedUser) return;
+            signOutButton.disabled = true;
+
+            try {
+                const headers = {};
+                if (authenticatedUser.csrfToken) {
+                    headers["X-CSRF-Token"] = authenticatedUser.csrfToken;
+                }
+                const result = await fetch("/api/auth/logout", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: headers
+                });
+                if (!result.ok) throw new Error("Could not log out.");
+
+                [
+                    "ukhanyiso-marks",
+                    "ukhanyiso-results",
+                    "ukhanyiso-showing-all-courses",
+                    "ukhanyiso-stage",
+                    "ukhanyiso-showcase"
+                ].forEach(key => sessionStorage.removeItem(key));
+
+                location.assign("/login.html");
+            } catch (error) {
+                say("We could not log you out. Please try again.");
+                signOutButton.disabled = false;
+            }
+        });
+
+        const checkAuthentication = async () => {
+            const checkVersion = ++authCheckVersion;
+            try {
+                const response = await fetch("/api/auth/me", { credentials: "same-origin" });
+                const user = response.ok ? await response.json() : null;
+                if (checkVersion !== authCheckVersion) return;
+
+                const needsProfileCheck = user && !authPage
+                    && location.pathname !== "/account.html"
+                    && (!authenticatedUser || authenticatedUser.username !== user.username);
+                authenticatedUser = user;
+                signUpLink.hidden = Boolean(user);
+                loginLink.hidden = Boolean(user);
+                signOutButton.hidden = !user;
+
                 if (!user) {
                     if (profileLink) {
                         profileLink.textContent = t("Profile");
+                        profileLink.removeAttribute("title");
                     }
-
-                    if (signOutButton) {
-                        signOutButton.hidden = true;
-                    }
+                    const studyPlan = navigation.querySelector(".auth-study-plan");
+                    if (studyPlan) studyPlan.remove();
                     return;
                 }
 
-                // Everyone must complete their profile before using the rest of the site.
-                if (location.pathname !== "/account.html") {
+                if (profileLink) {
+                    profileLink.textContent = t("Profile");
+                    profileLink.title = "Signed in as " + user.username;
+                }
+
+                if (!authPage && !navigation.querySelector('a[href="/study.html"]')) {
+                    const studyPlan = document.createElement("a");
+                    studyPlan.href = "/study.html";
+                    studyPlan.className = "auth-study-plan";
+                    studyPlan.textContent = t("Study Plan");
+                    if (location.pathname === studyPlan.pathname) {
+                        studyPlan.setAttribute("aria-current", "page");
+                    }
+                    const checklistLink = navigation.querySelector('a[href="/checklist.html"]');
+                    if (checklistLink) {
+                        navigation.insertBefore(studyPlan, checklistLink);
+                    } else {
+                        navigation.appendChild(studyPlan);
+                    }
+                }
+
+                if (needsProfileCheck) {
                     fetch("/api/auth/profile", { credentials: "same-origin" })
                         .then(response => (response.ok ? response.json() : null))
                         .then(profile => {
@@ -416,68 +509,18 @@
                         })
                         .catch(() => { });
                 }
-
-                if (profileLink) {
-                    profileLink.textContent = t("Profile");
-                    profileLink.title = "Signed in as " + user.username;
-                }
-
-                if (navigation && !navigation.querySelector('a[href="/study.html"]')) {
-                    const studyPlan = document.createElement("a");
-                    studyPlan.href = "/study.html";
-                    studyPlan.textContent = t("Study Plan");
-                    const checklistLink = navigation.querySelector('a[href="/checklist.html"]');
-                    if (checklistLink) {
-                        navigation.insertBefore(studyPlan, checklistLink);
-                    } else {
-                        navigation.appendChild(studyPlan);
-                    }
-                }
-
-                if (!signOutButton) {
-                    return;
-                }
-                signOutButton.hidden = false;
-
-                signOutButton.addEventListener("click", async () => {
-                    signOutButton.disabled = true;
-
-                    try {
-                        const headers = {};
-
-                        if (user.csrfToken) {
-                            headers["X-CSRF-Token"] = user.csrfToken;
-                        }
-
-                        const result = await fetch("/api/auth/logout", {
-                            method: "POST",
-                            credentials: "same-origin",
-                            headers: headers
-                        });
-
-                        if (!result.ok) {
-                            throw new Error("Could not log out.");
-                        }
-
-                        [
-                            "ukhanyiso-marks",
-                            "ukhanyiso-results",
-                            "ukhanyiso-showing-all-courses",
-                            "ukhanyiso-stage",
-                            "ukhanyiso-showcase"
-                        ].forEach(key => {
-                            sessionStorage.removeItem(key);
-                        });
-
-                        location.assign("/login.html");
-                    } catch (error) {
-                        say("We could not log you out. Please try again.");
-                        signOutButton.disabled = false;
-                    }
-                });
-            })
-            .catch(() => {
+            } catch (error) {
+                if (checkVersion !== authCheckVersion) return;
+                authenticatedUser = null;
+                signUpLink.hidden = false;
+                loginLink.hidden = false;
+                signOutButton.hidden = true;
                 say("We could not load your account details. Please refresh the page.");
-            });
+            }
+        };
+
+        checkAuthentication();
+        window.addEventListener("focus", checkAuthentication);
+        window.addEventListener("pageshow", checkAuthentication);
     }
 })();

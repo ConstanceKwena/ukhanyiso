@@ -24,8 +24,9 @@
     <header class="page-heading">
         <p class="eyebrow">Marks, courses and funding</p>
         <h1>See your courses and bursaries in one go</h1>
-        <p>Add a subject and enter its mark. The form starts blank; use fictional marks only. We send marks only for this course-matching request and do not save them to your account.</p>
+        <p>Enter your marks and add your subjects. Signed-in learners’ marks are saved to their account; sign in to save them.</p>
     </header>
+    <p id="marks-save-status" class="form-note" role="status" aria-live="polite">Checking whether marks can be saved…</p>
     <form id="marks-form" autocomplete="off" novalidate>
         <div id="rows" class="subject-list"></div>
         <div class="form-actions">
@@ -46,15 +47,24 @@
         <p id="bursary-status" class="form-note" role="status" aria-live="polite"></p>
         <p><a href="/funding.html">See funding and documents</a> · <a href="/calendar.html">Set application reminders</a> · <a href="/plan.html">Plan your budget</a> · <a href="/signup.html">Create an account</a></p>
     </section>
-    <p class="disclaimer">Use fictional marks only. Marks are used for this matching request and are kept in this browser tab only to show your results. Guides only; meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
+    <p class="disclaimer">Enter your marks to see matching courses and funding. Marks are used for this matching request and are kept in this browser tab only to show your results. Guides only; meeting a minimum does not promise a place or funding. Always confirm with the institution or funder.</p>
 </main>
 <script src="/js/validate.js"></script>
 <script src="/js/site.js"></script>
+<script src="/js/subject-picker.js"></script>
 <script>
     const rowsEl = document.getElementById("rows");
     const errorsEl = document.getElementById("errors");
     const addButton = document.getElementById("add");
+    const saveStatus = document.getElementById("marks-save-status");
     let rowNumber = 0;
+    let marksCsrfToken = "";
+    let marksAuthChecked = false;
+    let marksAuthenticated = false;
+    let marksDirty = false;
+    let savingMarks = false;
+    let marksRevision = 0;
+    let saveTimer;
     function el(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
     function addRow(subject) {
         if (rowsEl.children.length >= 12) return;
@@ -71,7 +81,7 @@
         s.id = `subject-${number}`;
         s.autocomplete = "off";
         const blank = el("option", "Choose subject"); blank.value = ""; s.appendChild(blank);
-        [...SUBJECTS].sort((a, b) => a.localeCompare(b)).forEach(n => {
+        [...SUBJECTS].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" })).forEach(n => {
             const o = el("option", n);
             o.value = n;
             if (n === subject) o.selected = true;
@@ -100,6 +110,7 @@
         remove.onclick = () => {
             d.remove();
             addButton.disabled = rowsEl.children.length >= 12;
+            scheduleSave();
         };
         d.append(subjectField, markField, remove);
         rowsEl.appendChild(d);
@@ -107,6 +118,113 @@
     }
     for (let i = 0; i < 7; i++) addRow();
     addButton.onclick = () => addRow();
+    function currentMarks() {
+        return [...rowsEl.children].map(d => ({
+            subject: d.querySelector("select").value,
+            mark: d.querySelector("input.mark-input").value
+        }));
+    }
+    function setSaveStatus(text, isError) {
+        saveStatus.textContent = text;
+        saveStatus.className = isError ? "error" : "form-note";
+    }
+    function hydrateMarks(marks) {
+        while (rowsEl.firstElementChild) rowsEl.firstElementChild.remove();
+        for (let i = 0; i < Math.max(7, marks.length); i++) {
+            const mark = marks[i];
+            addRow(mark && mark.subject);
+            if (mark) rowsEl.lastElementChild.querySelector(".mark-input").value = mark.mark;
+        }
+    }
+    async function loadSavedMarks() {
+        try {
+            const response = await fetch("/api/marks", { credentials: "same-origin" });
+            marksAuthChecked = true;
+            if (response.status === 401) {
+                marksAuthenticated = false;
+                setSaveStatus("Sign in to save marks to your account.");
+                return;
+            }
+            if (!response.ok) throw new Error("Could not load saved marks.");
+            const data = await response.json();
+            marksAuthenticated = true;
+            marksCsrfToken = data.csrfToken;
+            if (!marksDirty) hydrateMarks(data.marks || []);
+            setSaveStatus("Your saved marks are ready.");
+            if (marksDirty) saveMarks();
+        } catch (error) {
+            marksAuthChecked = true;
+            marksAuthenticated = false;
+            setSaveStatus("We could not check your saved marks. Sign in again or refresh and try again.", true);
+        }
+    }
+    function saveMarks() {
+        clearTimeout(saveTimer);
+        if (!marksAuthChecked || !marksAuthenticated) return;
+        if (savingMarks) return;
+        const rows = currentMarks();
+        const entries = rows.filter(row => row.subject || row.mark !== "");
+        if (entries.some(row => !row.subject || row.mark === "")) {
+            setSaveStatus("Choose a subject and enter its mark before saving.", true);
+            return;
+        }
+        const errors = [...new Set([...validateMarks(entries), ...validateCombos(entries)])];
+        if (errors.length) {
+            setSaveStatus(errors.join(" "), true);
+            return;
+        }
+        savingMarks = true;
+        const revision = marksRevision;
+        setSaveStatus("Saving…");
+        fetch("/api/marks", {
+            method: "PUT",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": marksCsrfToken
+            },
+            body: JSON.stringify({ marks: entries })
+        }).then(async response => {
+            const data = await response.json().catch(() => null);
+            if (response.status === 401) {
+                marksAuthenticated = false;
+                throw new Error("Your session ended. Sign in again to save marks.");
+            }
+            if (!response.ok) {
+                throw new Error(data && data.errors ? data.errors.join(" ") : "We could not save your marks.");
+            }
+            if (revision === marksRevision) {
+                marksDirty = false;
+                setSaveStatus("Saved.");
+            }
+        }).catch(error => {
+            setSaveStatus(error.message || "We could not save your marks. Please try again.", true);
+        }).finally(() => {
+            savingMarks = false;
+            if (marksDirty && marksAuthenticated && revision !== marksRevision) {
+                saveMarks();
+            }
+        });
+    }
+    function scheduleSave() {
+        marksDirty = true;
+        marksRevision++;
+        if (!marksAuthChecked) return;
+        if (!marksAuthenticated) {
+            setSaveStatus("Sign in to save marks to your account.");
+            return;
+        }
+        setSaveStatus("Unsaved changes.");
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveMarks, 500);
+    }
+    rowsEl.addEventListener("input", event => {
+        if (event.target.classList.contains("mark-input")) scheduleSave();
+    });
+    rowsEl.addEventListener("change", event => {
+        if (event.target.name === "subject") scheduleSave();
+    });
+    const marksLoadPromise = loadSavedMarks();
     function courseCard(r) {
         const c = el("article", null, "card");
         c.appendChild(el("h3", r.course || "Course"));
@@ -158,7 +276,7 @@
         document.getElementById("results-storage-status").className = "form-note";
         document.getElementById("bursary-status").textContent = "";
         document.getElementById("bursary-status").className = "form-note";
-        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input.mark-input").value }));
+        const rows = currentMarks();
         if (rows.length === 0) {
             errorsEl.textContent = "Add at least one subject before checking your options.";
             return;
@@ -166,6 +284,11 @@
         const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
         errorsEl.textContent = errors.join(" ");
         if (errors.length > 0) return;
+        await marksLoadPromise;
+        if (!marksAuthenticated) {
+            errorsEl.textContent = "Sign in to check your options.";
+            return;
+        }
         const btn = document.getElementById("submit");
         btn.disabled = true; btn.textContent = "Checking…";
         try {
@@ -176,7 +299,6 @@
             let resultsAvailableOnResultsPage = true;
             try {
                 sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
-                sessionStorage.setItem("ukhanyiso-marks", JSON.stringify(rows));
             } catch (err) {
                 resultsAvailableOnResultsPage = false;
             }
