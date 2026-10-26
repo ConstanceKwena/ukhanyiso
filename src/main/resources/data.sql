@@ -1,16 +1,18 @@
 -- Refresh only the course catalogue on startup. Learner accounts and checklist progress
 -- are intentionally not touched, so they survive database/application restarts.
+-- Institution rows are seeded only when absent because application data may reference them.
 DELETE FROM course_requirements;
 DELETE FROM courses;
-DELETE FROM institutions;
 DELETE FROM subjects;
-DELETE FROM sources;
+DELETE FROM sources WHERE source_id NOT IN (
+    SELECT source_id FROM institutions WHERE source_id IS NOT NULL
+);
 DELETE FROM match_config;
-INSERT INTO sources VALUES ('S001','UJ',NULL,'closing_date','2026-10-31','https://www.uj.ac.za/university-courses/bcom-in-accounting/','official','2026-10-16','nana','verified');
+INSERT INTO sources (source_id,institution_id,course_id,field,value_recorded,official_link,source_type,date_checked,checked_by,status) SELECT 'S001','UJ',NULL,'closing_date','2026-10-31','https://www.uj.ac.za/university-courses/bcom-in-accounting/','official','2026-10-16','nana','verified' WHERE NOT EXISTS (SELECT 1 FROM sources WHERE source_id = 'S001');
 INSERT INTO sources VALUES ('S002','UJ',NULL,'aps_method','APS method: guide sites say best six subjects excluding Life Orientation. Find t','https://www.uj.ac.za','none','2026-10-16','nana','unverified');
-INSERT INTO sources VALUES ('S003','UP',NULL,'closing_date','2026-06-30','https://www.up.ac.za/programmes/undergraduate/bachelor-of-laws-llb/2027','official','2026-10-16','nana','verified');
+INSERT INTO sources (source_id,institution_id,course_id,field,value_recorded,official_link,source_type,date_checked,checked_by,status) SELECT 'S003','UP',NULL,'closing_date','2026-06-30','https://www.up.ac.za/programmes/undergraduate/bachelor-of-laws-llb/2027','official','2026-10-16','nana','verified' WHERE NOT EXISTS (SELECT 1 FROM sources WHERE source_id = 'S003');
 INSERT INTO sources VALUES ('S004','UP',NULL,'aps_method','APS method detail (how many subjects count) not on programme pages - check the 2','https://www.up.ac.za/students/faculty-brochures-2027','none','2026-10-16','nana','unverified');
-INSERT INTO sources VALUES ('S005','TUT',NULL,'closing_date','2026-09-30','https://www.tut.ac.za/programme-closing-dates/','official','2026-10-16','nana','verified');
+INSERT INTO sources (source_id,institution_id,course_id,field,value_recorded,official_link,source_type,date_checked,checked_by,status) SELECT 'S005','TUT',NULL,'closing_date','2026-09-30','https://www.tut.ac.za/programme-closing-dates/','official','2026-10-16','nana','verified' WHERE NOT EXISTS (SELECT 1 FROM sources WHERE source_id = 'S005');
 INSERT INTO sources VALUES ('S010','UJ','UJ-BCOM-ACC','min_aps','APS 28; English 4 (50%); Mathematics 4 (50%); Maths Literacy and Technical Maths NOT accepted; closes 2026-10-31','https://www.uj.ac.za/university-courses/bcom-in-accounting/','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S011','UJ','UJ-BSC-CSI','min_aps','APS 30; English 5 (60%+); Mathematics 6 (70%+); closes 2026-10-31','https://www.uj.ac.za/university-courses/bsc-in-computer-science-and-informatics/','official','2026-10-16','nana','partial');
 INSERT INTO sources VALUES ('S012','UJ','UJ-BED-FP','min_aps','APS 28; English HL 5 (60%+) OR English first/second additional language 6 (70%+); Mathematics 3 (40%+) OR Maths Literacy 5 (60%+) OR Technical Maths 5 (60%+); closes 2026-10-31','https://www.uj.ac.za/university-courses/bed-in-foundation-phase-teaching-grade-r-3/','official','2026-10-16','nana','verified');
@@ -23,9 +25,9 @@ INSERT INTO sources VALUES ('S030','TUT','TUT-DIP-CS','min_aps','APS 26; English
 INSERT INTO sources VALUES ('S031','TUT','TUT-DIP-IT','min_aps','APS 26; English 4; Mathematics or Technical Mathematics 5, or Maths Literacy 7; Physical Science or Technical Science 3 (APS 28 with Maths Literacy); closes 2026-09-30','https://www.tut.ac.za/media/tshwane-interim/site-content/images/promo-blocks/_ICT-at-a-Glance.pdf','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S032','TUT','TUT-DIP-INF','min_aps','APS 26; English 4; Mathematics or Technical Mathematics 5, or Maths Literacy 7 (APS 28 with Maths Literacy); closes 2026-09-30','https://www.tut.ac.za/media/tshwane-interim/site-content/images/promo-blocks/_ICT-at-a-Glance.pdf','official','2026-10-16','nana','verified');
 INSERT INTO sources VALUES ('S033','TUT','TUT-DIP-CSE','min_aps','APS 26; English 4; Mathematics or Technical Mathematics 5; Physical Sciences or Technical Sciences 4 (Maths Literacy not accepted); closes 2026-09-30','https://www.tut.ac.za/media/tshwane-interim/site-content/images/promo-blocks/_ICT-at-a-Glance.pdf','official','2026-10-16','nana','verified');
-INSERT INTO institutions VALUES ('UJ','University of Johannesburg','university','BEST6_EXCL_LO',0,'Life Orientation excluded; best six subjects per guide sites (confirm in UJ prospectus).','https://www.uj.ac.za',NULL,'S001',0);
-INSERT INTO institutions VALUES ('UP','University of Pretoria','university','BEST6_EXCL_LO',0,'Life Orientation excluded (official UP page). How many subjects count is not stated on programme pages - confirm.','https://www.up.ac.za/online-application',NULL,'S003',0);
-INSERT INTO institutions VALUES ('TUT','Tshwane University of Technology','university_of_technology','BEST6_EXCL_LO',0,'Life Orientation and any subject at level 1 are not counted (official TUT 2027 course info). ''Six subjects'' per guide site - confirm.','https://www.tut.ac.za',NULL,'S005',1);
+INSERT INTO institutions (institution_id,name,inst_type,aps_method,aps_method_verified,aps_method_note,apply_url,app_fee_rand,source_id,exclude_level_one) SELECT 'UJ','University of Johannesburg','university','BEST6_EXCL_LO',0,'Life Orientation excluded; best six subjects per guide sites (confirm in UJ prospectus).','https://www.uj.ac.za',NULL,'S001',0 WHERE NOT EXISTS (SELECT 1 FROM institutions WHERE institution_id = 'UJ');
+INSERT INTO institutions (institution_id,name,inst_type,aps_method,aps_method_verified,aps_method_note,apply_url,app_fee_rand,source_id,exclude_level_one) SELECT 'UP','University of Pretoria','university','BEST6_EXCL_LO',0,'Life Orientation excluded (official UP page). How many subjects count is not stated on programme pages - confirm.','https://www.up.ac.za/online-application',NULL,'S003',0 WHERE NOT EXISTS (SELECT 1 FROM institutions WHERE institution_id = 'UP');
+INSERT INTO institutions (institution_id,name,inst_type,aps_method,aps_method_verified,aps_method_note,apply_url,app_fee_rand,source_id,exclude_level_one) SELECT 'TUT','Tshwane University of Technology','university_of_technology','BEST6_EXCL_LO',0,'Life Orientation and any subject at level 1 are not counted (official TUT 2027 course info). ''Six subjects'' per guide site - confirm.','https://www.tut.ac.za',NULL,'S005',1 WHERE NOT EXISTS (SELECT 1 FROM institutions WHERE institution_id = 'TUT');
 INSERT INTO subjects VALUES ('MATHS','Mathematics',1);
 INSERT INTO subjects VALUES ('MATHS_LIT','Mathematical Literacy',1);
 INSERT INTO subjects VALUES ('TECH_MATHS','Technical Mathematics',1);
@@ -108,7 +110,7 @@ INSERT INTO match_config DEFAULT VALUES;
 -- follows policy section 12 (applications close preferably end of October of the preceding
 -- year); 2027 entry therefore closes 2026-10-31, status 'partial' until the college
 -- calendar confirms the exact date.
-INSERT INTO sources VALUES ('S040','SWGC',NULL,'closing_date','NC(V) applications close preferably end of October of the preceding year (policy section 12.v.a)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','partial');
+INSERT INTO sources (source_id,institution_id,course_id,field,value_recorded,official_link,source_type,date_checked,checked_by,status) SELECT 'S040','SWGC',NULL,'closing_date','NC(V) applications close preferably end of October of the preceding year (policy section 12.v.a)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','partial' WHERE NOT EXISTS (SELECT 1 FROM sources WHERE source_id = 'S040');
 INSERT INTO sources VALUES ('S041','SWGC',NULL,'aps_method','No APS: NC(V) and Report 191 entry is per-subject pass requirements in the admission policy sections 13 and 15','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
 INSERT INTO sources VALUES ('S050','SWGC','SWGC-NCV-IT','min_aps','NC(V) Information Technology and Computer Science L2: English Grade 9 (40%); Mathematics Grade 9 (50%); policy section 13(xi)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
 INSERT INTO sources VALUES ('S051','SWGC','SWGC-NCV-ENG-ELECTRICAL','min_aps','NC(V) Electrical Infrastructure Construction L2: Mathematics (40%); English FAL (40%); Natural Science or Technology (40%); policy section 13(xiii)','https://www.swgc.co.za/wp-content/uploads/2026/01/Student-Admission-Policy_2025-08-28.pdf','official','2026-10-25','nana','verified');
@@ -118,7 +120,7 @@ INSERT INTO sources VALUES ('S054','SWGC','SWGC-N4-MECH-ENG','min_aps','Report 1
 -- New subjects needed by the SWGC rows (inserted before the courses that reference them).
 INSERT INTO subjects VALUES ('EMS','Economic and Management Sciences',1);
 INSERT INTO subjects VALUES ('ACCOUNTING','Accounting',1);
-INSERT INTO institutions VALUES ('SWGC','South West Gauteng TVET College','tvet_college','NO_APS',1,'No APS: admission is per-subject pass requirements per the official admission policy. Matric/Grade 12 holders apply for Report 191 only; Grade 9/10/11 apply for NC(V) only (official SWGC site).','https://www.swgc.co.za',NULL,'S040',0);
+INSERT INTO institutions (institution_id,name,inst_type,aps_method,aps_method_verified,aps_method_note,apply_url,app_fee_rand,source_id,exclude_level_one) SELECT 'SWGC','South West Gauteng TVET College','tvet_college','NO_APS',1,'No APS: admission is per-subject pass requirements per the official admission policy. Matric/Grade 12 holders apply for Report 191 only; Grade 9/10/11 apply for NC(V) only (official SWGC site).','https://www.swgc.co.za',NULL,'S040',0 WHERE NOT EXISTS (SELECT 1 FROM institutions WHERE institution_id = 'SWGC');
 -- NC(V) subjects (Grade 9 percentages) and NATED (Grade 12 percentages) use min_percent.
 -- Grade 9 passes are treated as Level 2/3 equivalents using the same percentage bands.
 INSERT INTO courses VALUES ('SWGC-NCV-IT','SWGC','NC(V) Information Technology and Computer Science (Level 2)',NULL,'ncv','Utility Studies',NULL,'2026-10-31',NULL,'https://www.swgc.co.za',2027,'S050');

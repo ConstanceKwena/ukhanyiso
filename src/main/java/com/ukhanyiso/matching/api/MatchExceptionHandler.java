@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Turns failures on /api/match into short, safe JSON. Never returns stack traces, class names or user input.
+ * Turns matching and saved-mark failures into short, safe JSON. Never returns stack traces or user input.
  */
-@RestControllerAdvice(assignableTypes = MatchController.class)
+@RestControllerAdvice(assignableTypes = {MatchController.class, LearnerMarksController.class})
 public class MatchExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(MatchExceptionHandler.class);
@@ -40,7 +40,7 @@ public class MatchExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, List<String>>> other(Exception e) {
-        log.error("Unexpected error on /api/match: {}", e.getClass().getSimpleName()); // class only: no marks, no stack trace
+        log.error("Unexpected error in marks request: {}", e.getClass().getSimpleName());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("errors", List.of("Something went wrong. Please try again.")));
     }

@@ -3,6 +3,11 @@ package com.ukhanyiso.matching.catalog;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+
+import javax.sql.DataSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,6 +17,9 @@ class CatalogRepositoryTest {
 
     @Autowired
     CatalogRepository repository;
+
+    @Autowired
+    DataSource dataSource;
 
     @Test
     void loadsTheTwelveCoursesFromTheDatabase() {
@@ -37,5 +45,26 @@ class CatalogRepositoryTest {
         assertTrue(catalog.institutions().get("TUT").excludeLevelOne());
         assertFalse(catalog.institutions().get("UJ").excludeLevelOne());
         assertNull(catalog.courses().stream().filter(c -> c.courseId().equals("UJ-BCOM-ACC")).findFirst().orElseThrow().closingTime());
+    }
+
+    @Test
+    void rerunningSeedDataPreservesApplicationsReferencingInstitutions() {
+        var jdbc = new JdbcTemplate(dataSource);
+        jdbc.execute("CREATE TABLE seed_test_institution_applications ("
+                + "application_id VARCHAR(40) PRIMARY KEY, "
+                + "institution_id VARCHAR(20) NOT NULL REFERENCES institutions(institution_id))");
+        try {
+            jdbc.update("INSERT INTO seed_test_institution_applications VALUES (?, ?)",
+                    "application-1", "UJ");
+
+            new ResourceDatabasePopulator(new ClassPathResource("data.sql")).execute(dataSource);
+
+            assertEquals(1, jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM seed_test_institution_applications WHERE application_id = ?",
+                    Integer.class, "application-1"));
+            assertEquals(4, jdbc.queryForObject("SELECT COUNT(*) FROM institutions", Integer.class));
+        } finally {
+            jdbc.execute("DROP TABLE seed_test_institution_applications");
+        }
     }
 }

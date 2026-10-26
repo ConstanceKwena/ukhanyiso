@@ -67,6 +67,12 @@ public class UsernameSchemaMigration implements ApplicationRunner {
                 + "    used_at     TIMESTAMP,\n"
                 + "    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
                 + ")");
+        jdbc.execute("CREATE TABLE IF NOT EXISTS learner_marks (\n"
+                + "    user_id   VARCHAR(100) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,\n"
+                + "    subject   VARCHAR(100) NOT NULL,\n"
+                + "    mark      INTEGER NOT NULL CHECK (mark BETWEEN 0 AND 100),\n"
+                + "    PRIMARY KEY (user_id, subject)\n"
+                + ")");
 
         // Reset tokens point at the account, so that column must hold an email too.
         // Best effort: if it cannot be widened, startup still succeeds and only resets for very long emails are affected.
