@@ -566,9 +566,10 @@
         ] }
     ];
 
-    // Builds the shared header (brand, menu button, back button, grouped menu, language) on every page.
+    // Builds the shared header; authentication pages keep the brand and language selector only.
     function buildUnifiedHeader(nav) {
         const pagePath = location.pathname.replace(/\/$/, "") || "/index.html";
+        const isAuthPage = pagePath === "/login.html" || pagePath === "/signup.html";
         const current = MENU_SECTIONS.find(s => s.href === pagePath) || null;
 
         const header = document.createElement("header");
@@ -585,69 +586,75 @@
         const actions = document.createElement("div");
         actions.className = "top-actions";
 
-        const back = document.createElement("a");
-        back.className = "nav-back";
-        back.href = "#";
-        back.textContent = t("← Back");
-        back.setAttribute("aria-label", "Go to the previous page");
-        back.addEventListener("click", event => {
-            event.preventDefault();
-            if (history.length > 1) history.back();
-            else location.assign("/index.html");
-        });
-
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.id = "menu-toggle";
-        toggle.className = "menu-toggle";
-        toggle.setAttribute("aria-controls", "main-menu");
-        toggle.setAttribute("aria-expanded", "false");
-        toggle.textContent = t("☰ Menu");
-
         const signOut = document.getElementById("sign-out");
         if (signOut) actions.appendChild(signOut);
-        actions.append(back, toggle);
+        if (!isAuthPage) {
+            const back = document.createElement("a");
+            back.className = "nav-back";
+            back.href = "#";
+            back.textContent = t("← Back");
+            back.setAttribute("aria-label", "Go to the previous page");
+            back.addEventListener("click", event => {
+                event.preventDefault();
+                if (history.length > 1) history.back();
+                else location.assign("/index.html");
+            });
+
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.id = "menu-toggle";
+            toggle.className = "menu-toggle";
+            toggle.setAttribute("aria-controls", "main-menu");
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.textContent = t("☰ Menu");
+            actions.append(back, toggle);
+        }
 
         bar.append(brand, actions);
 
-        const menu = document.createElement("nav");
-        menu.id = "main-menu";
-        menu.setAttribute("aria-label", "Main navigation");
-        menu.hidden = true;
+        let menu = null;
+        let scrim = null;
+        if (!isAuthPage) {
+            menu = document.createElement("nav");
+            menu.id = "main-menu";
+            menu.setAttribute("aria-label", "Main navigation");
+            menu.hidden = true;
 
-        const here = document.createElement("p");
-        here.className = "menu-here";
-        here.textContent = t("You are here:") + " " + t(current ? current.label : "Dashboard");
-        menu.appendChild(here);
+            const here = document.createElement("p");
+            here.className = "menu-here";
+            here.textContent = t("You are here:") + " " + t(current ? current.label : "Dashboard");
+            menu.appendChild(here);
 
-        const grid = document.createElement("div");
-        grid.className = "menu-grid";
+            const grid = document.createElement("div");
+            grid.className = "menu-grid";
 
-        MENU_SECTIONS.forEach(section => {
-            const cell = document.createElement("div");
-            cell.className = "menu-section" + (current === section ? " is-current" : "");
-            const head = document.createElement("a");
-            head.href = section.href;
-            head.textContent = t(section.label);
-            if (current === section) head.setAttribute("aria-current", "page");
-            cell.appendChild(head);
-            const sub = document.createElement("div");
-            sub.className = "menu-sub";
-            section.children.forEach(child => {
-                const link = document.createElement("a");
-                link.href = child.href;
-                link.textContent = t(child.label);
-                sub.appendChild(link);
+            MENU_SECTIONS.forEach(section => {
+                const cell = document.createElement("div");
+                cell.className = "menu-section" + (current === section ? " is-current" : "");
+                const head = document.createElement("a");
+                head.href = section.href;
+                head.textContent = t(section.label);
+                if (current === section) head.setAttribute("aria-current", "page");
+                cell.appendChild(head);
+                const sub = document.createElement("div");
+                sub.className = "menu-sub";
+                section.children.forEach(child => {
+                    const link = document.createElement("a");
+                    link.href = child.href;
+                    link.textContent = t(child.label);
+                    sub.appendChild(link);
+                });
+                cell.appendChild(sub);
+                grid.appendChild(cell);
             });
-            cell.appendChild(sub);
-            grid.appendChild(cell);
-        });
-        menu.appendChild(grid);
-        // Dimmed backdrop behind the slide-in menu drawer.
-        const scrim = document.createElement("div");
-        scrim.className = "menu-scrim";
-        scrim.hidden = true;
-        scrim.addEventListener("click", () => setMenuOpen(false));
+            menu.appendChild(grid);
+
+            // Dimmed backdrop behind the slide-in menu drawer.
+            scrim = document.createElement("div");
+            scrim.className = "menu-scrim";
+            scrim.hidden = true;
+            scrim.addEventListener("click", () => setMenuOpen(false));
+        }
 
         const toolbar = document.createElement("div");
         toolbar.className = "site-toolbar";
@@ -675,9 +682,16 @@
         });
         toolbar.append(label, select);
 
-        header.append(bar, menu, toolbar, scrim);
+        header.append(bar);
+        if (menu) header.append(menu);
+        header.append(toolbar);
+        if (scrim) header.append(scrim);
         nav.replaceWith(header);
-        return { toggle, menu, scrim };
+        return {
+            toggle: isAuthPage ? null : actions.querySelector("#menu-toggle"),
+            menu,
+            scrim
+        };
     }
 
     // On legacy pages without a unified header, wrap the plain nav as the menu.

@@ -12,14 +12,22 @@ test("home page opens the login screen and sign-up page", async ({ page }) => {
     await expect(page.locator("#auth-form")).toBeVisible();
 });
 
-test("signed-out navigation shows login and sign-up", async ({ page }) => {
+test("login and sign-up pages omit the website menu and Back button at desktop and mobile sizes", async ({ page }) => {
     await page.route("**/api/auth/me", route => route.fulfill({ status: 401 }));
-    await page.goto("/login.html");
-
-    const navigation = page.getByRole("navigation", { name: "Main navigation" });
-    await expect(navigation.getByRole("link", { name: "Log in" })).toBeVisible();
-    await expect(navigation.getByRole("link", { name: "Sign up" })).toBeVisible();
-    await expect(navigation.getByRole("button", { name: "Sign out" })).toBeHidden();
+    for (const viewport of [{ width: 1280, height: 800 }, { width: 375, height: 812 }]) {
+        await page.setViewportSize(viewport);
+        for (const [path, mode] of [["/login.html", "login"], ["/signup.html", "signup"]]) {
+            await page.goto(path);
+            await expect(page.locator("#auth-form")).toBeVisible();
+            await expect(page.locator("#menu-toggle")).toHaveCount(0);
+            await expect(page.locator("#main-menu")).toHaveCount(0);
+            await expect(page.locator(".nav-back")).toHaveCount(0);
+            await expect(page.getByRole("combobox", { name: "Language" })).toBeVisible();
+            await expect(page.locator("#auth-form")).toHaveAttribute("data-mode", mode);
+            expect(await page.evaluate(() => document.documentElement.scrollWidth))
+                .toBeLessThanOrEqual(viewport.width);
+        }
+    }
 });
 
 test("sign out stays hidden until the session check confirms a signed-in user", async ({ page }) => {
@@ -34,6 +42,12 @@ test("sign out stays hidden until the session check confirms a signed-in user", 
     await page.goto("/calendar.html");
 
     const navigation = page.getByRole("navigation", { name: "Main navigation" });
+    await expect(page.locator("#menu-toggle")).toBeVisible();
+    await expect(page.locator(".nav-back")).toBeVisible();
+    await page.locator("#menu-toggle").click();
+    await expect(navigation).toBeVisible();
+    await page.locator("#menu-toggle").click();
+    await expect(navigation).toBeHidden();
     await expect(navigation.getByRole("button", { name: "Sign out" })).toBeHidden();
     finishSessionCheck();
     await expect(navigation.getByRole("link", { name: "Log in" })).toBeVisible();
@@ -55,20 +69,6 @@ test("navigation refreshes its links when the session changes", async ({ page })
 
     signedIn = true;
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-    await expect(navigation.getByRole("link", { name: "Log in" })).toBeHidden();
-    await expect(navigation.getByRole("link", { name: "Sign up" })).toBeHidden();
-    await expect(navigation.getByRole("button", { name: "Sign out" })).toBeVisible();
-});
-
-test("signed-in navigation shows sign out instead of login and sign-up", async ({ page }) => {
-    await page.route("**/api/auth/me", route => route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ username: "learner@example.invalid", csrfToken: "test-csrf-token" })
-    }));
-    await page.goto("/login.html");
-
-    const navigation = page.getByRole("navigation", { name: "Main navigation" });
     await expect(navigation.getByRole("link", { name: "Log in" })).toBeHidden();
     await expect(navigation.getByRole("link", { name: "Sign up" })).toBeHidden();
     await expect(navigation.getByRole("button", { name: "Sign out" })).toBeVisible();
