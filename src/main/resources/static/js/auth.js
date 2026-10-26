@@ -68,6 +68,7 @@
         submit.disabled = true;
         submit.textContent = mode === "signup" ? "Creating account…" : "Logging in…";
         try {
+            // The email address is the username.
             const response = await fetch("/api/auth/" + mode, {
                 method: "POST",
                 credentials: "same-origin",
@@ -76,42 +77,42 @@
                     "X-CSRF-Token": csrfToken
                 },
                 body: JSON.stringify({
-                    username: username.value,
+                    username: username.value.trim(),
                     password: password.value
                 })
             });
             if (response.ok) {
+                const session = await response.json();
                 ["ukhanyiso-marks", "ukhanyiso-results", "ukhanyiso-showing-all-courses",
                     "ukhanyiso-stage", "ukhanyiso-showcase"].forEach(key => sessionStorage.removeItem(key));
                 if (mode === "signup") {
-                    const recoveryEmail = document.getElementById("recovery-email");
-                    if (recoveryEmail && recoveryEmail.value) {
-                        try {
-                            await fetch("/api/auth/recovery-email", {
-                                method: "PUT",
-                                credentials: "same-origin",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "X-CSRF-Token": (await response.json()).csrfToken
-                                },
-                                body: JSON.stringify({ email: recoveryEmail.value })
-                            });
-                        } catch (ignored) {
-                            // Recovery email is optional; the account itself was created.
-                        }
+                    // The sign-up email doubles as the password-recovery email.
+                    try {
+                        await fetch("/api/auth/recovery-email", {
+                            method: "PUT",
+                            credentials: "same-origin",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-Token": session.csrfToken
+                            },
+                            body: JSON.stringify({ email: username.value.trim() })
+                        });
+                    } catch (ignored) {
+                        // Recovery is a convenience; the account itself was created.
                     }
                 }
-                location.assign("/");
+                // New accounts go straight to the profile to enter their personal details.
+                location.assign(mode === "signup" ? "/account.html" : "/");
                 return;
             }
             if (response.status === 409) {
-                showError("That username is already in use. Choose another one or log in.");
+                showError("That email is already registered. Log in instead, or use a different email.");
             } else if (response.status === 401) {
-                showError("The username or password is incorrect.");
+                showError("The email or password is incorrect.");
             } else if (response.status === 400) {
                 showError(mode === "signup"
-                    ? "Check your username (3–50 letters, numbers, underscores or hyphens) and use a password of 12–128 characters."
-                    : "Check your username and password, then try again.");
+                    ? "Enter a valid email address and use a password of 12–128 characters."
+                    : "Check your email and password, then try again.");
             } else if (response.status === 429) {
                 showError("Too many attempts. Wait a minute, then try again.");
             } else {

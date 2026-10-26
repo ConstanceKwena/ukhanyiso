@@ -1,5 +1,7 @@
 package com.ukhanyiso.matching.api;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -12,6 +14,7 @@ import java.util.Locale;
 
 @Component
 public class UsernameSchemaMigration implements ApplicationRunner {
+    private static final Logger log = LoggerFactory.getLogger(UsernameSchemaMigration.class);
     private static final String LENGTH_CONSTRAINT = "app_users_username_length_check";
     private final JdbcTemplate jdbc;
 
@@ -40,14 +43,14 @@ public class UsernameSchemaMigration implements ApplicationRunner {
         }
 
         if (database.contains("postgres")) {
-            jdbc.execute("ALTER TABLE app_users ALTER COLUMN user_id TYPE VARCHAR(50)");
-            jdbc.execute("ALTER TABLE app_users ALTER COLUMN display_name TYPE VARCHAR(50)");
+            jdbc.execute("ALTER TABLE app_users ALTER COLUMN user_id TYPE VARCHAR(100)");
+            jdbc.execute("ALTER TABLE app_users ALTER COLUMN display_name TYPE VARCHAR(100)");
         } else {
-            jdbc.execute("ALTER TABLE app_users ALTER COLUMN user_id VARCHAR(50)");
-            jdbc.execute("ALTER TABLE app_users ALTER COLUMN display_name VARCHAR(50)");
+            jdbc.execute("ALTER TABLE app_users ALTER COLUMN user_id VARCHAR(100)");
+            jdbc.execute("ALTER TABLE app_users ALTER COLUMN display_name VARCHAR(100)");
         }
         jdbc.execute("ALTER TABLE app_users ADD CONSTRAINT " + LENGTH_CONSTRAINT
-                + " CHECK (LENGTH(user_id) BETWEEN 3 AND 50)");
+                + " CHECK (LENGTH(user_id) BETWEEN 3 AND 100)");
 
         // Password recovery and optional profile details, added after the first release.
         // ADD COLUMN IF NOT EXISTS works on H2 and PostgreSQL.
@@ -59,11 +62,21 @@ public class UsernameSchemaMigration implements ApplicationRunner {
         jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30)");
         jdbc.execute("CREATE TABLE IF NOT EXISTS password_resets (\n"
                 + "    token_hash  VARCHAR(64) PRIMARY KEY,\n"
-                + "    user_id     VARCHAR(50) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,\n"
+                + "    user_id     VARCHAR(100) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,\n"
                 + "    expires_at  TIMESTAMP   NOT NULL,\n"
                 + "    used_at     TIMESTAMP,\n"
                 + "    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
                 + ")");
+
+        // Reset tokens point at the account, so that column must hold an email too.
+        // Best effort: if it cannot be widened, startup still succeeds and only resets for very long emails are affected.
+        try {
+            jdbc.execute(database.contains("postgres")
+                    ? "ALTER TABLE password_resets ALTER COLUMN user_id TYPE VARCHAR(100)"
+                    : "ALTER TABLE password_resets ALTER COLUMN user_id VARCHAR(100) NOT NULL");
+        } catch (RuntimeException exception) {
+            log.warn("Could not widen password_resets.user_id to 100 characters: {}", exception.getMessage());
+        }
     }
 
     private List<CheckConstraint> h2Checks() {

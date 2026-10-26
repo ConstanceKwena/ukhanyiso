@@ -15,6 +15,20 @@ test("marks form starts blank and avoids browser autofill reusing saved marks", 
     assert.doesNotMatch(html, /\["English Home Language", "Mathematics", "Life Orientation"\]\.forEach\(addRow\)/);
 });
 
+test("signup uses email only and sends new accounts to the profile", () => {
+    const signup = fs.readFileSync(path.join(staticRoot, "signup.html"), "utf8");
+    const auth = fs.readFileSync(path.join(staticRoot, "js/auth.js"), "utf8");
+    const account = fs.readFileSync(path.join(staticRoot, "account.html"), "utf8");
+    assert.match(signup, /<input id="username" name="email" type="email"/);
+    assert.doesNotMatch(signup, /3–50 letters/);
+    assert.doesNotMatch(signup, /id="recovery-email"/);
+    assert.match(auth, /location\.assign\(mode === "signup" \? "\/account\.html" : "\/"\)/);
+    assert.doesNotMatch(account, /\(optional\)/);
+    for (const id of ["first-name", "surname", "contact-email", "whatsapp"]) {
+        assert.match(account, new RegExp('id="' + id + '"[^>]*required'));
+    }
+});
+
 test("signup explains and validates the server's 12-to-128 character password rule", () => {
     const signup = fs.readFileSync(path.join(staticRoot, "signup.html"), "utf8");
     const auth = fs.readFileSync(path.join(staticRoot, "js/auth.js"), "utf8");

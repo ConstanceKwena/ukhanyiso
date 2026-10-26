@@ -32,7 +32,7 @@ class PasswordRecoveryApiTest {
     @Test
     void recoveryEmailIsStoredOnlyAsHash() throws Exception {
         AuthSession account = signup(nextUsername(), "fictional-password-recover");
-        String email = "learner-" + account.username() + "@example.invalid";
+        String email = account.username(); // the sign-up email is the login
 
         mvc.perform(put("/api/auth/recovery-email").session(account.session())
                 .header("X-CSRF-Token", account.csrf())
@@ -64,7 +64,7 @@ class PasswordRecoveryApiTest {
     void resetWithTokenChangesThePassword() throws Exception {
         String username = nextUsername();
         AuthSession account = signup(username, "fictional-password-recover");
-        String email = "learner-" + username + "@example.invalid";
+        String email = username; // the sign-up email is the login
         mvc.perform(put("/api/auth/recovery-email").session(account.session())
                 .header("X-CSRF-Token", account.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -135,7 +135,7 @@ class PasswordRecoveryApiTest {
     }
 
     private static String nextUsername() {
-        return "learner-" + SEQUENCE.incrementAndGet();
+        return "learner-" + SEQUENCE.incrementAndGet() + "@example.invalid";
     }
 
     /** Test-only subclass that captures the prototype-delivered token. */
