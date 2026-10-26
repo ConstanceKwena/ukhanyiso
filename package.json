@@ -2,7 +2,7 @@
   "name": "ukhanyiso-browser-tests",
   "private": true,
   "scripts": {
-    "test:unit": "node --test src/test/js/form-ux.test.cjs src/test/js/study-planner.test.cjs",
+    "test:unit": "node --test src/test/js/form-ux.test.cjs src/test/js/study-planner.test.cjs src/test/js/subject-picker.test.cjs",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
