@@ -18,6 +18,7 @@
     <a href="/checklist.html">Checklist</a>
     <a href="/signup.html">Sign up</a>
     <a href="/login.html">Log in</a>
+    <button type="button" id="sign-out" class="nav-logout" hidden>Sign out</button>
 </nav>
 <main>
     <header class="page-heading">
@@ -57,6 +58,11 @@
             <div class="field">
                 <label for="reminder-date">Reminder date</label>
                 <input id="reminder-date" type="date" required>
+            </div>
+            <div class="field">
+                <label for="reminder-time">Reminder time</label>
+                <input id="reminder-time" type="time">
+                <p class="form-note">Optional. Set a time and we will send your WhatsApp/email reminder at that exact time on the day.</p>
             </div>
             <button type="submit">Add to my calendar</button>
             <p id="calendar-status" class="calendar-status form-note" role="status" aria-live="polite"></p>

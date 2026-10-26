@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -27,12 +29,10 @@ public class ShowcaseAuthController {
                     "AAAAAAAAAAAAAAAAAAAAAA==",
                     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
     private final ChecklistRepository repository;
-    private final PasswordRecoveryService recovery;
     private final PasswordHasher passwordHasher = new PasswordHasher();
 
-    public ShowcaseAuthController(ChecklistRepository repository, PasswordRecoveryService recovery) {
+    public ShowcaseAuthController(ChecklistRepository repository) {
         this.repository = repository;
-        this.recovery = recovery;
     }
 
     @GetMapping("/csrf")
@@ -114,27 +114,12 @@ public class ShowcaseAuthController {
         session.invalidate();
     }
 
-    /** Signed-in learner stores/updates the recovery email (hashed at rest). */
-    @PutMapping("/recovery-email")
-    public void setRecoveryEmail(
-            @RequestBody(required = false) RecoveryEmailRequest body,
-            @RequestHeader(value = "X-CSRF-Token", required = false) String token,
-            HttpSession session) {
-        String user = ShowcaseSession.requireUser(session);
-        verifyCsrf(session, token);
-        if (body == null || body.email() == null || body.email().length() > 200
-                || !EMAIL.matcher(body.email()).matches()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Provide a valid email address.");
-        }
-        recovery.setRecoveryEmail(user, body.email());
-    }
-
     @GetMapping("/profile")
     public ProfileResponse profile(HttpSession session) {
         String user = ShowcaseSession.requireUser(session);
         ChecklistRepository.Profile p = repository.profile(user);
-        return new ProfileResponse(p.firstName(), p.surname(), p.contactEmail(), p.whatsapp());
+        return new ProfileResponse(p.firstName(), p.surname(), p.contactEmail(), p.whatsapp(),
+                p.whatsappOptIn());
     }
 
     /** All four details are required and validated. */
@@ -161,13 +146,20 @@ public class ShowcaseAuthController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Enter a valid WhatsApp number, digits only (a leading + is allowed).");
         }
-        if (firstName == null || surname == null || email == null || whatsapp == null) {
+        // WhatsApp reminders are strictly opt-in: the learner must tick the box.
+        boolean whatsappOptIn = Boolean.TRUE.equals(body.whatsappOptIn());
+        if (whatsappOptIn && whatsapp == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "First name, surname, email and WhatsApp number are all required.");
+                    "Add a WhatsApp number so we know where to send your reminders.");
         }
-        repository.updateProfile(user, firstName, surname, email, whatsapp);
-        return new ProfileResponse(firstName, surname, email, whatsapp);
+        if (firstName == null || surname == null || email == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "First name, surname and email are all required.");
+        }
+        repository.updateProfile(user, firstName, surname, email, whatsapp, whatsappOptIn);
+        return new ProfileResponse(firstName, surname, email, whatsapp, whatsappOptIn);
     }
 
     private static String cleanProfileField(String value, int maxLength, String label) {
@@ -180,34 +172,6 @@ public class ShowcaseAuthController {
         return trimmed;
     }
 
-    /** Always returns 202 so an unknown email reveals nothing. */
-    @PostMapping("/forgot-password")
-    public Map<String, Boolean> forgotPassword(
-            @RequestBody(required = false) RecoveryEmailRequest body,
-            @RequestHeader(value = "X-CSRF-Token", required = false) String token,
-            HttpServletRequest request) {
-        verifyCsrf(request.getSession(false), token);
-        boolean dispatched = body != null && body.email() != null
-                && EMAIL.matcher(body.email()).matches()
-                && recovery.requestReset(body.email());
-        if (!dispatched) {
-            log.debug("No reset dispatched (unknown email or rate limit). Responding identically either way.");
-        }
-        return Map.of("dispatched", true);  // constant response: never reveal account existence
-    }
-
-    @PostMapping("/reset-password")
-    public void resetPassword(
-            @RequestBody(required = false) ResetRequest body,
-            @RequestHeader(value = "X-CSRF-Token", required = false) String token,
-            HttpServletRequest request) {
-        verifyCsrf(request.getSession(false), token);
-        if (body == null || !recovery.resetPassword(body.token(), body.newPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "That reset link is invalid or has expired.");
-        }
-    }
-
     private AuthResponse startSession(String username, HttpServletRequest request) {
         HttpSession previous = request.getSession(false);
         if (previous != null) previous.invalidate();
@@ -218,10 +182,17 @@ public class ShowcaseAuthController {
 
     private void verifyCsrf(HttpSession session, String token) {
         if (session == null || token == null
-                || !ShowcaseSession.csrf(session).equals(token)) {
+                || !constantTimeEquals(ShowcaseSession.csrf(session), token)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Invalid CSRF token.");
         }
+    }
+
+    /** Constant-time comparison so token checks do not leak timing information. */
+    private static boolean constantTimeEquals(String expected, String actual) {
+        return MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8),
+                actual.getBytes(StandardCharsets.UTF_8));
     }
 
     private boolean validEmail(String email) {
@@ -245,10 +216,10 @@ public class ShowcaseAuthController {
     }
 
     public record CredentialsRequest(String username, String password) { }
-    public record RecoveryEmailRequest(String email) { }
-    public record ResetRequest(String token, String newPassword) { }
-    public record ProfileRequest(String firstName, String surname, String contactEmail, String whatsapp) { }
-    public record ProfileResponse(String firstName, String surname, String contactEmail, String whatsapp) { }
+    public record ProfileRequest(String firstName, String surname, String contactEmail, String whatsapp,
+            Boolean whatsappOptIn) { }
+    public record ProfileResponse(String firstName, String surname, String contactEmail, String whatsapp,
+            boolean whatsappOptIn) { }
     public record CsrfResponse(String csrfToken) { }
     public record AuthResponse(String username, String csrfToken) { }
 }

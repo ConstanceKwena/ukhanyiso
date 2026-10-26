@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class ChecklistApiTest {
+
     private static final AtomicInteger USER_SEQUENCE = new AtomicInteger();
     @Autowired MockMvc mvc;
     @Autowired ChecklistRepository repository;
@@ -130,7 +131,7 @@ class ChecklistApiTest {
         ChecklistRepository firstRepository =
                 new ChecklistRepository(firstJdbc);
         ShowcaseAuthController firstController =
-                new ShowcaseAuthController(firstRepository, new PasswordRecoveryService(firstRepository));
+                new ShowcaseAuthController(firstRepository);
         String username = "persist@ex.co"; // short: the legacy table here only allows 24 characters
         String password = "fictional-password-persisted";
 
@@ -148,7 +149,7 @@ class ChecklistApiTest {
         ChecklistRepository restartedRepository =
                 new ChecklistRepository(new JdbcTemplate(restartedDataSource));
         ShowcaseAuthController restartedController =
-                new ShowcaseAuthController(restartedRepository, new PasswordRecoveryService(restartedRepository));
+                new ShowcaseAuthController(restartedRepository);
         MockHttpServletRequest loginRequest = new MockHttpServletRequest();
         String loginCsrf = restartedController.csrf(loginRequest).csrfToken();
         ShowcaseAuthController.AuthResponse loggedIn = restartedController.login(

@@ -7,12 +7,13 @@ const staticRoot = path.join(__dirname, "../../main/resources/static");
 
 test("marks form starts blank and avoids browser autofill reusing saved marks", () => {
     const html = fs.readFileSync(path.join(staticRoot, "start.html"), "utf8");
+    const js = fs.readFileSync(path.join(staticRoot, "js/page-start.js"), "utf8");
     assert.match(html, /<form id="marks-form" autocomplete="off"/);
-    assert.match(html, /m\.value = ""/);
-    assert.match(html, /m\.name = `uk-matric-mark-\$\{number\}`/);
-    assert.match(html, /m\.autocomplete = "off"/);
-    assert.match(html, /for \(let i = 0; i < 7; i\+\+\) addRow\(\)/);
-    assert.doesNotMatch(html, /\["English Home Language", "Mathematics", "Life Orientation"\]\.forEach\(addRow\)/);
+    assert.match(js, /m\.value = ""/);
+    assert.match(js, /m\.name = `uk-matric-mark-\$\{number\}`/);
+    assert.match(js, /m\.autocomplete = "off"/);
+    assert.match(js, /for \(let i = 0; i < 7; i\+\+\) addRow\(\)/);
+    assert.doesNotMatch(js, /\["English Home Language", "Mathematics", "Life Orientation"\]\.forEach\(addRow\)/);
 });
 
 test("signup uses email only and sends new accounts to the profile", () => {
@@ -23,10 +24,12 @@ test("signup uses email only and sends new accounts to the profile", () => {
     assert.doesNotMatch(signup, /3–50 letters/);
     assert.doesNotMatch(signup, /id="recovery-email"/);
     assert.match(auth, /location\.assign\(mode === "signup" \? "\/account\.html" : "\/"\)/);
-    assert.doesNotMatch(account, /\(optional\)/);
-    for (const id of ["first-name", "surname", "contact-email", "whatsapp"]) {
+    // WhatsApp is optional and reminders are opt-in, so nothing here may be required.
+    assert.match(account, /id="whatsapp-opt-in"/);
+    for (const id of ["first-name", "surname", "contact-email"]) {
         assert.match(account, new RegExp('id="' + id + '"[^>]*required'));
     }
+    assert.doesNotMatch(account, new RegExp('id="whatsapp"[^>]*required'));
 });
 
 test("signup explains and validates the server's 12-to-128 character password rule", () => {

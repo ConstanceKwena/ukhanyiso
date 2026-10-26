@@ -25,6 +25,13 @@ public final class ShowcaseSession {
         return user(session) != null;
     }
 
+    /** Checks the request CSRF token the same way the controllers do. */
+    public static void requireCsrf(HttpSession session, String token) {
+        if (session == null || token == null || !ShowcaseSession.csrf(session).equals(token)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid CSRF token.");
+        }
+    }
+
     static String csrf(HttpSession session) {
         String token = (String) session.getAttribute(CSRF_ATTRIBUTE);
         if (token == null) {

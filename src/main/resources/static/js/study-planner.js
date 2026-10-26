@@ -72,7 +72,7 @@
 
     function node(tag, text, className) {
         const element = document.createElement(tag);
-        if (text !== undefined) element.textContent = text;
+        if (text !== undefined) element.textContent = (window.Site && window.Site.t) ? window.Site.t(text) : text;
         if (className) element.className = className;
         return element;
     }

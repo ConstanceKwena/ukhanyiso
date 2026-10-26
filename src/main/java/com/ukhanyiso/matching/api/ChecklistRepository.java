@@ -95,19 +95,23 @@ public class ChecklistRepository {
                 salt, hash, userId);
     }
 
-    public record Profile(String firstName, String surname, String contactEmail, String whatsapp) { }
+    public record Profile(String firstName, String surname, String contactEmail, String whatsapp,
+            boolean whatsappOptIn) { }
 
     public Profile profile(String userId) {
-        return jdbc.query("SELECT first_name, surname, contact_email, whatsapp FROM app_users WHERE user_id = ?",
+        return jdbc.query("SELECT first_name, surname, contact_email, whatsapp, whatsapp_opt_in FROM app_users WHERE user_id = ?",
                 rs -> rs.next()
-                        ? new Profile(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4))
-                        : new Profile(null, null, null, null),
+                        ? new Profile(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4),
+                                rs.getBoolean("whatsapp_opt_in"))
+                        : new Profile(null, null, null, null, false),
                 userId);
     }
 
-    public void updateProfile(String userId, String firstName, String surname, String contactEmail, String whatsapp) {
-        jdbc.update("UPDATE app_users SET first_name = ?, surname = ?, contact_email = ?, whatsapp = ? WHERE user_id = ?",
-                firstName, surname, contactEmail, whatsapp, userId);
+    public void updateProfile(String userId, String firstName, String surname, String contactEmail, String whatsapp,
+            boolean whatsappOptIn) {
+        jdbc.update("UPDATE app_users SET first_name = ?, surname = ?, contact_email = ?, whatsapp = ?, "
+                + "whatsapp_opt_in = ? WHERE user_id = ?",
+                firstName, surname, contactEmail, whatsapp, whatsappOptIn, userId);
     }
 
     public void saveProgress(String userId, String itemId, boolean completed) {
@@ -118,5 +122,57 @@ public class ChecklistRepository {
             jdbc.update("INSERT INTO checklist_progress (user_id, item_id, completed, updated_at) VALUES (?, ?, ?, ?)",
                     userId, itemId, completed ? 1 : 0, now);
         }
+    }
+
+    // ---- Reminder deliveries (server-side WhatsApp/email reminders) ----
+
+    public record ReminderDelivery(long id, String userId, String title, java.time.LocalDate remindDate,
+            java.time.LocalTime remindTime, String channel, String status) { }
+
+    /** Stores one delivery per channel; ignores an exact duplicate. */
+    public void addReminderDelivery(String userId, String title, java.time.LocalDate remindDate,
+            java.time.LocalTime remindTime, String channel) {
+        Integer existing = jdbc.query(
+                "SELECT COUNT(*) FROM reminder_deliveries WHERE user_id = ? AND title = ? AND remind_date = ? AND channel = ?",
+                rs -> rs.next() ? rs.getInt(1) : 0, userId, title, java.sql.Date.valueOf(remindDate), channel);
+        if (existing != null && existing > 0) return;
+        jdbc.update("INSERT INTO reminder_deliveries (user_id, title, remind_date, remind_time, channel) VALUES (?, ?, ?, ?, ?)",
+                userId, title, java.sql.Date.valueOf(remindDate),
+                remindTime == null ? null : java.sql.Time.valueOf(remindTime), channel);
+    }
+
+    /** Removes every delivery for one reminder (used when the learner deletes it). */
+    public void removeReminderDeliveries(String userId, String title, java.time.LocalDate remindDate) {
+        jdbc.update("DELETE FROM reminder_deliveries WHERE user_id = ? AND title = ? AND remind_date = ?",
+                userId, title, java.sql.Date.valueOf(remindDate));
+    }
+
+    /** Deliveries due at or before this moment: date passed, or today with time reached. */
+    public List<ReminderDelivery> pendingDeliveries(java.time.LocalDate today, java.time.LocalTime now) {
+        return jdbc.query(
+                "SELECT id, user_id, title, remind_date, remind_time, channel, status FROM reminder_deliveries "
+                        + "WHERE status = 'pending' AND (remind_date < ? OR (remind_date = ? "
+                        + "AND (remind_time IS NULL OR remind_time <= ?))) ORDER BY remind_date, remind_time",
+                (rs, i) -> new ReminderDelivery(rs.getLong("id"), rs.getString("user_id"), rs.getString("title"),
+                        rs.getDate("remind_date").toLocalDate(),
+                        rs.getTime("remind_time") == null ? null : rs.getTime("remind_time").toLocalTime(),
+                        rs.getString("channel"), rs.getString("status")),
+                java.sql.Date.valueOf(today), java.sql.Date.valueOf(today), java.sql.Time.valueOf(now));
+    }
+
+    public void markDelivered(long id, String status, String detail) {
+        jdbc.update("UPDATE reminder_deliveries SET status = ?, detail = ?, sent_at = ? WHERE id = ?",
+                status, detail, Timestamp.from(Instant.now()), id);
+    }
+
+    public List<ReminderDelivery> deliveries(String userId) {
+        return jdbc.query(
+                "SELECT id, user_id, title, remind_date, remind_time, channel, status FROM reminder_deliveries "
+                        + "WHERE user_id = ? ORDER BY remind_date, remind_time",
+                (rs, i) -> new ReminderDelivery(rs.getLong("id"), rs.getString("user_id"), rs.getString("title"),
+                        rs.getDate("remind_date").toLocalDate(),
+                        rs.getTime("remind_time") == null ? null : rs.getTime("remind_time").toLocalTime(),
+                        rs.getString("channel"), rs.getString("status")),
+                userId);
     }
 }

@@ -60,6 +60,7 @@ public class UsernameSchemaMigration implements ApplicationRunner {
         jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS surname VARCHAR(80)");
         jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS contact_email VARCHAR(200)");
         jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30)");
+        jdbc.execute("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS whatsapp_opt_in BOOLEAN NOT NULL DEFAULT FALSE");
         jdbc.execute("CREATE TABLE IF NOT EXISTS password_resets (\n"
                 + "    token_hash  VARCHAR(64) PRIMARY KEY,\n"
                 + "    user_id     VARCHAR(100) NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,\n"
@@ -74,6 +75,8 @@ public class UsernameSchemaMigration implements ApplicationRunner {
                 + "    PRIMARY KEY (user_id, subject)\n"
                 + ")");
 
+        // Reminders carry the exact time of day the learner wants them.
+        jdbc.execute("ALTER TABLE reminder_deliveries ADD COLUMN IF NOT EXISTS remind_time TIME");
         // Reset tokens point at the account, so that column must hold an email too.
         // Best effort: if it cannot be widened, startup still succeeds and only resets for very long emails are affected.
         try {

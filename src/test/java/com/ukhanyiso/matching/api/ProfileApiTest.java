@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ProfileApiTest {
         private static final AtomicInteger SEQUENCE = new AtomicInteger();
+        private static final AtomicInteger SIGNUP_SEQUENCE = new AtomicInteger();
 
         @Autowired
         MockMvc mvc;
@@ -58,7 +60,7 @@ class ProfileApiTest {
 
         @Test
         void profileRejectsBadNamesEmailsAndNumbers() throws Exception {
-                AuthSession account = signup("learner-" + System.nanoTime() + "@example.invalid", "fictional-password-profile");
+                AuthSession account = signup("learner-" + System.nanoTime() + "@example.invalid", "fictional-password-profile2");
                 mvc.perform(put("/api/auth/profile").session(account.session())
                                 .header("X-CSRF-Token", account.csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -77,6 +79,36 @@ class ProfileApiTest {
         }
 
         @Test
+        void profileWhatsappReminderIsOptIn() throws Exception {
+                String username = "learner-" + System.nanoTime() + "@example.invalid";
+                AuthSession account = signup(username, "fictional-password-profile");
+
+                // No WhatsApp details: profile still saves, opt-in stays false.
+                mvc.perform(put("/api/auth/profile").session(account.session())
+                                .header("X-CSRF-Token", account.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"firstName\":\"Thandi\",\"surname\":\"Nkosi\",\"contactEmail\":\"t@example.invalid\"}"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.whatsappOptIn").value(false));
+
+                // Opting in without a number is rejected.
+                mvc.perform(put("/api/auth/profile").session(account.session())
+                                .header("X-CSRF-Token", account.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"firstName\":\"Thandi\",\"surname\":\"Nkosi\",\"contactEmail\":\"t@example.invalid\",\"whatsappOptIn\":true}"))
+                                .andExpect(status().isBadRequest());
+
+                // Opting in with a number is accepted and persisted.
+                mvc.perform(put("/api/auth/profile").session(account.session())
+                                .header("X-CSRF-Token", account.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"firstName\":\"Thandi\",\"surname\":\"Nkosi\",\"contactEmail\":\"t@example.invalid\",\"whatsapp\":\"+27 82 000 0000\",\"whatsappOptIn\":true}"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.whatsappOptIn").value(true));
+                assertTrue(repository.profile(username).whatsappOptIn());
+        }
+
+        @Test
         void profileRequiresLoginAndCsrf() throws Exception {
                 mvc.perform(get("/api/auth/profile")).andExpect(status().isUnauthorized());
                 mvc.perform(put("/api/auth/profile").contentType(MediaType.APPLICATION_JSON).content("{}"))
@@ -84,12 +116,12 @@ class ProfileApiTest {
         }
 
         @Test
-        void profileRequiresEveryDetail() throws Exception {
+        void profileRequiresRequiredDetails() throws Exception {
                 AuthSession account = signup("learner-" + System.nanoTime() + "@example.invalid", "fictional-password-profile");
                 mvc.perform(put("/api/auth/profile").session(account.session())
                                 .header("X-CSRF-Token", account.csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"firstName\":\"Thandi\",\"surname\":\"Nkosi\",\"contactEmail\":\"t@example.invalid\"}"))
+                                .content("{\"firstName\":\"Thandi\"}"))
                                 .andExpect(status().isBadRequest());
         }
 
@@ -97,7 +129,14 @@ class ProfileApiTest {
                 MvcResult preAuth = mvc.perform(get("/api/auth/csrf")).andExpect(status().isOk()).andReturn();
                 MockHttpSession session = (MockHttpSession) preAuth.getRequest().getSession(false);
                 String csrf = JsonPath.read(preAuth.getResponse().getContentAsString(), "$.csrfToken");
-                MvcResult created = mvc.perform(post("/api/auth/signup").session(session)
+                // Each test uses a unique client address so the signup rate limit (5/min per IP)
+                // is not consumed by other tests in this class.
+                MvcResult created = mvc.perform(post("/api/auth/signup")
+                                .with(request -> {
+                                        request.setRemoteAddr("192.0.2." + (SIGNUP_SEQUENCE.incrementAndGet() % 250 + 1));
+                                        return request;
+                                })
+                                .session(session)
                                 .header("X-CSRF-Token", csrf)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}"))
@@ -108,4 +147,7 @@ class ProfileApiTest {
                                 (MockHttpSession) created.getRequest().getSession(false),
                                 JsonPath.read(body, "$.csrfToken"));
         }
+}
+
+record AuthSession(String username, MockHttpSession session, String csrf) {
 }

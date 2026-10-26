@@ -27,8 +27,12 @@
         </div>
         <div class="field">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" minlength="12" maxlength="128"
-                   autocomplete="current-password" required>
+            <div class="password-wrap">
+                <input id="password" name="password" type="password" minlength="12" maxlength="128"
+                       autocomplete="current-password" required>
+                <button type="button" class="eye-toggle" data-for="password"
+                        aria-label="Show password" aria-pressed="false">👁</button>
+            </div>
         </div>
         <div class="form-actions">
             <button type="submit" id="submit">Log in</button>
@@ -36,40 +40,9 @@
         <p id="message" class="error" role="alert" aria-live="polite"></p>
         <p class="form-note">Do not enter an ID or exam number.</p>
     </form>
-    <form id="forgot-form" hidden novalidate>
-        <div class="field">
-            <label for="recovery-email">Recovery email</label>
-            <input id="recovery-email" name="recoveryEmail" type="email" maxlength="200" required>
-            <p class="form-note">If you added a recovery email to your account, we send a one-time reset link to it. The email is stored only as a secure hash, never in plain text.</p>
-        </div>
-        <div class="form-actions">
-            <button type="submit" id="forgot-submit">Send reset link</button>
-            <button type="button" id="forgot-cancel">Back to log in</button>
-        </div>
-        <p id="forgot-message" class="error" role="alert" aria-live="polite"></p>
-    </form>
-    <form id="reset-form" hidden novalidate>
-        <div class="field">
-            <label for="reset-token">Reset code</label>
-            <input id="reset-token" name="resetToken" type="text" required>
-            <p class="form-note">Copy the one-time code from your reset message.</p>
-        </div>
-        <div class="field">
-            <label for="new-password">New password</label>
-            <input id="new-password" name="newPassword" type="password" minlength="12" maxlength="128"
-                   autocomplete="new-password" required>
-            <p class="form-note">Use at least 12 characters.</p>
-        </div>
-        <div class="form-actions">
-            <button type="submit" id="reset-submit">Set new password</button>
-            <button type="button" id="reset-cancel">Back to log in</button>
-        </div>
-        <p id="reset-message" class="error" role="alert" aria-live="polite"></p>
-    </form>
-    <p><button type="button" id="forgot-link" class="link-button">Forgot your password?</button></p>
+    <p><a class="button-link secondary" href="/signup.html">Need an account? Sign up</a></p>
 </main>
 <script src="/js/site.js"></script>
 <script src="/js/auth.js"></script>
-<script src="/js/recovery.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
     const deadlineList = document.getElementById("deadline-list");
     const status = document.getElementById("calendar-status");
     const dateInput = document.getElementById("reminder-date");
+    const timeInput = document.getElementById("reminder-time");
     const todayDate = new Date();
     const today = localDate(todayDate);
     let reminders = loadReminders();
@@ -39,12 +40,42 @@
         }).format(date) : value;
     }
 
+    // One-hour calendar event starting at the reminder time.
+    function endHour(time) {
+        const [hour, minute] = time.split(":").map(Number);
+        return String((hour + 1) % 24).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+    }
+    function formatTime(value) {
+        if (!/^\d{2}:\d{2}(:\d{2})?$/.test(value || "")) return "";
+        const [hour, minute] = value.split(":").map(Number);
+        return new Intl.DateTimeFormat(undefined, {
+            hour: "numeric", minute: "2-digit"
+        }).format(new Date(2000, 0, 1, hour, minute));
+    }
+    // How long until the reminder fires; null when it has passed or has no time.
+    function countdown(value, time) {
+        if (!time) return null;
+        const due = parseDate(value);
+        if (!due) return null;
+        const [hour, minute] = time.split(":").map(Number);
+        due.setHours(hour, minute, 0, 0);
+        const ms = due.getTime() - Date.now();
+        if (ms <= 0) return null;
+        const days = Math.floor(ms / 86400000);
+        const hours = Math.floor((ms % 86400000) / 3600000);
+        const minutes = Math.floor((ms % 3600000) / 60000);
+        if (days > 0) return days + " day" + (days === 1 ? "" : "s") + " " + hours + "h";
+        if (hours > 0) return hours + "h " + minutes + "m";
+        return minutes <= 1 ? "less than a minute" : minutes + " minutes";
+    }
     function loadReminders() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
             if (!Array.isArray(saved)) return [];
             return saved.filter(item => item && typeof item.id === "string"
-                && typeof item.title === "string" && parseDate(item.date));
+                && typeof item.title === "string" && parseDate(item.date)
+                && (item.time === undefined || item.time === null
+                    || /^\d{2}:\d{2}(:\d{2})?$/.test(item.time)));
         } catch (error) {
             status.textContent = "This browser could not read saved reminders. You can still export reminders while this page is open.";
             return [];
@@ -67,27 +98,48 @@
             : Date.now().toString(36) + Math.random().toString(36).slice(2);
     }
 
-    function addReminder(title, date, sourceUrl) {
+    function addReminder(title, date, sourceUrl, time) {
         if (!parseDate(date)) return "failed";
         const existing = reminders.find(item => item.title === title && item.date === date);
         if (existing) return "duplicate";
-        reminders.push({
+        const reminder = {
             id: makeId(),
             title,
             date,
+            time: time || "",
             sourceUrl: sourceUrl || ""
-        });
+        };
+        reminders.push(reminder);
         if (!saveReminders()) {
             reminders.pop();
             return "failed";
         }
+        syncToServer("POST", reminder);
         render();
         return "saved";
     }
 
+    // Keeps the server in step so WhatsApp/email reminders go out even when
+    // this browser is closed. Fails silently: reminders still work locally.
+    async function syncToServer(method, reminder) {
+        try {
+            const me = await fetch("/api/auth/me", { credentials: "same-origin" });
+            if (!me.ok) return;  // signed out: local-only reminders
+            const token = (await me.json()).csrfToken;
+            await fetch("/api/reminders", {
+                method: method,
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+                body: JSON.stringify({ title: reminder.title, date: reminder.date, time: reminder.time || "" })
+            });
+        } catch (error) {
+            // The local reminder still works; server sync is best effort.
+        }
+    }
+
     function element(tag, text, className) {
         const node = document.createElement(tag);
-        if (text !== undefined) node.textContent = text;
+        if (text !== undefined) node.textContent = (window.Site && window.Site.t) ? window.Site.t(text) : text;
         if (className) node.className = className;
         return node;
     }
@@ -145,7 +197,14 @@
         const card = element("article", undefined, "reminder-card");
         const content = element("div");
         content.appendChild(element("strong", item.title));
-        content.appendChild(element("p", formatDate(item.date)));
+        content.appendChild(element("p", formatDate(item.date) + (item.time ? " at " + formatTime(item.time) : "")));
+        const soon = countdown(item.date, item.time);
+        if (soon) {
+            const live = element("p", "Due in " + soon, "reminder-countdown");
+            live.setAttribute("data-due-date", item.date);
+            live.setAttribute("data-due-time", item.time);
+            content.appendChild(live);
+        }
         const remove = element("button", "Remove", "secondary");
         remove.type = "button";
         remove.setAttribute("aria-label", "Remove reminder: " + item.title);
@@ -153,6 +212,7 @@
             const previousReminders = reminders;
             reminders = reminders.filter(reminder => reminder.id !== item.id);
             if (saveReminders()) {
+                syncToServer("DELETE", item);
                 status.textContent = "Reminder removed.";
                 render();
             } else {
@@ -166,7 +226,8 @@
 
     function renderReminderList() {
         reminderList.textContent = "";
-        const sorted = [...reminders].sort((a, b) => a.date.localeCompare(b.date));
+        const sorted = [...reminders].sort((a, b) =>
+            (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
         if (!sorted.length) {
             reminderList.appendChild(element("p", "You have no reminders yet."));
             return;
@@ -179,6 +240,15 @@
         renderSelectedReminders();
         renderReminderList();
     }
+    // Keeps countdowns live: refreshes the "Due in …" line every minute.
+    function refreshCountdowns() {
+        document.querySelectorAll(".reminder-countdown").forEach(node => {
+            const soon = countdown(node.getAttribute("data-due-date"), node.getAttribute("data-due-time"));
+            node.textContent = soon ? "Due in " + soon : "";
+            if (!soon) node.remove();
+        });
+    }
+    setInterval(refreshCountdowns, 30000);
 
     function addDeadlineReminder(item, button) {
         const result = addReminder("Funding deadline: " + item.name, item.closingDate, item.officialLink);
@@ -238,10 +308,12 @@
                 id: item.id,
                 title: item.title,
                 date: item.date,
-                allDay: true,
+                startTime: item.time || undefined,
+                endTime: item.time ? endHour(item.time) : undefined,
+                allDay: !item.time,
                 description: "Ukhanyiso reminder. Confirm deadlines with the official organisation.",
                 sourceUrl: item.sourceUrl,
-                alarm: "-P1D"
+                alarm: item.time ? "-PT15M" : "-P1D"
             }));
             if (!window.UkhanyisoCalendarExport.download(events, "ukhanyiso-reminders.ics", "Application reminders")) {
                 status.textContent = "No reminders were available to export.";
@@ -265,11 +337,12 @@
         event.preventDefault();
         const title = document.getElementById("reminder-type").value;
         const date = dateInput.value;
+        const time = timeInput.value;
         if (!parseDate(date) || date < today) {
             status.textContent = "Choose a valid date today or later.";
             return;
         }
-        const result = addReminder(title, date);
+        const result = addReminder(title, date, "", time);
         if (result === "saved") {
             selectedDate = date;
             displayedMonth = new Date(date.slice(0, 4), Number(date.slice(5, 7)) - 1, 1);

@@ -1,0 +1,166 @@
+    const rowsEl = document.getElementById("rows");
+    const errorsEl = document.getElementById("errors");
+    const addButton = document.getElementById("add");
+    let rowNumber = 0;
+    function el(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = (window.Site && window.Site.t) ? window.Site.t(text) : text; return e; }
+    function addRow(subject) {
+        if (rowsEl.children.length >= 12) return;
+        const number = ++rowNumber;
+        const d = el("div");
+        d.className = "row";
+        d.setAttribute("role", "group");
+        d.setAttribute("aria-label", `Subject ${number}`);
+        const subjectField = el("div", null, "field");
+        const subjectLabel = el("label", "Subject");
+        subjectLabel.htmlFor = `subject-${number}`;
+        const s = el("select");
+        s.name = "subject";
+        s.id = `subject-${number}`;
+        s.autocomplete = "off";
+        const blank = el("option", "Choose subject"); blank.value = ""; s.appendChild(blank);
+        [...SUBJECTS].sort((a, b) => a.localeCompare(b)).forEach(n => {
+            const o = el("option", n);
+            o.value = n;
+            if (n === subject) o.selected = true;
+            s.appendChild(o);
+        });
+        subjectField.append(subjectLabel, s);
+        const markField = el("div", null, "field");
+        const markLabel = el("label", "Mark (%)");
+        markLabel.htmlFor = `mark-${number}`;
+        const m = el("input");
+        m.id = `mark-${number}`;
+        m.name = `uk-matric-mark-${number}`;
+        m.className = "mark-input";
+        m.type = "number";
+        m.inputMode = "numeric";
+        m.min = 0;
+        m.max = 100;
+        m.step = 1;
+        m.value = "";
+        m.placeholder = "Enter mark";
+        m.autocomplete = "off";
+        markField.append(markLabel, m);
+        const remove = el("button", "Remove", "remove-button");
+        remove.type = "button";
+        remove.setAttribute("aria-label", `Remove subject row ${number}`);
+        remove.onclick = () => {
+            d.remove();
+            addButton.disabled = rowsEl.children.length >= 12;
+        };
+        d.append(subjectField, markField, remove);
+        rowsEl.appendChild(d);
+        addButton.disabled = rowsEl.children.length >= 12;
+    }
+    for (let i = 0; i < 7; i++) addRow();
+    addButton.onclick = () => addRow();
+    function courseCard(r) {
+        const c = el("article", null, "card");
+        c.appendChild(el("h3", r.course || "Course"));
+        if (r.label) c.appendChild(el("span", r.label.charAt(0) + r.label.slice(1).toLowerCase(), "badge " + r.label.toLowerCase()));
+        c.appendChild(el("p", (r.institution || "") + (Number.isFinite(r.requiredAps) ? " · Needs APS " + r.requiredAps : "") + (Number.isFinite(r.yourAps) ? " · Your APS " + r.yourAps : "")));
+        if (Array.isArray(r.suggestions) && r.suggestions[0]) c.appendChild(el("p", r.suggestions[0]));
+        return c;
+    }
+    function bursaryCard(b, avg) {
+        const c = el("article", null, "card");
+        c.appendChild(el("h3", b.name || "Bursary"));
+        const statuses = {
+            verified: { text: "Verified", css: "fit-match" },
+            partial: { text: "Partly verified", css: "fit-unknown" },
+            conflicting: { text: "Sources disagree: check carefully", css: "fit-no-match" },
+            unverified: { text: "Not verified yet", css: "fit-unknown" }
+        };
+        const status = statuses[b.status] || statuses.unverified;
+        c.appendChild(el("span", status.text, "badge " + status.css));
+        c.appendChild(el("p", b.closingDate ? "Closing date: " + b.closingDate + (b.closingTime ? " at " + String(b.closingTime).slice(0, 5) : "") : "Closing date not confirmed"));
+        c.appendChild(el("p", "Information last reviewed: " + (b.lastChecked || "Not verified yet")));
+        if (b.whoItsFor) c.appendChild(el("p", "Who can apply: " + b.whoItsFor));
+        const m = /(\d{2,3})% average/.exec(b.whoItsFor || "");
+        if (m && avg !== null) {
+            const ok = avg >= Number(m[1]);
+            c.appendChild(el("span", ok ? "Your average (" + avg + "%) meets the listed minimum" : "Your average (" + avg + "%) is below the listed minimum (" + m[1] + "%)", "badge " + (ok ? "fit-match" : "fit-near-miss")));
+        } else if (b.whoItsFor) {
+            c.appendChild(el("span", "Check the conditions yourself", "badge fit-unknown"));
+        }
+        if (b.notes) c.appendChild(el("p", "Important: " + b.notes));
+        if (b.officialLink && /^https:\/\//i.test(b.officialLink)) {
+            const link = el("a", "Visit official funder page");
+            link.href = b.officialLink;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            c.appendChild(link);
+        } else {
+            c.appendChild(el("p", "No official application link has been confirmed."));
+        }
+        return c;
+    }
+    document.getElementById("marks-form").onsubmit = async e => {
+        e.preventDefault();
+        document.getElementById("courses").hidden = true;
+        document.getElementById("bursaries").hidden = true;
+        document.getElementById("course-list").textContent = "";
+        document.getElementById("bursary-list").textContent = "";
+        document.getElementById("results-storage-status").textContent = "";
+        document.getElementById("results-storage-status").className = "form-note";
+        document.getElementById("bursary-status").textContent = "";
+        document.getElementById("bursary-status").className = "form-note";
+        const rows = [...rowsEl.children].map(d => ({ subject: d.querySelector("select").value, mark: d.querySelector("input.mark-input").value }));
+        if (rows.length === 0) {
+            errorsEl.textContent = "Add at least one subject before checking your options.";
+            return;
+        }
+        const errors = [...new Set([...validateMarks(rows), ...validateCombos(rows)])];
+        errorsEl.textContent = errors.join(" ");
+        if (errors.length > 0) return;
+        const btn = document.getElementById("submit");
+        btn.disabled = true; btn.textContent = "Checking…";
+        try {
+            const res = await fetch("/api/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ marks: rows }) });
+            const data = await res.json().catch(() => null);
+            if (res.status === 429) { errorsEl.textContent = "Too many tries. Please wait a minute."; return; }
+            if (!res.ok || !data || !Array.isArray(data.results)) { errorsEl.textContent = (data && data.errors ? data.errors : ["Something went wrong. Please try again."]).join(" "); return; }
+            let resultsAvailableOnResultsPage = true;
+            try {
+                sessionStorage.setItem("ukhanyiso-results", JSON.stringify(data));
+                sessionStorage.setItem("ukhanyiso-marks", JSON.stringify(rows));
+            } catch (err) {
+                resultsAvailableOnResultsPage = false;
+            }
+            const list = document.getElementById("course-list");
+            list.textContent = "";
+            if (data.results.length === 0) list.appendChild(el("p", "No matching or near-miss courses for these marks."));
+            data.results.slice(0, 5).forEach(r => list.appendChild(courseCard(r)));
+            document.getElementById("courses").hidden = false;
+            if (!resultsAvailableOnResultsPage) {
+                const storageStatus = document.getElementById("results-storage-status");
+                storageStatus.textContent = "Your matches are shown here, but this browser could not save the full results for the Results page.";
+                storageStatus.className = "error";
+            }
+            const graded = rows.filter(r => r.subject !== "Life Orientation");
+            const avg = graded.length ? Math.round(graded.reduce((s, r) => s + Number(r.mark), 0) / graded.length) : null;
+            const bl = document.getElementById("bursary-list");
+            bl.textContent = "";
+            const bursaryStatus = document.getElementById("bursary-status");
+            bursaryStatus.textContent = "Loading funding information…";
+            try {
+                const br = await fetch("/api/bursaries");
+                if (!br.ok) throw new Error("Funding service returned an error.");
+                const bj = await br.json();
+                const open = (bj.bursaries || []).filter(b => b.deadline !== "CLOSED")
+                    .sort((a, b) => (a.closingDate || "9999").localeCompare(b.closingDate || "9999"));
+                if (open.length === 0) bl.appendChild(el("p", "No open bursaries to show right now."));
+                open.forEach(b => bl.appendChild(bursaryCard(b, avg)));
+                bursaryStatus.textContent = "";
+            } catch (err) {
+                bursaryStatus.textContent = "We could not load funding information. Your course matches are available; try the Funding page again later.";
+                bursaryStatus.className = "error";
+            }
+            document.getElementById("bursaries").hidden = false;
+            document.getElementById("courses").scrollIntoView();
+        } catch (err) {
+            errorsEl.textContent = "We could not complete your request. Please try again.";
+        } finally {
+            btn.disabled = false; btn.textContent = "Show my options";
+        }
+    };

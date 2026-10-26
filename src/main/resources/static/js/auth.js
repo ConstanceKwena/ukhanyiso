@@ -14,6 +14,45 @@
         message.textContent = text;
     }
 
+    // Show/hide password eye toggles.
+    document.querySelectorAll(".eye-toggle").forEach(button => {
+        const input = document.getElementById(button.dataset.for);
+        if (!input) return;
+        button.addEventListener("click", () => {
+            const showing = input.type === "text";
+            input.type = showing ? "password" : "text";
+            button.setAttribute("aria-pressed", String(!showing));
+            button.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+            button.textContent = showing ? "👁" : "🙈";
+        });
+    });
+
+    // Live "passwords match" feedback on the sign-up form.
+    let matchNote = null;
+    function showMatchNote() {
+        if (mode !== "signup" || !confirmation) return;
+        if (!matchNote) {
+            matchNote = document.createElement("p");
+            matchNote.className = "form-note";
+            matchNote.id = "password-match";
+            matchNote.setAttribute("aria-live", "polite");
+            confirmation.closest(".field").appendChild(matchNote);
+        }
+        if (!confirmation.value) {
+            matchNote.textContent = "";
+        } else if (confirmation.value === password.value) {
+            matchNote.textContent = "✓ Passwords match.";
+            matchNote.className = "form-note match-ok";
+        } else {
+            matchNote.textContent = "✗ Passwords do not match yet.";
+            matchNote.className = "form-note match-bad";
+        }
+    }
+    if (confirmation) {
+        confirmation.addEventListener("input", showMatchNote);
+        password.addEventListener("input", showMatchNote);
+    }
+
     function validateSignupPassword() {
         if (mode !== "signup") return;
         if (password.value.length > 128) {
@@ -39,10 +78,12 @@
 
     if (confirmation) {
         confirmation.addEventListener("input", () => {
+            showMatchNote();
             confirmation.setCustomValidity(
                 confirmation.value === password.value ? "" : "The passwords do not match.");
         });
         password.addEventListener("input", () => {
+            showMatchNote();
             confirmation.setCustomValidity(
                 confirmation.value === password.value ? "" : "The passwords do not match.");
         });
@@ -85,22 +126,6 @@
                 const session = await response.json();
                 ["ukhanyiso-marks", "ukhanyiso-results", "ukhanyiso-showing-all-courses",
                     "ukhanyiso-stage", "ukhanyiso-showcase"].forEach(key => sessionStorage.removeItem(key));
-                if (mode === "signup") {
-                    // The sign-up email doubles as the password-recovery email.
-                    try {
-                        await fetch("/api/auth/recovery-email", {
-                            method: "PUT",
-                            credentials: "same-origin",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-Token": session.csrfToken
-                            },
-                            body: JSON.stringify({ email: username.value.trim() })
-                        });
-                    } catch (ignored) {
-                        // Recovery is a convenience; the account itself was created.
-                    }
-                }
                 // New accounts go straight to the profile to enter their personal details.
                 location.assign(mode === "signup" ? "/account.html" : "/");
                 return;

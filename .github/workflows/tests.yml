@@ -35,6 +35,9 @@ jobs:
       - name: Run Java tests
         if: github.event_name != 'workflow_dispatch'
         run: mvn --batch-mode test
+      - name: Dependency vulnerability scan (OWASP)
+        if: github.event_name != 'workflow_dispatch'
+        run: mvn --batch-mode -q org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 || echo "::warning::OWASP dependency-check found vulnerabilities or failed to run"
       - name: Install Node dependencies
         run: npm ci
       - name: Run JavaScript unit tests

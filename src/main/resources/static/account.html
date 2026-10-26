@@ -33,7 +33,7 @@
 
     <section class="calendar-panel" aria-labelledby="profile-heading">
         <h2 id="profile-heading">About you</h2>
-        <p class="form-note">All four details are required. They are used to personalise your reminders and checklist. They stay in your account on this app's database and are never sold or shared.</p>
+        <p class="form-note">First name, surname and email are required. They are used to personalise your reminders and checklist. They stay in your account on this app's database and are never sold or shared.</p>
         <form id="profile-form" novalidate>
             <div class="field">
                 <label for="first-name">First name</label>
@@ -49,9 +49,16 @@
                 <p class="form-note">Used only if you ask for reminder emails. Ukhanyiso does not send marketing mail.</p>
             </div>
             <div class="field">
-                <label for="whatsapp">WhatsApp number</label>
-                <input id="whatsapp" name="whatsapp" type="tel" maxlength="30" placeholder="+27 82 000 0000" required>
-                <p class="form-note">Digits only, a leading + is fine. Reminders are not sent to WhatsApp yet; this saves your preference for when it is built.</p>
+                <label for="whatsapp">WhatsApp number (optional)</label>
+                <input id="whatsapp" name="whatsapp" type="tel" maxlength="30" placeholder="+27 82 000 0000">
+                <p class="form-note">Digits only, a leading + is fine. Only fill this in if you want WhatsApp reminders.</p>
+            </div>
+            <div class="field">
+                <label>
+                    <input id="whatsapp-opt-in" name="whatsappOptIn" type="checkbox">
+                    Send me WhatsApp reminders about my application dates
+                </label>
+                <p class="form-note">Completely your choice. Tick this box and add your number above if you want a WhatsApp message when a reminder date arrives. Reminders are sent from the Ukhanyiso server, so they reach you even when your browser is closed. Leave it unticked and we will never message you.</p>
             </div>
             <div class="form-actions">
                 <button type="submit" id="profile-submit">Save profile</button>
@@ -67,21 +74,6 @@
         <p class="form-note">Reminders are saved in this browser only. They are not linked to your account or sent to Ukhanyiso.</p>
     </section>
 
-    <section class="calendar-panel" aria-labelledby="recovery-heading">
-        <h2 id="recovery-heading">Password recovery</h2>
-        <p class="form-note">Optionally add a recovery email so you can reset your password if you forget it. It is stored only as a secure hash — Ukhanyiso never keeps the address itself and never uses it for anything else.</p>
-        <form id="recovery-form" novalidate>
-            <div class="field">
-                <label for="recovery-email">Recovery email</label>
-                <input id="recovery-email" name="recoveryEmail" type="email" maxlength="200" autocomplete="email">
-            </div>
-            <div class="form-actions">
-                <button type="submit" id="recovery-submit">Save recovery email</button>
-            </div>
-            <p id="recovery-status" class="form-note" role="status" aria-live="polite"></p>
-        </form>
-    </section>
-
     <section class="calendar-panel" aria-labelledby="next-heading">
         <h2 id="next-heading">Continue your study journey</h2>
         <ul>
@@ -94,135 +86,6 @@
     </section>
 </main>
 <script src="/js/site.js"></script>
-<script>
-    (async () => {
-        const accountStatus = document.getElementById("account-status");
-        try {
-            const response = await fetch("/api/auth/me", { credentials: "same-origin" });
-            if (response.status === 401) {
-                location.assign("/login.html");
-                return;
-            }
-            if (!response.ok) throw new Error("Account information could not be loaded.");
-            const account = await response.json();
-            accountStatus.textContent = "Signed in as " + account.username + ".";
-            accountStatus.dataset.email = account.username;
-        } catch (error) {
-            accountStatus.textContent = "Could not load your account. Refresh the page and try again.";
-            accountStatus.className = "error";
-        }
-
-        // Load and save the required profile details.
-        const profileForm = document.getElementById("profile-form");
-        const profileStatus = document.getElementById("profile-status");
-        let profileWasComplete = false;
-        try {
-            const response = await fetch("/api/auth/profile", { credentials: "same-origin" });
-            if (response.ok) {
-                const profile = await response.json();
-                document.getElementById("first-name").value = profile.firstName || "";
-                document.getElementById("surname").value = profile.surname || "";
-                document.getElementById("contact-email").value = profile.contactEmail || accountStatus.dataset.email || "";
-                document.getElementById("whatsapp").value = profile.whatsapp || "";
-                profileWasComplete = Boolean(profile.firstName && profile.surname
-                    && profile.contactEmail && profile.whatsapp);
-                const fullName = [profile.firstName, profile.surname].filter(Boolean).join(" ");
-                if (fullName && accountStatus.dataset.email) {
-                    accountStatus.textContent = "Signed in as " + fullName + " (" + accountStatus.dataset.email + ").";
-                }
-                if (!profileWasComplete) {
-                    profileStatus.textContent = "Please complete all four details to continue.";
-                }
-            }
-        } catch (error) {
-            // Profile stays empty; saving still works.
-        }
-        profileForm.addEventListener("submit", async event => {
-            event.preventDefault();
-            profileStatus.textContent = "";
-            if (!profileForm.reportValidity()) return;
-            try {
-                const me = await fetch("/api/auth/me", { credentials: "same-origin" });
-                if (!me.ok) throw new Error("not signed in");
-                const token = (await me.json()).csrfToken;
-                const response = await fetch("/api/auth/profile", {
-                    method: "PUT",
-                    credentials: "same-origin",
-                    headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
-                    body: JSON.stringify({
-                        firstName: document.getElementById("first-name").value,
-                        surname: document.getElementById("surname").value,
-                        contactEmail: document.getElementById("contact-email").value,
-                        whatsapp: document.getElementById("whatsapp").value
-                    })
-                });
-                if (response.ok) {
-                    profileStatus.textContent = "Profile saved.";
-                    profileStatus.className = "form-note";
-                    if (!profileWasComplete) {
-                        location.assign("/");
-                        return;
-                    }
-                } else if (response.status === 400) {
-                    profileStatus.textContent = "Fill in all four fields. Names take letters, spaces, hyphens and apostrophes; the number takes digits only.";
-                    profileStatus.className = "error";
-                } else {
-                    profileStatus.textContent = "We could not save your profile. Please try again.";
-                    profileStatus.className = "error";
-                }
-            } catch (error) {
-                profileStatus.textContent = "We could not reach the account service. Please try again.";
-                profileStatus.className = "error";
-            }
-        });
-
-        const recoveryStatus = document.getElementById("recovery-status");
-        document.getElementById("recovery-form").addEventListener("submit", async event => {
-            event.preventDefault();
-            recoveryStatus.textContent = "";
-            const emailInput = document.getElementById("recovery-email");
-            if (emailInput.value && !emailInput.checkValidity()) {
-                recoveryStatus.textContent = "Enter a valid email address.";
-                recoveryStatus.className = "error";
-                return;
-            }
-            try {
-                const me = await fetch("/api/auth/me", { credentials: "same-origin" });
-                if (!me.ok) throw new Error("not signed in");
-                const token = (await me.json()).csrfToken;
-                const response = await fetch("/api/auth/recovery-email", {
-                    method: "PUT",
-                    credentials: "same-origin",
-                    headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
-                    body: JSON.stringify({ email: emailInput.value })
-                });
-                if (response.ok) {
-                    recoveryStatus.textContent = emailInput.value
-                        ? "Recovery email saved. It is stored only as a secure hash."
-                        : "Recovery email updated.";
-                    recoveryStatus.className = "form-note";
-                } else {
-                    recoveryStatus.textContent = "We could not save the recovery email. Please try again.";
-                    recoveryStatus.className = "error";
-                }
-            } catch (error) {
-                recoveryStatus.textContent = "We could not reach the account service. Please try again.";
-                recoveryStatus.className = "error";
-            }
-        });
-
-        const reminderSummary = document.getElementById("reminder-summary");
-        try {
-            const reminders = JSON.parse(localStorage.getItem("ukhanyiso-reminders-v1") || "[]");
-            const count = Array.isArray(reminders) ? reminders.length : 0;
-            reminderSummary.textContent = count + (count === 1
-                ? " reminder saved in this browser."
-                : " reminders saved in this browser.");
-        } catch (error) {
-            reminderSummary.textContent = "This browser could not read the local reminders.";
-            reminderSummary.className = "error";
-        }
-    })();
-</script>
+<script src="/js/page-account.js" defer></script>
 </body>
 </html>
